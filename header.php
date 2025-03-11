@@ -266,62 +266,89 @@
                 </div>
                 <div class="sidebar-menu">
                     <ul class="menu-list">
-                        <li class="menu-item">
-                            <a href="dashboard.php" class="menu-link">
-                                <i class="fas fa-tachometer-alt"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <?php if(isset($_SESSION['user_type'])): ?>
-                            <?php if($_SESSION['user_type'] === 'Admin'): ?>
-                                <li class="menu-item">
-                                    <a href="category.php" class="menu-link">
-                                        <i class="fas fa-th-list"></i>
-                                        <span>Category</span>
-                                    </a>
-                                </li>
-                                <li class="menu-item">
-                                    <div class="submenu-wrapper">
-                                        <a href="#" class="menu-link" onclick="toggleSubmenu(event, this)">
-                                            <i class="fas fa-users"></i>
-                                            <span>User</span>
-                                            <i class="fas fa-chevron-down dropdown-indicator"></i>
+                        <?php if ($_SESSION['user_type'] === 'Cashier'): ?>
+                            <li class="menu-item">
+                                <a href="add_order.php" class="menu-link">
+                                    <i class="fas fa-cart-plus"></i>
+                                    <span>Create Order</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="sales.php" class="menu-link">
+                                    <i class="fas fa-cash-register"></i>
+                                    <span>Sales</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="order_history.php" class="menu-link">
+                                    <i class="fas fa-history"></i>
+                                    <span>Order History</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="profile.php" class="menu-link">
+                                    <i class="fas fa-user"></i>
+                                    <span>Profile</span>
+                                </a>
+                            </li>
+                        <?php else: ?>
+                            <li class="menu-item">
+                                <a href="dashboard.php" class="menu-link">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                            </li>
+                            <?php if(isset($_SESSION['user_type'])): ?>
+                                <?php if($_SESSION['user_type'] === 'Admin'): ?>
+                                    <li class="menu-item">
+                                        <a href="category.php" class="menu-link">
+                                            <i class="fas fa-th-list"></i>
+                                            <span>Category</span>
                                         </a>
-                                        <ul class="submenu">
-                                            <li><a href="user.php" class="submenu-link"><i class="fas fa-users-gear"></i>Manage Users</a></li>
-                                            <li><a href="add_user.php?role=cashier" class="submenu-link"><i class="fas fa-cash-register"></i>Add Cashier</a></li>
-                                            <li><a href="add_user.php?role=stockman" class="submenu-link"><i class="fas fa-boxes"></i>Add Stockman</a></li>
-                                            <li><a href="add_user.php?role=admin" class="submenu-link"><i class="fas fa-user-shield"></i>Add Admin</a></li>
-                                        </ul>
-                                    </div>
-                                </li>
-                                <li class="menu-item">
-                                    <a href="ingredients.php" class="menu-link">
-                                        <i class="fas fa-mortar-pestle"></i>
-                                        <span>Ingredients</span>
-                                    </a>
-                                </li>
-                                <li class="menu-item">
-                                    <a href="product.php" class="menu-link">
-                                        <i class="fas fa-utensils"></i>
-                                        <span>Product</span>
-                                    </a>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php if($_SESSION['user_type'] === 'Admin' || $_SESSION['user_type'] === 'Cashier'): ?>
-                                <li class="menu-item">
-                                    <a href="add_order.php" class="menu-link">
-                                        <i class="fas fa-cart-plus"></i>
-                                        <span>Create Order</span>
-                                    </a>
-                                </li>
-                                <li class="menu-item">
-                                    <a href="order.php" class="menu-link">
-                                        <i class="fas fa-history"></i>
-                                        <span>Order History</span>
-                                    </a>
-                                </li>
+                                    </li>
+                                    <li class="menu-item">
+                                        <div class="submenu-wrapper">
+                                            <a href="#" class="menu-link" onclick="toggleSubmenu(event, this)">
+                                                <i class="fas fa-users"></i>
+                                                <span>User</span>
+                                                <i class="fas fa-chevron-down dropdown-indicator"></i>
+                                            </a>
+                                            <ul class="submenu">
+                                                <li><a href="user.php" class="submenu-link"><i class="fas fa-users-gear"></i>Manage Users</a></li>
+                                                <li><a href="add_user.php?role=cashier" class="submenu-link"><i class="fas fa-cash-register"></i>Add Cashier</a></li>
+                                                <li><a href="add_user.php?role=stockman" class="submenu-link"><i class="fas fa-boxes"></i>Add Stockman</a></li>
+                                                <li><a href="add_user.php?role=admin" class="submenu-link"><i class="fas fa-user-shield"></i>Add Admin</a></li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="menu-item">
+                                        <a href="ingredients.php" class="menu-link">
+                                            <i class="fas fa-mortar-pestle"></i>
+                                            <span>Ingredients</span>
+                                        </a>
+                                    </li>
+                                    <li class="menu-item">
+                                        <a href="product.php" class="menu-link">
+                                            <i class="fas fa-utensils"></i>
+                                            <span>Product</span>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                                
+                                <?php if($_SESSION['user_type'] === 'Admin' || $_SESSION['user_type'] === 'Cashier'): ?>
+                                    <li class="menu-item">
+                                        <a href="add_order.php" class="menu-link">
+                                            <i class="fas fa-cart-plus"></i>
+                                            <span>Create Order</span>
+                                        </a>
+                                    </li>
+                                    <li class="menu-item">
+                                        <a href="order.php" class="menu-link">
+                                            <i class="fas fa-history"></i>
+                                            <span>Order History</span>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
                     </ul>

@@ -16,7 +16,7 @@ function requireLogin() {
 function redirectIfLoggedIn() {
     if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] === true) {
         if ($_SESSION['user_type'] === 'Cashier') {
-            header('Location: add_order.php');
+            header('Location: sales.php');
         } else {
             header('Location: dashboard.php');
         }
@@ -29,7 +29,7 @@ function checkAdminLogin() {
     requireLogin();
     if ($_SESSION['user_type'] !== 'Admin') {
         if ($_SESSION['user_type'] === 'Cashier') {
-            header('Location: add_order.php');
+            header('Location: sales.php');
         } else {
             header('Location: dashboard.php');
         }
