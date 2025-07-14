@@ -17,7 +17,6 @@ $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
 $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
 $search = isset($_POST['search']['value']) ? $_POST['search']['value'] : '';
 $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d', strtotime('-30 days'));
-$end_date = isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d');
 
 $month = isset($_POST['month']) ? $_POST['month'] : '';
 $day = isset($_POST['day']) ? $_POST['day'] : '';
@@ -30,7 +29,7 @@ $base_query = "
     LEFT JOIN pos_order_item oi ON o.order_id = oi.order_id
     LEFT JOIN pos_product p ON oi.product_id = p.product_id
     WHERE o.order_created_by = :user_id
-    AND DATE(o.order_datetime) BETWEEN :start_date AND :end_date
+    AND DATE(o.order_datetime) >= :start_date
 ";
 
 // Search condition
@@ -51,12 +50,18 @@ if ($start_time !== '' && $end_time !== '') {
     $base_query .= " AND TIME(o.order_datetime) BETWEEN :start_time AND :end_time";
 }
 
-// Count total records
+// Count total records (no filters)
+$count_all_query = "SELECT COUNT(DISTINCT o.order_id) as total FROM pos_order o WHERE o.order_created_by = :user_id";
+$stmt_all = $pdo->prepare($count_all_query);
+$stmt_all->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+$stmt_all->execute();
+$total_records = $stmt_all->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Count filtered records (with filters)
 $count_query = "SELECT COUNT(DISTINCT o.order_id) as total " . $base_query;
 $stmt = $pdo->prepare($count_query);
 $stmt->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
 $stmt->bindValue(':start_date', $start_date);
-$stmt->bindValue(':end_date', $end_date);
 if (!empty($search)) {
     $stmt->bindValue(':search', "%$search%");
 }
@@ -71,7 +76,7 @@ if ($start_time !== '' && $end_time !== '') {
     $stmt->bindValue(':end_time', $end_time);
 }
 $stmt->execute();
-$total_records = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+$filtered_records = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
 // Get filtered records
 $query = "
@@ -90,7 +95,6 @@ $query = "
 $stmt = $pdo->prepare($query);
 $stmt->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
 $stmt->bindValue(':start_date', $start_date);
-$stmt->bindValue(':end_date', $end_date);
 $stmt->bindValue(':start', $start, PDO::PARAM_INT);
 $stmt->bindValue(':length', $length, PDO::PARAM_INT);
 if (!empty($search)) {
@@ -113,10 +117,23 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $response = [
     'draw' => isset($_POST['draw']) ? intval($_POST['draw']) : 1,
     'recordsTotal' => $total_records,
-    'recordsFiltered' => $total_records,
+    'recordsFiltered' => $filtered_records,
     'data' => $records
 ];
 
-header('Content-Type: application/json');
-echo json_encode($response);
-exit; 
+// Add try-catch for error handling
+try {
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+} catch (Exception $e) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'draw' => isset($_POST['draw']) ? intval($_POST['draw']) : 1,
+        'recordsTotal' => 0,
+        'recordsFiltered' => 0,
+        'data' => [],
+        'error' => $e->getMessage()
+    ]);
+    exit;
+} 

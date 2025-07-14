@@ -411,9 +411,12 @@ include('header.php');
                         <table class="table table-hover" id="cashierPerformanceTable">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    <th>Total</th>
-                                    <th>Qty</th>
+                                    <th>Cashier</th>
+                                    <th>Branch</th>
+                                    <th>Status</th>
+                                    <th>Transactions</th>
+                                    <th>Sales</th>
+                                    <th>Avg. Time</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1570,7 +1573,7 @@ function initializeCharts() {
     // Sales Trend Chart
     const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
     salesTrendChart = new Chart(salesTrendCtx, {
-        type: 'line',
+    type: 'line',
         data: {
             labels: [],
             datasets: [{
@@ -1582,8 +1585,8 @@ function initializeCharts() {
                 tension: 0.4
             }]
         },
-        options: {
-            responsive: true,
+    options: {
+        responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
@@ -1598,7 +1601,7 @@ function initializeCharts() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: {
+                ticks: {
                         callback: function(value) {
                             return formatCurrency(value);
                         }
@@ -1624,7 +1627,7 @@ function initializeCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
+        plugins: {
                 legend: { position: 'bottom' }
             }
         }
@@ -1648,8 +1651,8 @@ function initializeCharts() {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    callbacks: {
-                        label: function(context) {
+                callbacks: {
+                    label: function(context) {
                             return formatCurrency(context.raw);
                         }
                     }
@@ -1676,14 +1679,14 @@ function initializeCharts() {
             labels: [],
             datasets: [
                 {
-                    label: 'Current Stock',
-                    data: [],
-                    backgroundColor: '#8B4543'
+                label: 'Current Stock',
+                data: [],
+                backgroundColor: '#8B4543'
                 },
                 {
-                    label: 'Minimum Stock',
-                    data: [],
-                    backgroundColor: '#C4804D'
+                label: 'Minimum Stock',
+                data: [],
+                backgroundColor: '#C4804D'
                 }
             ]
         },
@@ -1729,6 +1732,44 @@ function updateDashboard() {
     });
 }
 
+function updateCashierPerformance() {
+    const period = $('#cashierPeriod').val() || 'today';
+    $.get('get_cashier_performance.php', { period: period }, function(data) {
+        if (data.success) {
+            // Update summary cards
+            $('#activeCashiers').text(data.active_cashiers);
+            $('#totalTransactions').text(data.total_transactions);
+            $('#avgTransactionTime').text(data.avg_transaction_time);
+            $('#totalCashierSales').text(formatCurrency(data.total_sales));
+
+            // Update table
+        const tbody = $('#cashierPerformanceTable tbody');
+        tbody.empty();
+            if (data.cashiers && data.cashiers.length > 0) {
+                data.cashiers.forEach(cashier => {
+                tbody.append(`
+                    <tr>
+                        <td>
+                            <div class="item-name d-flex align-items-center">
+                                <img src="${cashier.profile_image}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                                ${cashier.name}
+                            </div>
+                        </td>
+                        <td>${cashier.branch || '-'}</td>
+                        <td><span class="badge ${cashier.is_active ? 'bg-success' : 'bg-secondary'}">${cashier.is_active ? 'Active' : 'Inactive'}</span></td>
+                        <td>${cashier.transactions}</td>
+                            <td>${formatCurrency(cashier.sales)}</td>
+                        <td>${cashier.avg_time}</td>
+                    </tr>
+                `);
+            });
+        } else {
+            tbody.append('<tr><td colspan="6" class="text-center text-muted">No cashiers found for this period.</td></tr>');
+        }
+        }
+    }, 'json');
+}
+
 $(document).ready(function() {
     initializeCharts();
     updateDashboard();
@@ -1738,7 +1779,11 @@ $(document).ready(function() {
         updateDashboard();
     });
     setInterval(updateDashboard, 300000); // Auto-refresh every 5 minutes
-});
+    updateCashierPerformance();
+    $('#cashierPeriod').change(updateCashierPerformance);
+    $('#refreshCashierStats').click(updateCashierPerformance);
+    setInterval(updateCashierPerformance, 300000); // Auto-refresh every 5 minutes
+    });
 
 // ... existing code ...
 </script>

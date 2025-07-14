@@ -184,61 +184,54 @@ include('header.php');
         </div>
     </div>
 
-<!-- Order History Section -->
-<div class="card mb-4">
-    <div class="card-header">
-        <div class="row align-items-center">
-            <div class="col">
-                <i class="fas fa-history me-1"></i>
-                Order History
-            </div>
-            <div class="col-auto">
-                <form id="orderFilterForm" class="d-flex flex-wrap gap-2 align-items-center" onsubmit="return false;">
-                    <input type="date" id="startDate" class="form-control form-control-sm" style="min-width: 140px;">
-                    <input type="date" id="endDate" class="form-control form-control-sm" style="min-width: 140px;">
-                    <select id="monthFilter" class="form-control form-control-sm">
-                        <option value="">All Months</option>
-                        <option value="01">January</option>
-                        <option value="02">February</option>
-                        <option value="03">March</option>
-                        <option value="04">April</option>
-                        <option value="05">May</option>
-                        <option value="06">June</option>
-                        <option value="07">July</option>
-                        <option value="08">August</option>
-                        <option value="09">September</option>
-                        <option value="10">October</option>
-                        <option value="11">November</option>
-                        <option value="12">December</option>
-                    </select>
-                    <select id="dayFilter" class="form-control form-control-sm">
-                        <option value="">All Days</option>
-                    </select>
-                    <input type="time" id="startTime" class="form-control form-control-sm" value="00:00">
-                    <input type="time" id="endTime" class="form-control form-control-sm" value="23:59">
-                    <button id="filterBtn" class="btn btn-primary btn-sm">Filter</button>
-                </form>
+<!-- Enhanced Order History Section - System Design Consistent -->
+<div class="container-fluid px-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-11">
+            <div class="card shadow-sm border-0 mb-4" style="background: #fff; border-radius: 1rem;">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between" style="border-bottom: 1px solid #eee; border-radius: 1rem 1rem 0 0;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="d-flex align-items-center justify-content-center" style="background: #f3e5f5; border-radius: 50%; width: 40px; height: 40px;"><i class="fas fa-history fa-lg" style="color: #8B4543;"></i></span>
+                        <div>
+                            <h3 class="mb-0" style="font-weight: 700; color: #8B4543; letter-spacing: 0.5px;">Order History</h3>
+                            <small class="text-muted">View and manage all past orders</small>
+                        </div>
+                    </div>
+                    <form id="orderFilterForm" class="d-flex flex-wrap gap-2 align-items-center mb-0" onsubmit="return false;">
+                        <input type="date" id="startDate" class="form-control form-control-sm" style="min-width: 140px;">
+                        <input type="date" id="endDate" class="form-control form-control-sm" style="min-width: 140px;">
+                        <button id="filterBtn" class="btn btn-primary btn-sm" type="button"><i class="fas fa-filter"></i> Filter</button>
+                    </form>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table id="orderHistoryTable" class="table table-striped table-hover align-middle mb-0" style="width:100%; border-radius: 0.5rem; overflow: hidden;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>DATE</th>
+                                    <th>TIME</th>
+                                    <th>ORDER NUMBER</th>
+                                    <th>ITEMS</th>
+                                    <th>TOTAL</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- DataTables will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="card-body">
-        <table id="orderHistoryTable" class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Order Number</th>
-                    <th>Items</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-        </table>
     </div>
 </div>
 </div>
 
 <style>
+body {
+    background: #f8f9fa !important;
+}
 .icon-circle {
     width: 48px;
     height: 48px;
@@ -253,20 +246,28 @@ include('header.php');
 }
 
 .card {
-    border-radius: 0.5rem;
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 1rem;
+    box-shadow: 0 2px 16px rgba(140, 98, 57, 0.07), 0 1.5px 4px rgba(0,0,0,0.03);
+    background: #fff;
 }
 
 .card-header {
-    background: none;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    padding: 1rem;
+    border-radius: 1rem 1rem 0 0;
+    background: #fff;
+    border-bottom: 1px solid #eee;
 }
 
 .table th {
     font-weight: 500;
     background-color: #f8f9fa;
+}
+.dataTables_length { display: none !important; }
+#orderHistoryTable tbody tr:hover {
+    background: #f3e5f5 !important;
+    transition: background 0.2s;
+}
+#orderHistoryTable th, #orderHistoryTable td {
+    vertical-align: middle;
 }
 </style>
 
@@ -422,8 +423,8 @@ $(document).ready(function() {
     const orderTable = $('#orderHistoryTable').DataTable({
         processing: true,
         serverSide: true,
-        // Remove lengthMenu to hide 'Show entries'
-        lengthChange: false,
+        lengthChange: false, // Remove the 'Show entries' dropdown
+        pageLength: 10, // Default to 10 per page
         ajax: {
             url: 'order_history_ajax.php',
             type: 'POST',
@@ -466,8 +467,11 @@ $(document).ready(function() {
                 }
             }
         ],
+        pageLength: 10, // Show 10 orders per page by default
+        lengthMenu: [ [5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, 'All'] ],
+        paging: true, // Ensure pagination is enabled
+        lengthChange: true, // Allow user to change page length
         order: [[0, 'desc'], [1, 'desc']],
-        pageLength: 25,
         responsive: true
     });
 
