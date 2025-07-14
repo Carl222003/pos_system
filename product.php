@@ -659,12 +659,12 @@ $(document).ready(function() {
             }
         ],
         pageLength: 10,
+        lengthChange: false,
         language: {
             search: "",
-            searchPlaceholder: "Search...",
-            lengthMenu: "Show _MENU_ entries"
+            searchPlaceholder: "Search..."
         },
-        dom: '<"top d-flex justify-content-between align-items-center"lf>rt<"bottom d-flex justify-content-between align-items-center"ip><"clear">',
+        dom: '<"top d-flex justify-content-between align-items-center"f>rt<"bottom d-flex justify-content-between align-items-center"ip><"clear">',
         ordering: true,
         responsive: true
     });

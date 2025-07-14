@@ -672,6 +672,65 @@ $(document).ready(function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
+    // Real-time branch stats update
+    function updateBranchStats() {
+        $('.branch-card').each(function() {
+            var branchId = $(this).data('branch-id');
+            $.get('get_branch_stats.php', { branch_id: branchId }, function(data) {
+                if (data && !data.error) {
+                    // Update sales and orders
+                    $('#sales-' + branchId).text('₱' + parseFloat(data.today_sales).toFixed(2));
+                    $('#orders-' + branchId).text(data.today_orders);
+
+                    // Update cashier status: show all assigned cashiers, highlight active ones
+                    let cashierHtml = '';
+                    if (data.all_cashiers && data.all_cashiers.length > 0) {
+                        cashierHtml = data.all_cashiers.map(function(cashier) {
+                            if (cashier.is_active) {
+                                return `<span style="color: #218838; font-weight: bold;"><i class='fas fa-circle' style='font-size:8px;color:#28a745;margin-right:4px;'></i>${cashier.full_name}</span>`;
+                            } else {
+                                return `<span style="color: #888;">${cashier.full_name}</span>`;
+                            }
+                        }).join(', ');
+                    } else {
+                        cashierHtml = '<span style="color:#888;">None assigned</span>';
+                    }
+                    $('#cashiers-' + branchId + ' .cashier-list').html(cashierHtml);
+
+                    // Update operating status
+                    let statusHtml = data.is_operating
+                        ? '<span class="badge bg-success">Operating</span>'
+                        : '<span class="badge bg-secondary">Closed</span>';
+                    $('#status-' + branchId).html(statusHtml);
+
+                    // Update inventory alerts
+                    $('#lowstock-' + branchId).text(data.low_stock_count);
+                    $('#expiring-' + branchId).text(data.expiring_count);
+                } else {
+                    // Show error in all fields for this branch
+                    $('#sales-' + branchId).text('Error');
+                    $('#orders-' + branchId).text('Error');
+                    $('#cashiers-' + branchId + ' .cashier-list').text('Error');
+                    $('#status-' + branchId).html('<span class="badge bg-danger">Error</span>');
+                    $('#lowstock-' + branchId).text('!');
+                    $('#expiring-' + branchId).text('!');
+                }
+            }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
+                // Show error in all fields for this branch
+                $('#sales-' + branchId).text('Error');
+                $('#orders-' + branchId).text('Error');
+                $('#cashiers-' + branchId + ' .cashier-list').text('Error');
+                $('#status-' + branchId).html('<span class="badge bg-danger">Error</span>');
+                $('#lowstock-' + branchId).text('!');
+                $('#expiring-' + branchId).text('!');
+                // Debug log
+                console.error('AJAX error for branch_id=' + branchId, textStatus, errorThrown, jqXHR.responseText);
+            });
+        });
+    }
+    setInterval(updateBranchStats, 5000);
+    updateBranchStats();
+
     // Handle View Sales button click
     $('.view-sales-btn').on('click', function() {
         const branchId = $(this).data('branch-id');

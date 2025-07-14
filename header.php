@@ -446,6 +446,12 @@
                                                 <span>Request Stock</span>
                                             </a>
                                         </li>
+                                        <li class="menu-item">
+                                            <a href="ingredients.php" class="menu-link">
+                                                <i class="fa-solid fa-mortar-pestle"></i>
+                                                <span>Available Ingredients</span>
+                                            </a>
+                                        </li>
                                     <?php endif; ?>
                                     <?php if($_SESSION['user_type'] === 'Admin'): ?>
                                         <li class="menu-item">

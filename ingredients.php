@@ -273,6 +273,36 @@ h1 {
     font-weight: 400;
     margin-bottom: 1.5rem;
 }
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem; /* Adjust the gap as needed */
+    justify-content: center;
+    align-items: center;
+}
+.action-buttons .btn {
+    margin: 0; /* Remove any default margin */
+    padding: 0.4rem 0.7rem; /* Consistent button size */
+}
+
+.table td, .table th {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+}
+
+.table td img {
+    display: block;
+    margin: 0 auto;           /* Center horizontally */
+    margin-top: 4px;          /* Add a little space above */
+    margin-bottom: 4px;       /* Add a little space below */
+    width: 48px;              /* Consistent size */
+    height: 48px;
+    object-fit: cover;
+    border-radius: 10px;      /* Soft corners */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 2px solid #f3e6e6;
+    background: #fff;
+}
 </style>
 
 <div class="container-fluid px-4">
@@ -285,7 +315,7 @@ h1 {
                         <i class="fas fa-mortar-pestle me-1"></i>
                         Ingredient List
                     </div>
-                    <a href="add_ingredient.php" class="btn btn-success">
+                    <a href="#" class="btn btn-success" id="addIngredientBtn">
                         <i class="fas fa-plus me-1"></i> Add Ingredient
                     </a>
                 </div>
@@ -314,6 +344,17 @@ h1 {
     <div class="modal-content">
       <div class="modal-body" id="editIngredientModalBody">
         <!-- AJAX-loaded content here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Ingredient Modal -->
+<div class="modal fade" id="addIngredientModal" tabindex="-1" aria-labelledby="addIngredientModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body" id="addIngredientModalBody">
+        <!-- AJAX-loaded content will go here -->
       </div>
     </div>
   </div>
@@ -433,5 +474,28 @@ $(document).on('click', '#editIngredientModalBody .btn-cancel', function(e) {
             $('#editIngredientModal').modal('show');
         }
     });
+});
+
+$(document).on('click', '#addIngredientBtn', function(e) {
+    e.preventDefault();
+    $.get('add_ingredient.php', function(data) {
+        $('#addIngredientModalBody').html(data);
+        $('#addIngredientModal').modal('show');
+    });
+});
+
+// Handle Add Ingredient form submission via AJAX
+$(document).on('submit', '#addIngredientForm', function(e) {
+    e.preventDefault();
+    var formData = $(this).serialize();
+    $.post('add_ingredient.php', formData, function(response) {
+        if(response.success) {
+            $('#addIngredientModal').modal('hide');
+            $('#ingredientTable').DataTable().ajax.reload();
+            Swal.fire('Success', 'Ingredient added!', 'success');
+        } else {
+            Swal.fire('Error', response.message || 'Failed to add ingredient.', 'error');
+        }
+    }, 'json');
 });
 </script>

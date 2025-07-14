@@ -15,13 +15,12 @@ try {
         case 'daily':
             // Get hourly sales for today
             $sql = "SELECT 
-                        HOUR(created_at) as hour,
-                        COALESCE(SUM(total_amount), 0) as total
-                    FROM pos_orders 
-                    WHERE DATE(created_at) = CURDATE()
-                    AND status = 'Completed'
-                    GROUP BY HOUR(created_at)
-                    ORDER BY HOUR(created_at)";
+                        HOUR(order_datetime) as hour,
+                        COALESCE(SUM(order_total), 0) as total
+                    FROM pos_order 
+                    WHERE DATE(order_datetime) = CURDATE()
+                    GROUP BY HOUR(order_datetime)
+                    ORDER BY HOUR(order_datetime)";
 
             $stmt = $pdo->query($sql);
             
@@ -40,13 +39,12 @@ try {
         case 'weekly':
             // Get daily sales for the past week
             $sql = "SELECT 
-                        DATE(created_at) as date,
-                        COALESCE(SUM(total_amount), 0) as total
-                    FROM pos_orders 
-                    WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-                    AND status = 'Completed'
-                    GROUP BY DATE(created_at)
-                    ORDER BY DATE(created_at)";
+                        DATE(order_datetime) as date,
+                        COALESCE(SUM(order_total), 0) as total
+                    FROM pos_order 
+                    WHERE order_datetime >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+                    GROUP BY DATE(order_datetime)
+                    ORDER BY DATE(order_datetime)";
 
             $stmt = $pdo->query($sql);
 
@@ -66,12 +64,11 @@ try {
         case 'monthly':
             // Get monthly sales for the past 6 months
             $sql = "SELECT 
-                        DATE_FORMAT(created_at, '%Y-%m') as month,
-                        COALESCE(SUM(total_amount), 0) as total
-                    FROM pos_orders 
-                    WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 5 MONTH)
-                    AND status = 'Completed'
-                    GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+                        DATE_FORMAT(order_datetime, '%Y-%m') as month,
+                        COALESCE(SUM(order_total), 0) as total
+                    FROM pos_order 
+                    WHERE order_datetime >= DATE_SUB(CURDATE(), INTERVAL 5 MONTH)
+                    GROUP BY DATE_FORMAT(order_datetime, '%Y-%m')
                     ORDER BY month";
 
             $stmt = $pdo->query($sql);

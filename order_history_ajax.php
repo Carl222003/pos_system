@@ -1,6 +1,14 @@
 <?php
+// DEBUG MODE: Show all errors directly in the response
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'db_connect.php';
 require_once 'auth_function.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 checkCashierLogin();
 
@@ -11,10 +19,16 @@ $search = isset($_POST['search']['value']) ? $_POST['search']['value'] : '';
 $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d', strtotime('-30 days'));
 $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d');
 
+$month = isset($_POST['month']) ? $_POST['month'] : '';
+$day = isset($_POST['day']) ? $_POST['day'] : '';
+$start_time = isset($_POST['start_time']) ? $_POST['start_time'] : '';
+$end_time = isset($_POST['end_time']) ? $_POST['end_time'] : '';
+
 // Base query
 $base_query = "
     FROM pos_order o
     LEFT JOIN pos_order_item oi ON o.order_id = oi.order_id
+    LEFT JOIN pos_product p ON oi.product_id = p.product_id
     WHERE o.order_created_by = :user_id
     AND DATE(o.order_datetime) BETWEEN :start_date AND :end_date
 ";
@@ -23,8 +37,18 @@ $base_query = "
 if (!empty($search)) {
     $base_query .= " AND (
         o.order_number LIKE :search
-        OR oi.product_name LIKE :search
+        OR p.product_name LIKE :search
     )";
+}
+
+if ($month !== '') {
+    $base_query .= " AND MONTH(o.order_datetime) = :month";
+}
+if ($day !== '') {
+    $base_query .= " AND DAY(o.order_datetime) = :day";
+}
+if ($start_time !== '' && $end_time !== '') {
+    $base_query .= " AND TIME(o.order_datetime) BETWEEN :start_time AND :end_time";
 }
 
 // Count total records
@@ -36,6 +60,16 @@ $stmt->bindValue(':end_date', $end_date);
 if (!empty($search)) {
     $stmt->bindValue(':search', "%$search%");
 }
+if ($month !== '') {
+    $stmt->bindValue(':month', $month, PDO::PARAM_INT);
+}
+if ($day !== '') {
+    $stmt->bindValue(':day', $day, PDO::PARAM_INT);
+}
+if ($start_time !== '' && $end_time !== '') {
+    $stmt->bindValue(':start_time', $start_time);
+    $stmt->bindValue(':end_time', $end_time);
+}
 $stmt->execute();
 $total_records = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
@@ -46,7 +80,7 @@ $query = "
         o.order_number,
         o.order_datetime,
         o.order_total,
-        GROUP_CONCAT(CONCAT(oi.product_qty, 'x ', oi.product_name) SEPARATOR ', ') as items
+        GROUP_CONCAT(CONCAT(oi.product_qty, 'x ', p.product_name) SEPARATOR ', ') as items
     " . $base_query . "
     GROUP BY o.order_id
     ORDER BY o.order_datetime DESC
@@ -62,6 +96,16 @@ $stmt->bindValue(':length', $length, PDO::PARAM_INT);
 if (!empty($search)) {
     $stmt->bindValue(':search', "%$search%");
 }
+if ($month !== '') {
+    $stmt->bindValue(':month', $month, PDO::PARAM_INT);
+}
+if ($day !== '') {
+    $stmt->bindValue(':day', $day, PDO::PARAM_INT);
+}
+if ($start_time !== '' && $end_time !== '') {
+    $stmt->bindValue(':start_time', $start_time);
+    $stmt->bindValue(':end_time', $end_time);
+}
 $stmt->execute();
 $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -74,4 +118,5 @@ $response = [
 ];
 
 header('Content-Type: application/json');
-echo json_encode($response); 
+echo json_encode($response);
+exit; 

@@ -183,6 +183,59 @@ include('header.php');
             </div>
         </div>
     </div>
+
+<!-- Order History Section -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <i class="fas fa-history me-1"></i>
+                Order History
+            </div>
+            <div class="col-auto">
+                <form id="orderFilterForm" class="d-flex flex-wrap gap-2 align-items-center" onsubmit="return false;">
+                    <input type="date" id="startDate" class="form-control form-control-sm" style="min-width: 140px;">
+                    <input type="date" id="endDate" class="form-control form-control-sm" style="min-width: 140px;">
+                    <select id="monthFilter" class="form-control form-control-sm">
+                        <option value="">All Months</option>
+                        <option value="01">January</option>
+                        <option value="02">February</option>
+                        <option value="03">March</option>
+                        <option value="04">April</option>
+                        <option value="05">May</option>
+                        <option value="06">June</option>
+                        <option value="07">July</option>
+                        <option value="08">August</option>
+                        <option value="09">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <select id="dayFilter" class="form-control form-control-sm">
+                        <option value="">All Days</option>
+                    </select>
+                    <input type="time" id="startTime" class="form-control form-control-sm" value="00:00">
+                    <input type="time" id="endTime" class="form-control form-control-sm" value="23:59">
+                    <button id="filterBtn" class="btn btn-primary btn-sm">Filter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table id="orderHistoryTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Order Number</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
 </div>
 
 <style>
@@ -352,6 +405,76 @@ $(document).ready(function() {
     // Refresh timer
     setInterval(updateStats, 60000); // Update every minute
     setInterval(updateStockMovements, 300000); // Update every 5 minutes
+
+    // Dynamically populate day dropdown
+    for (let i = 1; i <= 31; i++) {
+        const val = i < 10 ? '0' + i : i;
+        $('#dayFilter').append(`<option value="${val}">${i}</option>`);
+    }
+
+    // Order History DataTable
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    $('#startDate').val(thirtyDaysAgo.toISOString().split('T')[0]);
+    $('#endDate').val(today.toISOString().split('T')[0]);
+
+    const orderTable = $('#orderHistoryTable').DataTable({
+        processing: true,
+        serverSide: true,
+        // Remove lengthMenu to hide 'Show entries'
+        lengthChange: false,
+        ajax: {
+            url: 'order_history_ajax.php',
+            type: 'POST',
+            data: function(d) {
+                d.start_date = $('#startDate').val();
+                d.end_date = $('#endDate').val();
+                d.month = $('#monthFilter').val();
+                d.day = $('#dayFilter').val();
+                d.start_time = $('#startTime').val();
+                d.end_time = $('#endTime').val();
+            }
+        },
+        columns: [
+            {
+                data: 'order_datetime',
+                render: function(data) {
+                    return new Date(data).toLocaleDateString();
+                }
+            },
+            {
+                data: 'order_datetime',
+                render: function(data) {
+                    return new Date(data).toLocaleTimeString();
+                }
+            },
+            { data: 'order_number' },
+            { data: 'items' },
+            {
+                data: 'order_total',
+                render: function(data) {
+                    return '<?php echo $confData['currency']; ?>' + parseFloat(data).toFixed(2);
+                }
+            },
+            {
+                data: 'order_id',
+                render: function(data) {
+                    return `<a href="print_order.php?id=${data}" class="btn btn-sm btn-primary" target="_blank">
+                                <i class="fas fa-print"></i> Print
+                           </a>`;
+                }
+            }
+        ],
+        order: [[0, 'desc'], [1, 'desc']],
+        pageLength: 25,
+        responsive: true
+    });
+
+    // Apply filter
+    $('#filterBtn').click(function() {
+        orderTable.ajax.reload();
+    });
 });
 </script>
 

@@ -1559,7 +1559,6 @@ let productDistributionChart = null;
 let branchPerformanceChart = null;
 let inventoryStatusChart = null;
 
-// Function to format currency
 function formatCurrency(value) {
     return '₱' + parseFloat(value).toLocaleString('en-PH', {
         minimumFractionDigits: 2,
@@ -1567,12 +1566,11 @@ function formatCurrency(value) {
     });
 }
 
-// Function to initialize charts
 function initializeCharts() {
     // Sales Trend Chart
     const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
     salesTrendChart = new Chart(salesTrendCtx, {
-    type: 'line',
+        type: 'line',
         data: {
             labels: [],
             datasets: [{
@@ -1584,13 +1582,11 @@ function initializeCharts() {
                 tension: 0.4
             }]
         },
-    options: {
-        responsive: true,
+        options: {
+            responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -1602,7 +1598,7 @@ function initializeCharts() {
             scales: {
                 y: {
                     beginAtZero: true,
-                ticks: {
+                    ticks: {
                         callback: function(value) {
                             return formatCurrency(value);
                         }
@@ -1628,10 +1624,8 @@ function initializeCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                    position: 'bottom'
-                }
+            plugins: {
+                legend: { position: 'bottom' }
             }
         }
     });
@@ -1652,12 +1646,10 @@ function initializeCharts() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
-                callbacks: {
-                    label: function(context) {
+                    callbacks: {
+                        label: function(context) {
                             return formatCurrency(context.raw);
                         }
                     }
@@ -1682,66 +1674,53 @@ function initializeCharts() {
         type: 'bar',
         data: {
             labels: [],
-            datasets: [{
-                label: 'Current Stock',
-                data: [],
-                backgroundColor: '#8B4543'
-            }, {
-                label: 'Minimum Stock',
-                data: [],
-                backgroundColor: '#C4804D'
-            }]
+            datasets: [
+                {
+                    label: 'Current Stock',
+                    data: [],
+                    backgroundColor: '#8B4543'
+                },
+                {
+                    label: 'Minimum Stock',
+                    data: [],
+                    backgroundColor: '#C4804D'
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: 'bottom'
-                }
+                legend: { position: 'bottom' }
             },
             scales: {
-                y: {
-                    beginAtZero: true
-                }
+                y: { beginAtZero: true }
             }
         }
     });
 }
 
-// Function to update dashboard data
 function updateDashboard() {
-    // Update stats
-    $.get('get_dashboard_stats.php', function(response) {
-        $('#totalCategories').text(response.total_categories);
-        $('#totalProducts').text(response.total_products);
-        $('#totalBranches').text(response.total_branches);
-        $('#totalRevenue').text(formatCurrency(response.total_revenue));
-    });
-
-    // Update sales trend
+    // Sales Trend
     const period = $('.period-selector.active').data('period');
     $.get('get_sales_trend.php', { period: period }, function(response) {
         salesTrendChart.data.labels = response.labels;
         salesTrendChart.data.datasets[0].data = response.data;
         salesTrendChart.update();
     });
-
-    // Update product distribution
+    // Product Distribution
     $.get('get_product_distribution.php', function(response) {
         productDistributionChart.data.labels = response.labels;
         productDistributionChart.data.datasets[0].data = response.data;
         productDistributionChart.update();
     });
-
-    // Update branch performance
+    // Branch Performance
     $.get('get_branch_performance.php', function(response) {
         branchPerformanceChart.data.labels = response.labels;
         branchPerformanceChart.data.datasets[0].data = response.data;
         branchPerformanceChart.update();
     });
-
-    // Update inventory status
+    // Inventory Status
     $.get('get_inventory_status.php', function(response) {
         inventoryStatusChart.data.labels = response.labels;
         inventoryStatusChart.data.datasets[0].data = response.current_stock;
@@ -1750,436 +1729,18 @@ function updateDashboard() {
     });
 }
 
-// Function to update cashier performance data
-function updateCashierPerformance() {
-    const period = $('#cashierPeriod').val();
-    
-    $.get('get_cashier_performance.php', { period: period }, function(response) {
-        const tbody = $('#cashierPerformanceTable tbody');
-        tbody.empty();
-
-        if (response.cashiers && response.cashiers.length > 0) {
-            response.cashiers.forEach(cashier => {
-                tbody.append(`
-                    <tr>
-                        <td>
-                            <div class="item-name d-flex align-items-center">
-                                <img src="${cashier.profile_image}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
-                                ${cashier.name}
-                            </div>
-                        </td>
-                        <td>${cashier.branch || '-'}</td>
-                        <td><span class="badge ${cashier.is_active ? 'bg-success' : 'bg-secondary'}">${cashier.is_active ? 'Active' : 'Inactive'}</span></td>
-                        <td>${cashier.transactions}</td>
-                        <td>₱${formatCurrency(cashier.sales)}</td>
-                        <td>${cashier.avg_time}</td>
-                    </tr>
-                `);
-            });
-        } else {
-            tbody.append('<tr><td colspan="6" class="text-center text-muted">No cashiers found for this period.</td></tr>');
-        }
-    });
-}
-
-// Function to show cashier details modal
-function showCashierDetails(cashierId) {
-    const modal = $('#cashierDetailsModal');
-    modal.modal('show');
-
-    $.get('get_cashier_details.php', { id: cashierId }, function(response) {
-        // Initialize hourly sales chart
-        const hourlyCtx = document.getElementById('cashierHourlySalesChart').getContext('2d');
-        new Chart(hourlyCtx, {
-            type: 'line',
-            data: {
-                labels: response.hourly_sales.labels,
-                datasets: [{
-                    label: 'Total Sales',
-                    data: response.hourly_sales.data,
-                    borderColor: '#8B4543',
-                    backgroundColor: 'rgba(139, 69, 67, 0.1)',
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                                return formatCurrency(context.raw);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Initialize payment methods chart
-        const paymentCtx = document.getElementById('cashierPaymentMethodsChart').getContext('2d');
-        new Chart(paymentCtx, {
-            type: 'doughnut',
-            data: {
-                labels: response.payment_methods.labels,
-                datasets: [{
-                    data: response.payment_methods.data,
-                    backgroundColor: ['#8B4543', '#4A7C59', '#C4804D']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const method = response.payment_methods.labels[context.dataIndex];
-                                const count = context.raw;
-                                const total = response.payment_methods.total[context.dataIndex];
-                                return `${method}: ${count} orders (${formatCurrency(total)})`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Populate transactions table
-        const tbody = $('#cashierTransactionsTable tbody');
-        tbody.empty();
-
-        response.transactions.forEach(tx => {
-            tbody.append(`
-                <tr>
-                    <td>${tx.time}</td>
-                    <td>${tx.order_id}</td>
-                    <td>${tx.items}</td>
-                    <td>
-                        <div>${formatCurrency(tx.total)}</div>
-                        <div class="small">
-                            <div>Subtotal: ${formatCurrency(tx.subtotal)}</div>
-                            <div>Tax: ${formatCurrency(tx.tax)}</div>
-                            <div>Discount: ${formatCurrency(tx.discount)} (${tx.discount_type})</div>
-                        </div>
-                    </td>
-                    <td>
-                        <div>${tx.payment_method}</div>
-                        <div class="small">${tx.service_type}</div>
-                    </td>
-                    <td>
-                        <span class="badge ${tx.status === 'completed' ? 'bg-success' : 'bg-warning'}">
-                            ${tx.status}
-                        </span>
-                    </td>
-                </tr>
-            `);
-        });
-    });
-}
-
-// Enhanced Cashier Performance Functions
-function initializeCashierPerformanceEffects() {
-    // Add hover effects to table rows
-    const tableRows = document.querySelectorAll('.cashier-table tbody tr');
-    tableRows.forEach(row => {
-        row.addEventListener('mouseenter', () => {
-            row.style.transform = 'translateY(-3px) scale(1.01)';
-            row.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
-            row.style.background = 'rgba(255, 255, 255, 0.9)';
-            row.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-        });
-
-        row.addEventListener('mouseleave', () => {
-            row.style.transform = 'none';
-            row.style.boxShadow = 'none';
-            row.style.background = 'rgba(255, 255, 255, 0.7)';
-        });
-    });
-
-    // Add glass effect to stats cards
-    const statsCards = document.querySelectorAll('.cashier-stats-card');
-    statsCards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            card.style.transform = 'translateY(-5px)';
-            card.style.boxShadow = '0 12px 28px rgba(0, 0, 0, 0.12)';
-            card.style.borderColor = 'rgba(255, 255, 255, 0.6)';
-            
-            // Animate icon
-            const icon = card.querySelector('i');
-            if (icon) {
-                icon.style.transform = 'scale(1.1) rotate(10deg)';
-            }
-        });
-
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'none';
-            card.style.boxShadow = 'none';
-            card.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-            
-            // Reset icon
-            const icon = card.querySelector('i');
-            if (icon) {
-                icon.style.transform = 'none';
-            }
-        });
-    });
-
-    // Add smooth transitions to status badges
-    const statusBadges = document.querySelectorAll('.cashier-status');
-    statusBadges.forEach(badge => {
-        badge.addEventListener('mouseenter', () => {
-            badge.style.transform = 'translateY(-2px)';
-            if (badge.classList.contains('status-active')) {
-                badge.style.background = 'rgba(74, 222, 128, 0.3)';
-            } else {
-                badge.style.background = 'rgba(248, 113, 113, 0.3)';
-            }
-        });
-
-        badge.addEventListener('mouseleave', () => {
-            badge.style.transform = 'none';
-            if (badge.classList.contains('status-active')) {
-                badge.style.background = 'rgba(74, 222, 128, 0.2)';
-            } else {
-                badge.style.background = 'rgba(248, 113, 113, 0.2)';
-            }
-        });
-    });
-}
-
-// Function to animate value changes
-function animateValue(element, start, end, duration) {
-    const startTime = performance.now();
-    const isPrice = element.textContent.includes('₱');
-    
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function for smooth animation
-        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-        const current = start + (end - start) * easeOutQuart;
-        
-        // Format the number based on whether it's a price
-        if (isPrice) {
-            element.textContent = formatCurrency(current);
-        } else {
-            element.textContent = Math.round(current).toString();
-        }
-        
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        }
-    }
-    
-    requestAnimationFrame(update);
-}
-
-// Function to handle refresh button animation
-function initializeRefreshButton() {
-    const refreshBtn = document.getElementById('refreshCashierStats');
-    const refreshIcon = refreshBtn.querySelector('i');
-    let isRefreshing = false;
-
-    refreshBtn.addEventListener('click', () => {
-        if (!isRefreshing) {
-            isRefreshing = true;
-            refreshIcon.style.transform = 'rotate(360deg)';
-            refreshBtn.disabled = true;
-            refreshBtn.style.opacity = '0.7';
-
-            // Simulate refresh delay
-            setTimeout(() => {
-                refreshIcon.style.transform = 'rotate(0deg)';
-                refreshBtn.disabled = false;
-                refreshBtn.style.opacity = '1';
-                isRefreshing = false;
-            }, 1000);
-        }
-    });
-}
-
-// Function to enhance cashier profile interactions
-function enhanceCashierProfiles() {
-    const profiles = document.querySelectorAll('.cashier-profile');
-    profiles.forEach(profile => {
-        const img = profile.querySelector('img');
-        
-        profile.addEventListener('mouseenter', () => {
-            img.style.transform = 'scale(1.1)';
-            img.style.borderColor = '#8B4543';
-            profile.style.transform = 'translateX(5px)';
-        });
-
-        profile.addEventListener('mouseleave', () => {
-            img.style.transform = 'none';
-            img.style.borderColor = 'rgba(255, 255, 255, 0.8)';
-            profile.style.transform = 'none';
-        });
-    });
-}
-
-// Function to add glass effect to the main container
-function addGlassEffect() {
-    const container = document.querySelector('.cashier-performance-card');
-    
-    container.addEventListener('mousemove', (e) => {
-        const { left, top, width, height } = container.getBoundingClientRect();
-        const x = (e.clientX - left) / width;
-        const y = (e.clientY - top) / height;
-        
-        container.style.background = `
-            linear-gradient(
-                ${Math.atan2(y - 0.5, x - 0.5) * (180 / Math.PI)}deg,
-                rgba(255, 255, 255, 0.8),
-                rgba(255, 255, 255, 0.6)
-            )
-        `;
-    });
-
-    container.addEventListener('mouseleave', () => {
-        container.style.background = 'rgba(255, 255, 255, 0.7)';
-    });
-}
-
 $(document).ready(function() {
-    // Initialize charts
     initializeCharts();
-
-    // Initial update
     updateDashboard();
-
-    // Set up period selector buttons
     $('.period-selector').click(function() {
         $('.period-selector').removeClass('active');
         $(this).addClass('active');
         updateDashboard();
     });
-
-    // Auto-refresh every 5 minutes
-    setInterval(updateDashboard, 300000);
-
-    // Initialize cashier performance
-    updateCashierPerformance();
-
-    // Set up event handlers
-    $('#cashierPeriod').change(updateCashierPerformance);
-    $('#refreshCashierStats').click(updateCashierPerformance);
-
-    $(document).on('click', '.btn-view-details', function() {
-        const cashierId = $(this).data('id');
-        showCashierDetails(cashierId);
-    });
-
-    // Add cashier performance to auto-refresh
-    setInterval(updateCashierPerformance, 300000);
-
-    // Initialize new enhancements
-    initializeCashierPerformanceEffects();
-    initializeRefreshButton();
-    enhanceCashierProfiles();
-    addGlassEffect();
-
-    // Add animation when updating stats
-    const oldUpdateCashierPerformance = updateCashierPerformance;
-    updateCashierPerformance = function() {
-        const oldValues = {
-            activeCashiers: parseInt($('#activeCashiers').text()) || 0,
-            totalTransactions: parseInt($('#totalTransactions').text()) || 0,
-            avgTransactionTime: parseFloat($('#avgTransactionTime').text()) || 0,
-            totalSales: parseFloat($('#totalCashierSales').text().replace(/[₱,]/g, '')) || 0
-        };
-
-        oldUpdateCashierPerformance.call(this);
-
-        // Animate the changes after data is updated
-        setTimeout(() => {
-            const newValues = {
-                activeCashiers: parseInt($('#activeCashiers').text()) || 0,
-                totalTransactions: parseInt($('#totalTransactions').text()) || 0,
-                avgTransactionTime: parseFloat($('#avgTransactionTime').text()) || 0,
-                totalSales: parseFloat($('#totalCashierSales').text().replace(/[₱,]/g, '')) || 0
-            };
-
-            // Animate each value
-            animateValue(document.getElementById('activeCashiers'), oldValues.activeCashiers, newValues.activeCashiers, 1000);
-            animateValue(document.getElementById('totalTransactions'), oldValues.totalTransactions, newValues.totalTransactions, 1000);
-            animateValue(document.getElementById('avgTransactionTime'), oldValues.avgTransactionTime, newValues.avgTransactionTime, 1000);
-            animateValue(document.getElementById('totalCashierSales'), oldValues.totalSales, newValues.totalSales, 1000);
-        }, 100);
-    };
-
-    // Update table headers if needed
-    $('#cashierPerformanceTable thead tr').html(`
-        <th>Cashier</th>
-        <th>Branch</th>
-        <th>Status</th>
-        <th>Transactions</th>
-        <th>Sales</th>
-        <th>Avg. Time</th>
-    `);
+    setInterval(updateDashboard, 300000); // Auto-refresh every 5 minutes
 });
 
-// Menu Items Interaction
-document.addEventListener('DOMContentLoaded', function() {
-    // Category Selection
-    const categoryCards = document.querySelectorAll('.category-card');
-    categoryCards.forEach(card => {
-        card.addEventListener('click', () => {
-            categoryCards.forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-        });
-    });
-
-    // Quantity Controls
-    const quantityControls = document.querySelectorAll('.quantity-control');
-    quantityControls.forEach(control => {
-        const input = control.querySelector('.qty-input');
-        const minusBtn = control.querySelector('.minus');
-        const plusBtn = control.querySelector('.plus');
-
-        minusBtn.addEventListener('click', () => {
-            let value = parseInt(input.value);
-            if (value > 0) {
-                input.value = value - 1;
-            }
-        });
-
-        plusBtn.addEventListener('click', () => {
-            let value = parseInt(input.value);
-            input.value = value + 1;
-        });
-    });
-
-    // Add to Cart Animation
-    const addToCartBtns = document.querySelectorAll('.add-to-cart-btn');
-    addToCartBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const icon = this.querySelector('i');
-            icon.style.transform = 'scale(0)';
-            this.style.width = '50px';
-            this.textContent = '';
-            this.appendChild(icon);
-            icon.style.transform = 'scale(1.2)';
-            
-            setTimeout(() => {
-                icon.style.transform = 'scale(1)';
-                this.style.width = '';
-                this.innerHTML = `
-                    <i class="fas fa-shopping-cart"></i>
-                    Add to Cart
-                `;
-            }, 1500);
-        });
-    });
-});
-
-$('#yourTableId').DataTable({
-    "ajax": "get_ingredient_requests.php",
-    // ...
-});
+// ... existing code ...
 </script>
 
 <?php include('footer.php'); ?>

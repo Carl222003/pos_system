@@ -8,7 +8,11 @@ if ($_SESSION['user_type'] !== 'Stockman') {
     exit();
 }
 
-include('header.php');
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
+if (!$isAjax) {
+    include('header.php');
+}
 
 // Fetch all active ingredients with category and quantity
 $stmt = $pdo->query("SELECT i.ingredient_id, i.ingredient_name, i.ingredient_unit, i.ingredient_quantity, c.category_name FROM ingredients i LEFT JOIN pos_category c ON i.category_id = c.category_id WHERE i.ingredient_status = 'Active'");
@@ -53,5 +57,33 @@ $(document).ready(function() {
         if (!this.checked) qtyInput.val('');
     });
 });
+
+// Open the Add Ingredient modal (if not already handled)
+$(document).on('click', '#addIngredientBtn', function(e) {
+    e.preventDefault();
+    $.get('add_ingredient.php', function(data) {
+        $('#addIngredientModalBody').html(data);
+        $('#addIngredientModal').modal('show');
+    });
+});
+
+// Handle Add Ingredient form submission via AJAX
+$(document).on('submit', '#addIngredientForm', function(e) {
+    e.preventDefault();
+    var formData = $(this).serialize();
+    $.post('add_ingredient.php', formData, function(response) {
+        if(response.success) {
+            $('#addIngredientModal').modal('hide');
+            $('#ingredientTable').DataTable().ajax.reload(null, false); // false = stay on current page
+            Swal.fire('Success', 'Ingredient added!', 'success');
+        } else {
+            Swal.fire('Error', response.message || 'Failed to add ingredient.', 'error');
+        }
+    }, 'json');
+});
 </script>
-<?php include('footer.php'); ?> 
+<?php
+if (!$isAjax) {
+    include('footer.php');
+}
+?> 
