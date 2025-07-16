@@ -262,35 +262,35 @@ include('header.php');
     <div class="row g-4 mb-4">
         <!-- Sales Trend Chart -->
         <div class="col-xl-8 col-lg-7">
-            <div class="chart-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="sales-trend-card">
+                <div class="sales-trend-header d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="mb-0">Sales Trend</h5>
-                        <p class="text-muted mb-0">Overview of sales performance</p>
+                        <h5 class="mb-0 sales-trend-title">Sales Trend</h5>
+                        <p class="text-muted mb-0 sales-trend-subtitle">Overview of sales performance</p>
                     </div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-outline-secondary period-selector active" data-period="daily">Daily</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary period-selector" data-period="weekly">Weekly</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary period-selector" data-period="monthly">Monthly</button>
+                    <div class="btn-group sales-trend-period-group">
+                        <button type="button" class="btn btn-sm sales-trend-period period-selector active" data-period="daily">Daily</button>
+                        <button type="button" class="btn btn-sm sales-trend-period period-selector" data-period="weekly">Weekly</button>
+                        <button type="button" class="btn btn-sm sales-trend-period period-selector" data-period="monthly">Monthly</button>
                     </div>
                 </div>
-                <div class="card-body">
-                    <canvas id="salesTrendChart" height="300"></canvas>
+                <div class="sales-trend-body">
+                    <canvas id="salesTrendChart" class="sales-trend-canvas" height="320"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Product Distribution Chart -->
         <div class="col-xl-4 col-lg-5">
-            <div class="chart-card">
-                <div class="card-header">
-                    <h5 class="mb-0">Product Distribution</h5>
-                    <p class="text-muted mb-0">Products by category</p>
-                </div>
-                <div class="card-body">
-                    <canvas id="productDistributionChart" height="300"></canvas>
-                </div>
+          <div class="product-distribution-card">
+            <div class="product-distribution-header">
+              <h5 class="mb-0 product-distribution-title">Product Distribution</h5>
+              <p class="text-muted mb-0 product-distribution-subtitle">Products by category</p>
             </div>
+            <div class="product-distribution-body">
+              <canvas id="productDistributionChart" class="product-distribution-canvas" height="320"></canvas>
+            </div>
+          </div>
         </div>
     </div>
 
@@ -298,135 +298,131 @@ include('header.php');
     <div class="row">
         <!-- Branch Performance - Made wider -->
         <div class="col-xl-8 col-lg-7">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="branch-performance-card">
+                <div class="branch-performance-header d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="mb-0">Branch Performance</h5>
-                        <p class="text-muted mb-0">Today's sales by branch</p>
+                        <h5 class="mb-0 branch-performance-title">Branch Performance</h5>
+                        <p class="text-muted mb-0 branch-performance-subtitle">Total sales by branch</p>
                     </div>
-                    <a href="branch_comparison.php" class="btn btn-sm btn-primary">Compare Branches</a>
+                    <button type="button" class="btn btn-sm branch-performance-btn" data-bs-toggle="modal" data-bs-target="#branchComparisonModal">Compare Branches</button>
                 </div>
-                <div class="card-body">
-                    <canvas id="branchPerformanceChart" height="300"></canvas>
+                <div class="branch-performance-body">
+                    <canvas id="branchPerformanceChart" class="branch-performance-canvas" height="320"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Inventory Status - Made narrower -->
         <div class="col-xl-4 col-lg-5">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Inventory Status</h5>
-                    <p class="text-muted mb-0">Low stock alerts</p>
-                </div>
-                <div class="card-body">
-                    <canvas id="inventoryStatusChart" height="300"></canvas>
-                </div>
+          <div class="inventory-status-card">
+            <div class="inventory-status-header">
+              <h5 class="mb-0 inventory-status-title">Inventory Status</h5>
+              <p class="text-muted mb-0 inventory-status-subtitle">Low stock alerts</p>
             </div>
+            <div class="inventory-status-body">
+              <canvas id="inventoryStatusChart" class="inventory-status-canvas" height="320"></canvas>
+            </div>
+          </div>
         </div>
     </div>
 
     <!-- Cashier Performance Section - Full width -->
     <div class="row mt-4">
-        <div class="col-12">
-            <div class="card cashier-performance-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-0">Cashier Performance</h5>
-                        <p class="text-muted mb-0">Active cashiers and their performance metrics</p>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <select class="form-select form-select-sm period-select" id="cashierPeriod">
-                            <option value="today">Today</option>
-                            <option value="week">This Week</option>
-                            <option value="month">This Month</option>
-                        </select>
-                        <button class="btn btn-sm btn-primary btn-refresh" id="refreshCashierStats">
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3 mb-4">
-                        <!-- Active Cashiers Card -->
-                        <div class="col-md-3">
-                            <div class="p-3 bg-light rounded">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">Active Cashiers</h6>
-                                        <h4 class="mb-0" id="activeCashiers">0</h4>
-                                    </div>
-                                    <div class="rounded-circle p-3 bg-white">
-                                        <i class="fas fa-user-clock text-primary"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Total Transactions Card -->
-                        <div class="col-md-3">
-                            <div class="p-3 bg-light rounded">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">Total Transactions</h6>
-                                        <h4 class="mb-0" id="totalTransactions">0</h4>
-                                    </div>
-                                    <div class="rounded-circle p-3 bg-white">
-                                        <i class="fas fa-receipt text-success"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Average Transaction Time Card -->
-                        <div class="col-md-3">
-                            <div class="p-3 bg-light rounded">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">Avg. Transaction Time</h6>
-                                        <h4 class="mb-0" id="avgTransactionTime">0m</h4>
-                                    </div>
-                                    <div class="rounded-circle p-3 bg-white">
-                                        <i class="fas fa-clock text-warning"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Total Sales Card -->
-                        <div class="col-md-3">
-                            <div class="p-3 bg-light rounded">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">Total Sales</h6>
-                                        <h4 class="mb-0" id="totalCashierSales">₱0.00</h4>
-                                    </div>
-                                    <div class="rounded-circle p-3 bg-white">
-                                        <i class="fas fa-peso-sign text-info"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Cashier Performance Table -->
-                    <div class="table-responsive cashier-table">
-                        <table class="table table-hover" id="cashierPerformanceTable">
-                            <thead>
-                                <tr>
-                                    <th>Cashier</th>
-                                    <th>Branch</th>
-                                    <th>Status</th>
-                                    <th>Transactions</th>
-                                    <th>Sales</th>
-                                    <th>Avg. Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Dynamically populated -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+      <div class="col-12">
+        <div class="cashier-performance-card-enhanced">
+          <div class="cashier-performance-header d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0 cashier-performance-title">Cashier Performance</h5>
+              <p class="text-muted mb-0 cashier-performance-subtitle">Active cashiers and their performance metrics</p>
             </div>
+            <div class="d-flex gap-2 align-items-center">
+              <select class="form-select form-select-sm period-select cashier-performance-select" id="cashierPeriod">
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
+              <button class="btn btn-sm cashier-performance-refresh" id="refreshCashierStats">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div class="cashier-performance-summary-row row g-3 mb-4">
+            <!-- Active Cashiers Card -->
+            <div class="col-md-3">
+              <div class="cashier-summary-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">Active Cashiers</h6>
+                    <h4 class="mb-0" id="activeCashiers">0</h4>
+                  </div>
+                  <div class="cashier-summary-icon bg-summary-blue">
+                    <i class="fas fa-user-clock"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Total Transactions Card -->
+            <div class="col-md-3">
+              <div class="cashier-summary-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">Total Transactions</h6>
+                    <h4 class="mb-0" id="totalTransactions">0</h4>
+                  </div>
+                  <div class="cashier-summary-icon bg-summary-green">
+                    <i class="fas fa-receipt"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Average Transaction Time Card -->
+            <div class="col-md-3">
+              <div class="cashier-summary-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">Avg. Transaction Time</h6>
+                    <h4 class="mb-0" id="avgTransactionTime">0m</h4>
+                  </div>
+                  <div class="cashier-summary-icon bg-summary-yellow">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Total Sales Card -->
+            <div class="col-md-3">
+              <div class="cashier-summary-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">Total Sales</h6>
+                    <h4 class="mb-0" id="totalCashierSales">₱0.00</h4>
+                  </div>
+                  <div class="cashier-summary-icon bg-summary-purple">
+                    <i class="fas fa-peso-sign"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="table-responsive cashier-table-enhanced">
+            <table class="table table-hover cashier-performance-table" id="cashierPerformanceTable">
+              <thead>
+                <tr>
+                  <th>Cashier</th>
+                  <th>Branch</th>
+                  <th>Status</th>
+                  <th>Transactions</th>
+                  <th>Sales</th>
+                  <th>Avg. Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
     </div>
 </div>
 
@@ -484,6 +480,53 @@ include('header.php');
     </div>
 </div>
 
+<!-- Branch Comparison Modal -->
+<div class="modal fade" id="branchComparisonModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content branch-modal-content">
+      <div class="modal-header branch-modal-header">
+        <h5 class="modal-title branch-modal-title"><i class="fas fa-balance-scale"></i> Branch Comparison</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body branch-modal-body">
+        <div class="d-flex gap-2 align-items-center mb-4">
+          <select class="form-select form-select-sm branch-modal-select" id="periodSelect">
+            <option value="daily">Today</option>
+            <option value="weekly">This Week</option>
+            <option value="monthly">This Month</option>
+            <option value="yearly">This Year</option>
+            <option value="custom">Custom</option>
+          </select>
+          <input type="date" id="startDate" class="form-control form-control-sm d-none branch-modal-date">
+          <input type="date" id="endDate" class="form-control form-control-sm d-none branch-modal-date">
+          <button class="btn btn-sm branch-modal-refresh" id="refreshComparison"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <div class="branch-modal-card mb-4">
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered branch-modal-table" id="branchComparisonTable">
+              <thead>
+                <tr>
+                  <th>Branch</th>
+                  <th>Total Sales</th>
+                  <th>Total Orders</th>
+                  <th>Average Sale</th>
+                  <th>Active Cashiers</th>
+                  <th>Top Products</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Data will be populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="branch-modal-card" style="width:100%; min-height:480px;">
+          <canvas id="branchComparisonChart" style="max-width:100%; height:480px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <style>
 /* Enhanced Card Styling */
 .card {
@@ -1058,504 +1101,441 @@ include('header.php');
 }
 
 /* Cashier Performance Section Styling */
-.cashier-performance-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+.cashier-performance-card-enhanced {
+  background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(139,69,67,0.10);
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #f0e6e3;
 }
-
-.cashier-performance-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    z-index: 1;
+.cashier-performance-header {
+  border-bottom: 1px solid #f0e6e3;
+  padding-bottom: 1.1rem;
+  margin-bottom: 1.1rem;
 }
-
-.cashier-performance-card:hover::before {
-    opacity: 1;
+.cashier-performance-title {
+  color: #8B4543;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
 }
-
-.cashier-stats-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 1rem;
-    padding: 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+.cashier-performance-subtitle {
+  font-size: 1.01rem;
+  color: #A65D5D;
+  font-weight: 500;
 }
-
-.cashier-stats-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+.cashier-performance-select {
+  border-radius: 0.75rem;
+  border: 1px solid #e0cfc7;
+  font-weight: 500;
+  color: #8B4543;
+  background: #f7ece8;
+  min-width: 120px;
 }
-
-.cashier-stats-card .rounded-circle {
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+.cashier-performance-refresh {
+  background: linear-gradient(135deg, #8B4543 80%, #A65D5D 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(139,69,67,0.08);
+  border-radius: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 0.45rem 1.2rem;
+  transition: background 0.2s;
+  border: none;
 }
-
-.cashier-stats-card:hover .rounded-circle {
-    transform: scale(1.1) rotate(10deg);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+.cashier-performance-refresh:hover {
+  background: linear-gradient(135deg, #A65D5D 80%, #8B4543 100%);
 }
-
-.cashier-stats-card i {
-    font-size: 1.25rem;
-    transition: all 0.3s ease;
+.cashier-performance-summary-row {
+  margin-bottom: 2rem;
 }
-
-.cashier-stats-card:hover i {
-    transform: scale(1.1);
+.cashier-summary-card {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 16px rgba(139,69,67,0.07);
+  padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+  border: 1px solid #f0e6e3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 110px;
 }
-
-/* Enhanced Table Styling */
-.cashier-table {
-    border-collapse: separate;
-    border-spacing: 0 0.5rem;
-    margin-top: -0.5rem;
+.cashier-summary-icon {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  background: #f7ece8;
+  box-shadow: 0 2px 8px rgba(139,69,67,0.08);
 }
-
-.cashier-table thead th {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: none;
-    padding: 1rem 1.5rem;
-    font-weight: 600;
-    color: #333;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
+.bg-summary-blue { color: #2196F3; background: #e3f0fa !important; }
+.bg-summary-green { color: #4CAF50; background: #eafae3 !important; }
+.bg-summary-yellow { color: #FFC107; background: #fff8e1 !important; }
+.bg-summary-purple { color: #9C27B0; background: #f3e6fa !important; }
+.cashier-table-enhanced {
+  margin-top: 1.5rem;
 }
-
-.cashier-table tbody tr {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 0.75rem;
-    transition: all 0.3s ease;
+.cashier-performance-table {
+  border-radius: 1rem;
+  overflow: hidden;
+  font-size: 1.05rem;
+  color: #5E2F2D;
+  background: #fff;
 }
-
-.cashier-table tbody tr:hover {
-    transform: translateY(-3px) scale(1.01);
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+.cashier-performance-table thead {
+  background: linear-gradient(90deg, #f7ece8 80%, #fcf8f6 100%);
+  color: #8B4543;
+  font-weight: 700;
+  font-size: 1.08rem;
+  letter-spacing: 0.5px;
 }
-
-.cashier-table td {
-    padding: 1rem 1.5rem;
-    border: none;
-    vertical-align: middle;
+.cashier-performance-table tbody tr {
+  transition: background 0.18s;
 }
-
-.cashier-table td:first-child {
-    border-top-left-radius: 0.75rem;
-    border-bottom-left-radius: 0.75rem;
-    font-weight: 500;
+.cashier-performance-table tbody tr:hover {
+  background: #f7ece8;
+  color: #8B4543;
 }
-
-.cashier-table td:last-child {
-    border-top-right-radius: 0.75rem;
-    border-bottom-right-radius: 0.75rem;
-    text-align: center;
+.cashier-performance-table th, .cashier-performance-table td {
+  vertical-align: middle;
+  padding: 0.85rem 1.1rem;
+  border: none;
 }
-
-.cashier-table td:nth-child(2) {
-    font-weight: 600;
-    color: #8B4543;
+.cashier-performance-table td {
+  font-weight: 500;
 }
-
-.cashier-table td:nth-child(3) {
-    font-weight: 500;
-    color: #4A7C59;
-    text-align: center;
+.cashier-performance-table td:first-child {
+  font-weight: 700;
+  color: #8B4543;
 }
-
-/* Quantity Badge */
-.qty-badge {
-    background: rgba(74, 124, 89, 0.1);
-    color: #4A7C59;
-    padding: 0.25rem 0.75rem;
-    border-radius: 2rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2.5rem;
-    transition: all 0.3s ease;
+.cashier-performance-table td span {
+  font-weight: 500;
 }
-
-.qty-badge:hover {
-    background: rgba(74, 124, 89, 0.2);
-    transform: translateY(-2px);
+@media (max-width: 1200px) {
+  .cashier-performance-card-enhanced { padding: 1.5rem 0.5rem; }
+  .cashier-summary-card { padding: 1rem 0.5rem; }
 }
-
-/* Item Name */
-.item-name {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+.branch-modal-content {
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 40px rgba(139,69,67,0.18), 0 1.5px 8px rgba(139,69,67,0.10);
+  background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
-
-.item-name i {
-    color: #8B4543;
-    font-size: 1rem;
-    opacity: 0.7;
-    transition: all 0.3s ease;
+.branch-modal-header {
+  border-bottom: 1px solid #f0e6e3;
+  background: transparent;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
 }
-
-.cashier-table tr:hover .item-name i {
-    opacity: 1;
-    transform: scale(1.1);
+.branch-modal-title {
+  color: #8B4543;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 1.45rem;
 }
-
-/* Total Amount */
-.total-amount {
-    color: #8B4543;
-    font-weight: 600;
-    transition: all 0.3s ease;
+.branch-modal-body {
+  padding: 2.5rem 3rem 2.5rem 3rem;
+  background: transparent;
 }
-
-.cashier-table tr:hover .total-amount {
-    transform: scale(1.05);
-    text-shadow: 1px 1px 2px rgba(139, 69, 67, 0.1);
+.branch-modal-select, .branch-modal-date {
+  border-radius: 0.75rem;
+  border: 1px solid #e0cfc7;
+  font-weight: 500;
+  color: #8B4543;
+  background: #f7ece8;
+  min-width: 120px;
 }
-
-/* Menu Items Section Styling */
-.menu-section {
-    padding: 2rem 0;
+.branch-modal-refresh {
+  background: linear-gradient(135deg, #8B4543 80%, #A65D5D 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(139,69,67,0.08);
+  border-radius: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 0.45rem 1.2rem;
+  transition: background 0.2s;
 }
-
-.menu-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
+.branch-modal-refresh:hover {
+  background: linear-gradient(135deg, #A65D5D 80%, #8B4543 100%);
 }
-
-.menu-header i {
-    font-size: 1.5rem;
-    color: #8B4543;
+.branch-modal-card {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 16px rgba(139,69,67,0.07);
+  padding: 2rem 2rem 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #f0e6e3;
 }
-
-.menu-header h2 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: #2D3436;
-    margin: 0;
+.branch-modal-table {
+  border-radius: 1rem;
+  overflow: hidden;
+  font-size: 1.05rem;
+  color: #5E2F2D;
+  background: #fff;
 }
-
-.menu-categories {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+.branch-modal-table thead {
+  background: linear-gradient(90deg, #f7ece8 80%, #fcf8f6 100%);
+  color: #8B4543;
+  font-weight: 700;
+  font-size: 1.08rem;
+  letter-spacing: 0.5px;
 }
-
-.category-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 1.25rem;
-    padding: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
+.branch-modal-table tbody tr {
+  transition: background 0.18s;
 }
-
-.category-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    z-index: 1;
+.branch-modal-table tbody tr:hover {
+  background: #f7ece8;
+  color: #8B4543;
 }
-
-.category-card:hover,
-.category-card.active {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+.branch-modal-table th, .branch-modal-table td {
+  vertical-align: middle;
+  padding: 0.85rem 1.1rem;
+  border: none;
 }
-
-.category-card:hover::before,
-.category-card.active::before {
-    opacity: 1;
+.branch-modal-table td {
+  font-weight: 500;
 }
-
-.category-icon {
-    width: 3.5rem;
-    height: 3.5rem;
-    background: rgba(139, 69, 67, 0.1);
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    transition: all 0.4s ease;
+.branch-modal-table td:first-child {
+  font-weight: 700;
+  color: #8B4543;
 }
-
-.category-card:hover .category-icon,
-.category-card.active .category-icon {
-    transform: scale(1.1) rotate(10deg);
-    background: rgba(139, 69, 67, 0.2);
+.branch-modal-table td span {
+  font-weight: 500;
 }
-
-.category-icon i {
-    font-size: 1.5rem;
-    color: #8B4543;
-    transition: all 0.4s ease;
+.branch-modal-card canvas {
+  border-radius: 1rem;
+  background: #fcf8f6;
+  box-shadow: 0 2px 12px rgba(139,69,67,0.06);
+  border: 1px solid #f0e6e3;
 }
-
-.category-card:hover .category-icon i,
-.category-card.active .category-icon i {
-    transform: scale(1.1);
+@media (max-width: 1200px) {
+  .branch-modal-body { padding: 1.5rem 0.5rem; }
+  .branch-modal-card { padding: 1rem 0.5rem; }
 }
-
-.category-name {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #2D3436;
-    margin-bottom: 0.5rem;
-    transition: all 0.3s ease;
+.sales-trend-card {
+  background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(139,69,67,0.10);
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #f0e6e3;
 }
-
-.category-card:hover .category-name,
-.category-card.active .category-name {
-    color: #8B4543;
+.sales-trend-header {
+  border-bottom: 1px solid #f0e6e3;
+  padding-bottom: 1.1rem;
+  margin-bottom: 1.1rem;
 }
-
-.item-count {
-    font-size: 0.875rem;
-    color: #636E72;
-    transition: all 0.3s ease;
+.sales-trend-title {
+  color: #8B4543;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
 }
-
-.category-card:hover .item-count,
-.category-card.active .item-count {
-    color: #2D3436;
+.sales-trend-subtitle {
+  font-size: 1.01rem;
+  color: #A65D5D;
+  font-weight: 500;
 }
-
-/* Menu Items Grid */
-.menu-items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
+.sales-trend-period-group .sales-trend-period {
+  background: #f7ece8;
+  color: #8B4543;
+  border: none;
+  font-weight: 600;
+  border-radius: 0.75rem !important;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+  transition: background 0.18s, color 0.18s;
+  box-shadow: 0 1px 4px rgba(139,69,67,0.06);
 }
-
-.menu-item-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 1.25rem;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.sales-trend-period-group .sales-trend-period.active,
+.sales-trend-period-group .sales-trend-period:focus,
+.sales-trend-period-group .sales-trend-period:hover {
+  background: linear-gradient(135deg, #8B4543 80%, #A65D5D 100%);
+  color: #fff;
 }
-
-.menu-item-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+.sales-trend-body {
+  padding-top: 1.2rem;
 }
-
-.item-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 1rem 1rem 0 0;
-    transition: all 0.4s ease;
+.sales-trend-canvas {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(139,69,67,0.06);
+  border: 1px solid #f0e6e3;
+  padding: 0.5rem;
 }
-
-.menu-item-card:hover .item-image {
-    transform: scale(1.05);
+.branch-performance-card {
+  background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(139,69,67,0.10);
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #f0e6e3;
 }
-
-.item-details {
-    padding: 1.5rem;
+.branch-performance-header {
+  border-bottom: 1px solid #f0e6e3;
+  padding-bottom: 1.1rem;
+  margin-bottom: 1.1rem;
 }
-
-.item-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #2D3436;
-    margin-bottom: 0.5rem;
-    transition: all 0.3s ease;
+.branch-performance-title {
+  color: #8B4543;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
 }
-
-.menu-item-card:hover .item-name {
-    color: #8B4543;
+.branch-performance-subtitle {
+  font-size: 1.01rem;
+  color: #A65D5D;
+  font-weight: 500;
 }
-
-.item-description {
-    font-size: 0.875rem;
-    color: #636E72;
-    margin-bottom: 1rem;
-    line-height: 1.5;
+.branch-performance-btn {
+  background: linear-gradient(135deg, #8B4543 80%, #A65D5D 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(139,69,67,0.08);
+  border-radius: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 0.45rem 1.2rem;
+  transition: background 0.2s;
+  border: none;
 }
-
-.item-price {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #8B4543;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
+.branch-performance-btn:hover {
+  background: linear-gradient(135deg, #A65D5D 80%, #8B4543 100%);
 }
-
-.menu-item-card:hover .item-price {
-    transform: scale(1.05);
-    text-shadow: 2px 2px 4px rgba(139, 69, 67, 0.1);
+.branch-performance-body {
+  padding-top: 1.2rem;
 }
-
-.item-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+.branch-performance-canvas {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(139,69,67,0.06);
+  border: 1px solid #f0e6e3;
+  padding: 0.5rem;
 }
-
-.quantity-control {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(139, 69, 67, 0.1);
-    padding: 0.5rem;
-    border-radius: 0.75rem;
+.product-distribution-card {
+  background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(139,69,67,0.10);
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #f0e6e3;
 }
-
-.qty-btn {
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: white;
-    border-radius: 0.5rem;
-    color: #8B4543;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.product-distribution-header {
+  border-bottom: 1px solid #f0e6e3;
+  padding-bottom: 1.1rem;
+  margin-bottom: 1.1rem;
 }
-
-.qty-btn:hover {
-    background: #8B4543;
-    color: white;
-    transform: scale(1.1);
+.product-distribution-title {
+  color: #8B4543;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
 }
-
-.qty-input {
-    width: 3rem;
-    text-align: center;
-    border: none;
-    background: transparent;
-    font-weight: 600;
-    color: #2D3436;
+.product-distribution-subtitle {
+  font-size: 1.01rem;
+  color: #A65D5D;
+  font-weight: 500;
 }
-
-.add-to-cart-btn {
-    flex: 1;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    background: linear-gradient(135deg, #8B4543, #723937);
-    color: white;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+.product-distribution-body {
+  padding-top: 1.2rem;
 }
-
-.add-to-cart-btn:hover {
-    background: linear-gradient(135deg, #723937, #5E2F2D);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(139, 69, 67, 0.2);
+.product-distribution-canvas {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(139,69,67,0.06);
+  border: 1px solid #f0e6e3;
+  padding: 0.5rem;
 }
-
-.add-to-cart-btn i {
-    font-size: 1.125rem;
-    transition: all 0.3s ease;
+/* Chart.js legend enhancements */
+#productDistributionChart + div,
+.product-distribution-card .chartjs-legend {
+  display: flex !important;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.2rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #8B4543;
 }
-
-.add-to-cart-btn:hover i {
-    transform: scale(1.1);
+#productDistributionChart + div li,
+.product-distribution-card .chartjs-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .menu-categories {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-    }
-
-    .menu-items-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .item-image {
-        height: 180px;
-    }
-
-    .item-details {
-        padding: 1.25rem;
-    }
-
-    .item-name {
-        font-size: 1.125rem;
-    }
-
-    .item-price {
-        font-size: 1.25rem;
-    }
+#productDistributionChart + div span,
+.product-distribution-card .chartjs-legend span {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  margin-right: 0.5rem;
 }
-
-@media (max-width: 480px) {
-    .menu-categories {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .menu-items-grid {
-        grid-template-columns: 1fr;
-    }
+.inventory-status-card {
+  background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(139,69,67,0.10);
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #f0e6e3;
+}
+.inventory-status-header {
+  border-bottom: 1px solid #f0e6e3;
+  padding-bottom: 1.1rem;
+  margin-bottom: 1.1rem;
+}
+.inventory-status-title {
+  color: #8B4543;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
+}
+.inventory-status-subtitle {
+  font-size: 1.01rem;
+  color: #A65D5D;
+  font-weight: 500;
+}
+.inventory-status-body {
+  padding-top: 1.2rem;
+}
+.inventory-status-canvas {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(139,69,67,0.06);
+  border: 1px solid #f0e6e3;
+  padding: 0.5rem;
+}
+/* Chart.js legend enhancements */
+#inventoryStatusChart + div,
+.inventory-status-card .chartjs-legend {
+  display: flex !important;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.2rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #8B4543;
+}
+#inventoryStatusChart + div li,
+.inventory-status-card .chartjs-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+#inventoryStatusChart + div span,
+.inventory-status-card .chartjs-legend span {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  margin-right: 0.5rem;
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let salesTrendChart = null;
 let productDistributionChart = null;
@@ -1582,7 +1562,12 @@ function initializeCharts() {
                 borderColor: '#8B4543',
                 backgroundColor: 'rgba(139, 69, 67, 0.1)',
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 5,
+                pointBackgroundColor: '#A65D5D',
+                pointBorderColor: '#fff',
+                pointHoverRadius: 7
             }]
         },
     options: {
@@ -1627,8 +1612,17 @@ function initializeCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-        plugins: {
-                legend: { position: 'bottom' }
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 18,
+                        boxHeight: 18,
+                        borderRadius: 4,
+                        color: '#8B4543',
+                        font: { weight: 600, size: 15 }
+                    }
+                }
             }
         }
     });
@@ -1694,7 +1688,16 @@ function initializeCharts() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 18,
+                        boxHeight: 18,
+                        borderRadius: 4,
+                        color: '#8B4543',
+                        font: { weight: 600, size: 15 }
+                    }
+                }
             },
             scales: {
                 y: { beginAtZero: true }
@@ -1785,7 +1788,129 @@ $(document).ready(function() {
     setInterval(updateCashierPerformance, 300000); // Auto-refresh every 5 minutes
     });
 
-// ... existing code ...
+let branchComparisonChart = null;
+function getBarColors(count) {
+    // Use a palette of visually distinct colors
+    const palette = [
+        '#8B4543', '#4A7C59', '#C4804D', '#3B7B9E', '#A65D5D',
+        '#FFB347', '#6A5ACD', '#20B2AA', '#FF6F61', '#009688'
+    ];
+    let colors = [];
+    for (let i = 0; i < count; i++) {
+        colors.push(palette[i % palette.length]);
+    }
+    return colors;
+}
+function fetchBranchComparison() {
+    const period = document.getElementById('periodSelect').value;
+    let url = 'get_branch_comparison.php?period=' + period;
+    if (period === 'custom') {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        if (start && end) {
+            url += '&start_date=' + start + '&end_date=' + end;
+        }
+    }
+    fetch(url)
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                populateComparisonTable(res.data);
+                populateComparisonChart(res.data);
+            } else {
+                populateComparisonTable([]);
+                populateComparisonChart([]);
+            }
+        })
+        .catch(() => {
+            populateComparisonTable([]);
+            populateComparisonChart([]);
+        });
+}
+function populateComparisonTable(data) {
+    const tbody = document.querySelector('#branchComparisonTable tbody');
+    tbody.innerHTML = '';
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No data available for this period.</td></tr>';
+        return;
+    }
+    data.forEach(branch => {
+        const topProducts = branch.top_products.map(p => `<span style='color:#8B4543;'>${p.product_name}</span> <span style='color:#bfa08e;'>(${p.total_quantity})</span>`).join(', ');
+        tbody.innerHTML += `
+            <tr>
+                <td style="font-weight:600; color:#8B4543;">${branch.branch_name}</td>
+                <td>${formatCurrency(branch.total_sales)}</td>
+                <td>${branch.total_orders}</td>
+                <td>${formatCurrency(branch.average_sale)}</td>
+                <td>${branch.active_cashiers}</td>
+                <td>${topProducts}</td>
+            </tr>
+        `;
+    });
+}
+function populateComparisonChart(data) {
+    const labels = data.map(b => b.branch_name);
+    const sales = data.map(b => b.total_sales);
+    const colors = getBarColors(labels.length);
+    if (branchComparisonChart) branchComparisonChart.destroy();
+    const ctx = document.getElementById('branchComparisonChart').getContext('2d');
+    branchComparisonChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Sales',
+                data: sales,
+                backgroundColor: colors,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y', // Make the bar chart horizontal (landscape)
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return formatCurrency(context.raw);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { color: '#f0e6e3' },
+                    ticks: {
+                        color: '#8B4543',
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        },
+                        font: { weight: 600 }
+                    }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: '#8B4543', font: { weight: 600 } }
+                }
+            }
+        }
+    });
+}
+document.getElementById('refreshComparison').addEventListener('click', fetchBranchComparison);
+document.getElementById('periodSelect').addEventListener('change', function() {
+    const period = this.value;
+    document.getElementById('startDate').classList.toggle('d-none', period !== 'custom');
+    document.getElementById('endDate').classList.toggle('d-none', period !== 'custom');
+    fetchBranchComparison();
+});
+document.getElementById('startDate').addEventListener('change', fetchBranchComparison);
+document.getElementById('endDate').addEventListener('change', fetchBranchComparison);
+// Load data when modal is shown
+const branchComparisonModal = document.getElementById('branchComparisonModal');
+branchComparisonModal.addEventListener('shown.bs.modal', fetchBranchComparison);
 </script>
 
 <?php include('footer.php'); ?>
