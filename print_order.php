@@ -30,6 +30,10 @@ try {
         die("Order not found");
     }
 
+    // Log activity for reprinting receipt
+    $user_id = $_SESSION['user_id'] ?? null;
+    logActivity($pdo, $user_id, 'Reprinted Receipt', 'Order #: ' . $order['order_number'] . ' (ID: ' . $order_id . ')');
+
     // Get order items with product names
     $stmt = $pdo->prepare("
         SELECT 

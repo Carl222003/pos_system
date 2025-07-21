@@ -93,10 +93,7 @@ include('header.php');
 ?>
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4 mb-4" style="color: #8B4543; font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
-        <i class="fas fa-chart-line"></i>
-        Dashboard Overview
-    </h1>
+    <h1 class="section-title"><span class="section-icon"><i class="fas fa-chart-line"></i></span>Dashboard Overview</h1>
 
     <!-- Main Stats Row -->
     <div class="row g-4 mb-4">
@@ -286,11 +283,11 @@ include('header.php');
             <div class="product-distribution-header">
               <h5 class="mb-0 product-distribution-title">Product Distribution</h5>
               <p class="text-muted mb-0 product-distribution-subtitle">Products by category</p>
-            </div>
+                </div>
             <div class="product-distribution-body">
               <canvas id="productDistributionChart" class="product-distribution-canvas" height="320"></canvas>
+                </div>
             </div>
-          </div>
         </div>
     </div>
 
@@ -318,111 +315,111 @@ include('header.php');
             <div class="inventory-status-header">
               <h5 class="mb-0 inventory-status-title">Inventory Status</h5>
               <p class="text-muted mb-0 inventory-status-subtitle">Low stock alerts</p>
-            </div>
+                </div>
             <div class="inventory-status-body">
               <canvas id="inventoryStatusChart" class="inventory-status-canvas" height="320"></canvas>
+                </div>
             </div>
-          </div>
         </div>
     </div>
 
     <!-- Cashier Performance Section - Full width -->
     <div class="row mt-4">
-      <div class="col-12">
+        <div class="col-12">
         <div class="cashier-performance-card-enhanced">
           <div class="cashier-performance-header d-flex justify-content-between align-items-center">
-            <div>
+                    <div>
               <h5 class="mb-0 cashier-performance-title">Cashier Performance</h5>
               <p class="text-muted mb-0 cashier-performance-subtitle">Active cashiers and their performance metrics</p>
-            </div>
+                    </div>
             <div class="d-flex gap-2 align-items-center">
               <select class="form-select form-select-sm period-select cashier-performance-select" id="cashierPeriod">
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-              </select>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
               <button class="btn btn-sm cashier-performance-refresh" id="refreshCashierStats">
-                <i class="fas fa-sync-alt"></i> Refresh
-              </button>
-            </div>
-          </div>
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
           <div class="cashier-performance-summary-row row g-3 mb-4">
-            <!-- Active Cashiers Card -->
-            <div class="col-md-3">
+                        <!-- Active Cashiers Card -->
+                        <div class="col-md-3">
               <div class="cashier-summary-card">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 class="mb-1">Active Cashiers</h6>
-                    <h4 class="mb-0" id="activeCashiers">0</h4>
-                  </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Active Cashiers</h6>
+                                        <h4 class="mb-0" id="activeCashiers">0</h4>
+                                    </div>
                   <div class="cashier-summary-icon bg-summary-blue">
                     <i class="fas fa-user-clock"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Total Transactions Card -->
-            <div class="col-md-3">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Total Transactions Card -->
+                        <div class="col-md-3">
               <div class="cashier-summary-card">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 class="mb-1">Total Transactions</h6>
-                    <h4 class="mb-0" id="totalTransactions">0</h4>
-                  </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Total Transactions</h6>
+                                        <h4 class="mb-0" id="totalTransactions">0</h4>
+                                    </div>
                   <div class="cashier-summary-icon bg-summary-green">
                     <i class="fas fa-receipt"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Average Transaction Time Card -->
-            <div class="col-md-3">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Average Transaction Time Card -->
+                        <div class="col-md-3">
               <div class="cashier-summary-card">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 class="mb-1">Avg. Transaction Time</h6>
-                    <h4 class="mb-0" id="avgTransactionTime">0m</h4>
-                  </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Avg. Transaction Time</h6>
+                                        <h4 class="mb-0" id="avgTransactionTime">0m</h4>
+                                    </div>
                   <div class="cashier-summary-icon bg-summary-yellow">
                     <i class="fas fa-clock"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Total Sales Card -->
-            <div class="col-md-3">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Total Sales Card -->
+                        <div class="col-md-3">
               <div class="cashier-summary-card">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 class="mb-1">Total Sales</h6>
-                    <h4 class="mb-0" id="totalCashierSales">₱0.00</h4>
-                  </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Total Sales</h6>
+                                        <h4 class="mb-0" id="totalCashierSales">₱0.00</h4>
+                                    </div>
                   <div class="cashier-summary-icon bg-summary-purple">
                     <i class="fas fa-peso-sign"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
           <div class="table-responsive cashier-table-enhanced">
             <table class="table table-hover cashier-performance-table" id="cashierPerformanceTable">
-              <thead>
-                <tr>
-                  <th>Cashier</th>
-                  <th>Branch</th>
-                  <th>Status</th>
-                  <th>Transactions</th>
-                  <th>Sales</th>
-                  <th>Avg. Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
+                            <thead>
+                                <tr>
+                                    <th>Cashier</th>
+                                    <th>Branch</th>
+                                    <th>Status</th>
+                                    <th>Transactions</th>
+                                    <th>Sales</th>
+                                    <th>Avg. Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 </div>
 
@@ -1103,7 +1100,7 @@ include('header.php');
 /* Cashier Performance Section Styling */
 .cashier-performance-card-enhanced {
   background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
-  border-radius: 1.25rem;
+    border-radius: 1.25rem;
   box-shadow: 0 4px 24px rgba(139,69,67,0.10);
   padding: 2.2rem 2.2rem 1.5rem 2.2rem;
   margin-bottom: 2rem;
@@ -1165,9 +1162,9 @@ include('header.php');
   width: 2.8rem;
   height: 2.8rem;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   font-size: 1.35rem;
   background: #f7ece8;
   box-shadow: 0 2px 8px rgba(139,69,67,0.08);
@@ -1191,7 +1188,7 @@ include('header.php');
   color: #8B4543;
   font-weight: 700;
   font-size: 1.08rem;
-  letter-spacing: 0.5px;
+    letter-spacing: 0.5px;
 }
 .cashier-performance-table tbody tr {
   transition: background 0.18s;
@@ -1201,19 +1198,19 @@ include('header.php');
   color: #8B4543;
 }
 .cashier-performance-table th, .cashier-performance-table td {
-  vertical-align: middle;
+    vertical-align: middle;
   padding: 0.85rem 1.1rem;
   border: none;
 }
 .cashier-performance-table td {
-  font-weight: 500;
+    font-weight: 500;
 }
 .cashier-performance-table td:first-child {
   font-weight: 700;
-  color: #8B4543;
+    color: #8B4543;
 }
 .cashier-performance-table td span {
-  font-weight: 500;
+    font-weight: 500;
 }
 @media (max-width: 1200px) {
   .cashier-performance-card-enhanced { padding: 1.5rem 0.5rem; }
@@ -1232,7 +1229,7 @@ include('header.php');
   border-top-right-radius: 1.5rem;
 }
 .branch-modal-title {
-  color: #8B4543;
+    color: #8B4543;
   font-weight: 700;
   letter-spacing: 0.5px;
   font-size: 1.45rem;
@@ -1245,7 +1242,7 @@ include('header.php');
   border-radius: 0.75rem;
   border: 1px solid #e0cfc7;
   font-weight: 500;
-  color: #8B4543;
+    color: #8B4543;
   background: #f7ece8;
   min-width: 120px;
 }
@@ -1254,7 +1251,7 @@ include('header.php');
   color: #fff;
   box-shadow: 0 2px 8px rgba(139,69,67,0.08);
   border-radius: 0.75rem;
-  font-weight: 600;
+    font-weight: 600;
   letter-spacing: 0.5px;
   padding: 0.45rem 1.2rem;
   transition: background 0.2s;
@@ -1279,7 +1276,7 @@ include('header.php');
 }
 .branch-modal-table thead {
   background: linear-gradient(90deg, #f7ece8 80%, #fcf8f6 100%);
-  color: #8B4543;
+    color: #8B4543;
   font-weight: 700;
   font-size: 1.08rem;
   letter-spacing: 0.5px;
@@ -1307,7 +1304,7 @@ include('header.php');
   font-weight: 500;
 }
 .branch-modal-card canvas {
-  border-radius: 1rem;
+    border-radius: 1rem;
   background: #fcf8f6;
   box-shadow: 0 2px 12px rgba(139,69,67,0.06);
   border: 1px solid #f0e6e3;
@@ -1330,7 +1327,7 @@ include('header.php');
   margin-bottom: 1.1rem;
 }
 .sales-trend-title {
-  color: #8B4543;
+    color: #8B4543;
   font-weight: 700;
   font-size: 1.35rem;
   letter-spacing: 0.5px;
@@ -1344,7 +1341,7 @@ include('header.php');
   background: #f7ece8;
   color: #8B4543;
   border: none;
-  font-weight: 600;
+    font-weight: 600;
   border-radius: 0.75rem !important;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
@@ -1369,7 +1366,7 @@ include('header.php');
 }
 .branch-performance-card {
   background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
-  border-radius: 1.25rem;
+    border-radius: 1.25rem;
   box-shadow: 0 4px 24px rgba(139,69,67,0.10);
   padding: 2.2rem 2.2rem 1.5rem 2.2rem;
   margin-bottom: 2rem;
@@ -1396,7 +1393,7 @@ include('header.php');
   color: #fff;
   box-shadow: 0 2px 8px rgba(139,69,67,0.08);
   border-radius: 0.75rem;
-  font-weight: 600;
+    font-weight: 600;
   letter-spacing: 0.5px;
   padding: 0.45rem 1.2rem;
   transition: background 0.2s;
@@ -1429,7 +1426,7 @@ include('header.php');
   margin-bottom: 1.1rem;
 }
 .product-distribution-title {
-  color: #8B4543;
+    color: #8B4543;
   font-weight: 700;
   font-size: 1.35rem;
   letter-spacing: 0.5px;
@@ -1447,24 +1444,24 @@ include('header.php');
   border-radius: 1rem;
   box-shadow: 0 2px 12px rgba(139,69,67,0.06);
   border: 1px solid #f0e6e3;
-  padding: 0.5rem;
+    padding: 0.5rem;
 }
 /* Chart.js legend enhancements */
 #productDistributionChart + div,
 .product-distribution-card .chartjs-legend {
   display: flex !important;
-  justify-content: center;
+    justify-content: center;
   gap: 2rem;
   margin-top: 1.2rem;
   font-size: 1.05rem;
   font-weight: 600;
-  color: #8B4543;
+    color: #8B4543;
 }
 #productDistributionChart + div li,
 .product-distribution-card .chartjs-legend li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 #productDistributionChart + div span,
 .product-distribution-card .chartjs-legend span {
@@ -1532,6 +1529,42 @@ include('header.php');
   height: 18px;
   border-radius: 4px;
   margin-right: 0.5rem;
+}
+.section-title {
+    color: #8B4543;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    margin-bottom: 1.7rem;
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    position: relative;
+    background: none;
+    border: none;
+    animation: fadeInDown 0.7s;
+}
+.section-title .section-icon {
+    font-size: 1.5em;
+    color: #8B4543;
+    opacity: 0.92;
+}
+.section-title::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: -7px;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #8B4543 0%, #b97a6a 100%);
+    opacity: 0.18;
+}
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 
@@ -1612,7 +1645,7 @@ function initializeCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
+        plugins: {
                 legend: {
                     position: 'bottom',
                     labels: {
@@ -1911,6 +1944,104 @@ document.getElementById('endDate').addEventListener('change', fetchBranchCompari
 // Load data when modal is shown
 const branchComparisonModal = document.getElementById('branchComparisonModal');
 branchComparisonModal.addEventListener('shown.bs.modal', fetchBranchComparison);
+</script>
+
+<!-- Cashier Profile Modal -->
+<div class="modal fade" id="cashierProfileModal" tabindex="-1">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content profile-modal-content">
+      <div class="modal-header profile-modal-header">
+        <h5 class="modal-title profile-modal-title"><i class="fas fa-user"></i> Cashier Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body profile-modal-body">
+        <div id="cashierProfileContent" class="text-center">
+          <!-- Profile details will be loaded here -->
+          <div class="spinner-border text-secondary" role="status" id="profileLoadingSpinner">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+.profile-modal-content {
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 32px rgba(139,69,67,0.14);
+  background: linear-gradient(135deg, #fcf8f6 80%, #f7ece8 100%);
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+.profile-modal-header {
+  border-bottom: 1px solid #f0e6e3;
+  background: transparent;
+  border-top-left-radius: 1.25rem;
+  border-top-right-radius: 1.25rem;
+}
+.profile-modal-title {
+  color: #8B4543;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 1.25rem;
+}
+.profile-modal-body {
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  background: transparent;
+}
+.profile-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+  border: 3px solid #f0e6e3;
+  box-shadow: 0 2px 8px rgba(139,69,67,0.08);
+}
+.profile-info-label {
+  color: #A65D5D;
+  font-weight: 600;
+  font-size: 1.01rem;
+  margin-bottom: 0.2rem;
+}
+.profile-info-value {
+  color: #8B4543;
+  font-weight: 700;
+  font-size: 1.12rem;
+  margin-bottom: 0.7rem;
+}
+</style>
+<script>
+// Make cashier names clickable and show profile modal
+$(document).on('click', '.cashier-profile-link', function(e) {
+  e.preventDefault();
+  const userId = $(this).data('userid');
+  $('#cashierProfileModal').modal('show');
+  $('#cashierProfileContent').html('<div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Loading...</span></div>');
+  $.get('get_user_details.php', { user_id: userId }, function(data) {
+    if (data && data.success) {
+      const user = data.user;
+      let html = `<img src="${user.profile_image || 'assets/img/default-profile.png'}" class="profile-avatar mb-2" alt="Profile">
+        <div class="profile-info-label">Name</div>
+        <div class="profile-info-value">${user.name}</div>
+        <div class="profile-info-label">Username</div>
+        <div class="profile-info-value">${user.username}</div>
+        <div class="profile-info-label">Branch</div>
+        <div class="profile-info-value">${user.branch || '-'}</div>
+        <div class="profile-info-label">Status</div>
+        <div class="profile-info-value">${user.user_status}</div>
+        <div class="profile-info-label">User Type</div>
+        <div class="profile-info-value">${user.user_type}</div>`;
+      $('#cashierProfileContent').html(html);
+    } else {
+      $('#cashierProfileContent').html('<div class="text-danger">Failed to load profile details.</div>');
+    }
+  }, 'json');
+});
+// Enhance cashier name rendering in the table
+function renderCashierName(name, profileImage, userId) {
+  return `<a href="#" class="cashier-profile-link" data-userid="${userId}" style="color:#8B4543; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:0.5rem;"><img src="${profileImage || 'assets/img/default-profile.png'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">${name}</a>`;
+}
+// In the JS that populates the cashier table, use renderCashierName for the cashier column.
 </script>
 
 <?php include('footer.php'); ?>

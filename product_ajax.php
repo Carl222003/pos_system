@@ -35,23 +35,28 @@ try {
     $baseQuery = "FROM pos_product p 
                   LEFT JOIN pos_category c ON p.category_id = c.category_id";
     
+    // Add status filter to exclude archived products
+    $statusFilter = "p.product_status != 'archived'";
+
     // Search condition
     $searchCondition = "";
     $params = [];
     if (!empty($search)) {
-        $searchCondition = " WHERE (
-            p.product_name LIKE :search 
-            OR c.category_name LIKE :search
-            OR p.description LIKE :search
-            OR p.ingredients LIKE :search
-            OR p.product_status LIKE :search
-            OR CAST(p.product_price AS CHAR) LIKE :search
-        )";
+        $searchCondition = " WHERE (" . $statusFilter . ") AND (\n"
+            . "p.product_name LIKE :search \n"
+            . "OR c.category_name LIKE :search\n"
+            . "OR p.description LIKE :search\n"
+            . "OR p.ingredients LIKE :search\n"
+            . "OR p.product_status LIKE :search\n"
+            . "OR CAST(p.product_price AS CHAR) LIKE :search\n"
+            . ")";
         $params[':search'] = "%{$search}%";
+    } else {
+        $searchCondition = " WHERE " . $statusFilter;
     }
 
-    // Get total records without filtering
-    $stmt = $pdo->query("SELECT COUNT(*) FROM pos_product");
+    // Get total records without filtering (excluding archived)
+    $stmt = $pdo->query("SELECT COUNT(*) FROM pos_product WHERE product_status != 'archived'");
     $totalRecords = $stmt->fetchColumn();
 
     // Get filtered records count

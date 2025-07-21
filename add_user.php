@@ -15,9 +15,7 @@ include('header.php');
 ?>
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4" style="color: #8B4543; font-size: 1.25rem; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 500; background-color: #F8F9FA; padding: 1rem;">
-        | Add New <?php echo ucfirst($role); ?>
-    </h1>
+    <h1 class="section-title"><span class="section-icon"><i class="fas fa-user-cog"></i></span>Add New Stockman</h1>
 
     <div class="row">
         <div class="col-xl-12">
@@ -197,6 +195,43 @@ h5 {
     color: #566a7f;
     font-weight: 500;
     margin-bottom: 1.5rem;
+}
+
+.section-title {
+    color: #8B4543;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    margin-bottom: 1.7rem;
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    position: relative;
+    background: none;
+    border: none;
+    animation: fadeInDown 0.7s;
+}
+.section-title .section-icon {
+    font-size: 1.5em;
+    color: #8B4543;
+    opacity: 0.92;
+}
+.section-title::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: -7px;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #8B4543 0%, #b97a6a 100%);
+    opacity: 0.18;
+}
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 

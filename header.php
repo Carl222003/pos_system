@@ -512,6 +512,18 @@
                                                 <span>Sales</span>
                                             </a>
                                         </li>
+                                        <li class="menu-item">
+                                            <a href="archived_list.php" class="menu-link">
+                                                <i class="fa-solid fa-box-archive"></i>
+                                                <span>Archived List</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item">
+                                            <a href="activity_log.php" class="menu-link">
+                                                <i class="fa-solid fa-list-check"></i>
+                                                <span>Activity log</span>
+                                            </a>
+                                        </li>
                                     <?php endif; ?>
                                     
                                     <?php if($_SESSION['user_type'] === 'Cashier'): ?>

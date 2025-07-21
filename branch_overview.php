@@ -14,7 +14,7 @@ include('header.php');
 <!-- Main Content -->
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mt-4" style="color: #8B4543; font-size: 1.5rem; font-weight: 600;">Branch Overview</h1>
+        <h1 class="section-title"><span class="section-icon"><i class="fas fa-eye"></i></span>Branch Overview</h1>
         <div class="d-flex gap-2">
             <button class="btn btn-primary" id="refreshStats">
                 <i class="fas fa-sync-alt me-2"></i>Refresh Stats
@@ -519,6 +519,43 @@ include('header.php');
 
 .bg-gradient-info {
     background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+}
+
+.section-title {
+    color: #8B4543;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    margin-bottom: 1.7rem;
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    position: relative;
+    background: none;
+    border: none;
+    animation: fadeInDown 0.7s;
+}
+.section-title .section-icon {
+    font-size: 1.5em;
+    color: #8B4543;
+    opacity: 0.92;
+}
+.section-title::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: -7px;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #8B4543 0%, #b97a6a 100%);
+    opacity: 0.18;
+}
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 

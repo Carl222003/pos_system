@@ -17,7 +17,7 @@ include('header.php');
 <div class="container-fluid px-4">
     <div class="d-flex align-items-center mt-4 mb-4">
         <div style="width: 4px; height: 24px; background-color: #8B4543; margin-right: 12px;"></div>
-        <h1 style="color: #8B4543; font-size: 24px; font-weight: normal; margin: 0;">Product Management</h1>
+        <h1 class="section-title"><span class="section-icon"><i class="fas fa-box-open"></i></span>Product Management</h1>
     </div>
 
     <div class="card mb-4" style="background-color: #8B4543; border: none; border-radius: 8px;">
@@ -223,26 +223,7 @@ include('header.php');
                             <label class="text-muted mb-1"><i class="fas fa-mortar-pestle me-2"></i>Ingredients</label>
                             <div id="viewIngredients" class="p-3" style="background-color: #f8f9fa; border-radius: 8px; min-height: 60px;"></div>
                         </div>
-                        <div class="mb-3">
-                            <label class="text-muted mb-1"><i class="fas fa-users me-2"></i>Assigned Cashiers</label>
-                            <div id="viewCashiers" class="p-3" style="background-color: #f8f9fa; border-radius: 8px;">
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Branch</th>
-                                                <th>Cashier Name</th>
-                                                <th>Shift Schedule</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="cashiersList">
-                                            <!-- Cashiers will be dynamically added here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Removed Assigned Cashiers section -->
                     </div>
                 </div>
             </div>
@@ -360,6 +341,24 @@ body {
 /* Status Badge */
 .badge-active {
     background-color: #4B7F52;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+.badge-inactive {
+    background-color: #dc3545;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+.badge-secondary {
+    background-color: #6c757d;
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 6px;
@@ -510,6 +509,22 @@ body {
     background-color: #6c757d !important;
 }
 
+.swal2-confirm-archive {
+    background-color: #B33A3A !important;
+    color: #fff !important;
+    border-radius: 0.75rem !important;
+    padding: 0.75rem 1.5rem !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(179, 58, 58, 0.15) !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.4em;
+}
+.swal2-confirm-archive:focus {
+    box-shadow: 0 0 0 0.25rem rgba(179, 58, 58, 0.25) !important;
+}
+
 .product-details label {
     font-size: 0.9em;
     color: #666;
@@ -608,14 +623,69 @@ body {
     text-align: center;
     padding: 1rem;
 }
+
+.nav-tabs .nav-link:not(.active) {
+    color: #800000 !important;
+    opacity: 1 !important;
+    background: none !important;
+    cursor: pointer !important;
+}
+    .section-title {
+        color: #8B4543;
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: 0.7px;
+        margin-bottom: 1rem;
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        position: relative;
+        background: none;
+        border: none;
+        animation: fadeInDown 0.7s;
+    }
+    .section-title .section-icon {
+        font-size: 1.5em;
+        color: #8B4543;
+        opacity: 0.92;
+    }
+    .section-title::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: -7px;
+        width: 100%;
+        height: 5px;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #8B4543 0%, #b97a6a 100%);
+        opacity: 0.18;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-18px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <script>
+function showFeedbackModal(type, title, text) {
+  Swal.fire({
+    icon: type,
+    title: title,
+    text: text,
+    confirmButtonText: 'OK',
+    customClass: { confirmButton: 'swal2-confirm-archive' },
+    buttonsStyling: false
+  });
+}
 $(document).ready(function() {
     var productTable = $('#productTable').DataTable({
         ajax: 'product_ajax.php',
         processing: true,
         serverSide: true,
+        pageLength: 5,
+        lengthChange: false,
         columns: [
             { data: 'category_name' },
             { data: 'product_name' },
@@ -630,7 +700,12 @@ $(document).ready(function() {
             { 
                 data: 'product_status',
                 render: function(data) {
-                    return '<span class="badge badge-active">' + data + '</span>';
+                    if (data === 'Available') {
+                        return '<span class="badge badge-active">Active</span>';
+                    } else {
+                        // Treat blank/null/other as Inactive
+                        return '<span class="badge badge-inactive">Inactive</span>';
+                    }
                 }
             },
             { 
@@ -650,8 +725,8 @@ $(document).ready(function() {
                             <button class="btn btn-edit edit-btn" data-id="${data.product_id}" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-delete delete-btn" data-id="${data.product_id}" title="Delete">
-                                <i class="fas fa-trash"></i>
+                            <button class="btn btn-secondary archive-btn" data-id="${data.product_id}" title="Archive">
+                                <i class="fas fa-box-archive"></i>
                             </button>
                         </div>
                     `;
@@ -688,25 +763,13 @@ $(document).ready(function() {
                     
                     $('#addProductForm')[0].reset();
                     productTable.ajax.reload();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message
-                    });
+                    showFeedbackModal('success', 'Success', response.message);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
+                    showFeedbackModal('error', 'Error', response.message);
                 }
             },
             error: function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while processing your request.'
-                });
+                showFeedbackModal('error', 'Error', 'An error occurred while processing your request.');
             }
         });
     });
@@ -760,17 +823,9 @@ $(document).ready(function() {
                     $('.modal-backdrop').remove();
                     
                     productTable.ajax.reload();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message
-                    });
+                    showFeedbackModal('success', 'Success', response.message);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
+                    showFeedbackModal('error', 'Error', response.message);
                 }
             }
         });
@@ -788,38 +843,38 @@ $(document).ready(function() {
     });
 
     // Delete Product
-    $('#productTable').on('click', '.delete-btn', function() {
+    $('#productTable').on('click', '.archive-btn', function() {
         var id = $(this).data('id');
-        
         Swal.fire({
             title: 'Are you sure?',
-            text: "This product will be permanently deleted!",
+            text: "This product will be archived and can be restored later!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonColor: '#B33A3A',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, archive it!',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                confirmButton: 'swal2-confirm-archive',
+                cancelButton: 'btn btn-archive btn-lg'
+            },
+            buttonsStyling: false
         }).then((result) => {
             if (result.isConfirmed) {
-            $.ajax({
-                url: 'delete_product.php',
-                type: 'POST',
+                $.ajax({
+                    url: 'archive_product.php',
+                    type: 'POST',
                     data: { product_id: id },
-                success: function(response) {
+                    success: function(response) {
                         if (response.success) {
+                            showFeedbackModal('success', 'Archived!', 'Product has been archived successfully.');
                             productTable.ajax.reload();
-                            Swal.fire(
-                                'Deleted!',
-                                response.message,
-                                'success'
-                            );
                         } else {
-                            Swal.fire(
-                                'Error!',
-                                response.message,
-                                'error'
-                            );
+                            showFeedbackModal('error', 'Error!', response.message || 'An error occurred while archiving the product.');
                         }
+                    },
+                    error: function() {
+                        showFeedbackModal('error', 'Error!', 'An error occurred while archiving the product.');
                     }
                 });
             }

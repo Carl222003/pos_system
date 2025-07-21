@@ -303,10 +303,116 @@ h1 {
     border: 2px solid #f3e6e6;
     background: #fff;
 }
+
+.btn-edit {
+    background: #C4804D !important;
+    color: #fff !important;
+    border: none;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(196, 128, 77, 0.10);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-edit i {
+    color: #fff !important;
+    font-size: 1.2em;
+}
+.btn-edit:hover, .btn-edit:focus {
+    background: #a96a3d !important;
+    color: #fff !important;
+    text-decoration: none;
+}
+.btn-edit:active {
+    background: #8a5632 !important;
+    color: #fff !important;
+}
+.btn-archive {
+    background: #6c757d !important;
+    color: #fff !important;
+    border: none;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(108, 117, 125, 0.10);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-archive i {
+    color: #fff !important;
+    font-size: 1.2em;
+}
+.btn-archive:hover, .btn-archive:focus {
+    background: #5a6268 !important;
+    color: #fff !important;
+    text-decoration: none;
+}
+.btn-archive:active {
+    background: #545b62 !important;
+    color: #fff !important;
+}
+.swal2-confirm-archive {
+    background-color: #B33A3A !important;
+    color: #fff !important;
+    border-radius: 0.75rem !important;
+    padding: 0.75rem 1.5rem !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(179, 58, 58, 0.15) !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.4em;
+}
+.swal2-confirm-archive:focus {
+    box-shadow: 0 0 0 0.25rem rgba(179, 58, 58, 0.25) !important;
+}
+    .section-title {
+        color: #8B4543;
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: 0.7px;
+        margin-bottom: 1.7rem;
+        margin-top: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        position: relative;
+        background: none;
+        border: none;
+        animation: fadeInDown 0.7s;
+    }
+    .section-title .section-icon {
+        font-size: 1.5em;
+        color: #8B4543;
+        opacity: 0.92;
+    }
+    .section-title::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: -7px;
+        width: 100%;
+        height: 5px;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #8B4543 0%, #b97a6a 100%);
+        opacity: 0.18;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-18px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4" style="color: #8B4543; font-size: 1.25rem; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 500; background-color: #F8F9FA; padding: 1rem;">| Ingredient Management</h1>
+    <h1 class="section-title"><span class="section-icon"><i class="fas fa-carrot"></i></span>Ingredient Management</h1>
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
@@ -366,6 +472,17 @@ h1 {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+function showFeedbackModal(type, title, text) {
+  Swal.fire({
+    icon: type,
+    title: title,
+    text: text,
+    confirmButtonText: 'OK',
+    customClass: { confirmButton: 'swal2-confirm-archive' },
+    buttonsStyling: false
+  });
+}
+
 $(document).ready(function() {
     $('#ingredientTable').DataTable({
         "processing": true,
@@ -385,8 +502,12 @@ $(document).ready(function() {
                 "render": function(data, type, row) {
                     return `
                         <div class="text-center">
-                            <a href="#" class="btn btn-warning btn-sm edit-ingredient-btn" data-id="${row.ingredient_id}">Edit</a>
-                            <button class="btn btn-danger btn-sm delete-btn" data-id="${row.ingredient_id}">Delete</button>
+                            <button class="btn btn-edit btn-sm edit-ingredient-btn" data-id="${row.ingredient_id}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-archive btn-sm archive-btn" data-id="${row.ingredient_id}">
+                                <i class="fas fa-box-archive"></i> Archive
+                            </button>
                         </div>`;
                 }
             }
@@ -394,33 +515,30 @@ $(document).ready(function() {
     });
 
     // Handle Delete Button Click
-    $(document).on('click', '.delete-btn', function() {
+    $(document).on('click', '.archive-btn', function() {
         let ingredientId = $(this).data('id');
         Swal.fire({
             icon: 'warning',
             title: 'Are you sure?',
-            text: "You won't be able to revert this!",
+            text: "You can restore this ingredient from the archive.",
             showCancelButton: true,
-            confirmButtonColor: '#B33A3A',
+            confirmButtonColor: '#6c757d',
             cancelButtonColor: '#8B4543',
-            confirmButtonText: '<i class="fas fa-trash"></i> Yes, delete it!',
+            confirmButtonText: '<i class="fas fa-box-archive"></i> Yes, archive it!',
             cancelButtonText: 'Cancel',
             customClass: {popup: 'rounded-4'}
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: 'delete_ingredient.php',
+                    url: 'archive_ingredient.php',
                     type: 'POST',
                     data: { id: ingredientId },
                     success: function(response) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Deleted!',
-                            text: 'Ingredient has been deleted successfully.',
-                            confirmButtonColor: '#8B4543',
-                            customClass: {popup: 'rounded-4'}
-                        });
+                        showFeedbackModal('success', 'Archived!', 'Ingredient has been archived successfully.');
                         $('#ingredientTable').DataTable().ajax.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        showFeedbackModal('error', 'Error!', 'An error occurred while archiving the ingredient.');
                     }
                 });
             }
@@ -443,17 +561,10 @@ $(document).on('submit', '#editIngredientModalBody form', function(e) {
     var form = $(this);
     var formData = form.serialize();
     $.post(form.attr('action'), formData, function(response) {
-        Swal.fire({
-            icon: 'success',
-            title: 'Saved!',
-            text: 'Ingredient has been updated successfully.',
-            confirmButtonColor: '#8B4543',
-            customClass: {popup: 'rounded-4'}
-        }).then(() => {
-            $('#editIngredientModal').modal('hide');
-            $('#ingredientTable').DataTable().ajax.reload();
-        });
-    });
+        showFeedbackModal('success', 'Saved!', 'Ingredient has been updated successfully.');
+        $('#editIngredientModal').modal('hide');
+        $('#ingredientTable').DataTable().ajax.reload();
+    }, 'json');
 });
 // Intercept Cancel button
 $(document).on('click', '#editIngredientModalBody .btn-cancel', function(e) {

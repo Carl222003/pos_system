@@ -46,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         $pdo->commit();
+        // Log activity for order creation
+        $cashier_id = $_SESSION['user_id'] ?? null;
+        logActivity($pdo, $cashier_id, 'Created Order', 'Order ID: ' . $orderId . ', Total: ' . $orderTotal);
         echo json_encode(['success' => true, 'orderId' => $orderId]);
         
     } catch (Exception $e) {

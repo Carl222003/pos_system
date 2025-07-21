@@ -138,6 +138,14 @@ try {
     // Commit transaction
     $pdo->commit();
 
+    // Log activity for adding cashier or stockman
+    $admin_id = $_SESSION['user_id'] ?? null;
+    $user_type = $_POST['user_type'];
+    $user_name = $_POST['user_name'];
+    if ($user_type === 'Cashier' || $user_type === 'Stockman') {
+        logActivity($pdo, $admin_id, 'Added ' . $user_type, $user_type . ': ' . $user_name . ' (ID: ' . $user_id . ')');
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'User added successfully'

@@ -322,10 +322,46 @@ h1 {
 .swal2-cancel:hover {
     background-color: #e9ecef !important;
 }
+    .section-title {
+        color: #8B4543;
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: 0.7px;
+        margin-bottom: 1.7rem;
+        margin-top: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        position: relative;
+        background: none;
+        border: none;
+        animation: fadeInDown 0.7s;
+    }
+    .section-title .section-icon {
+        font-size: 1.5em;
+        color: #8B4543;
+        opacity: 0.92;
+    }
+    .section-title::after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: -7px;
+        width: 100%;
+        height: 5px;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #8B4543 0%, #b97a6a 100%);
+        opacity: 0.18;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-18px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4" style="color: #8B4543; font-size: 1.25rem; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 500; background-color: #F8F9FA; padding: 1rem;">| User Management</h1>
+    <h1 class="section-title"><span class="section-icon"><i class="fas fa-users"></i></span>User Management</h1>
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
@@ -408,6 +444,17 @@ include('footer.php');
 ?>
 
 <script>
+function showFeedbackModal(type, title, text) {
+  Swal.fire({
+    icon: type,
+    title: title,
+    text: text,
+    confirmButtonText: 'OK',
+    customClass: { confirmButton: 'swal2-confirm-archive' },
+    buttonsStyling: false
+  });
+}
+
 $(document).ready(function() {
     $('#userTable').DataTable({
         "processing": true,
@@ -444,8 +491,8 @@ $(document).ready(function() {
                         <a href="edit_user.php?id=${row.user_id}" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i> Edit
                         </a>
-                        <button class="btn btn-danger btn-sm delete-btn" data-id="${row.user_id}">
-                            <i class="fas fa-trash"></i> Delete
+                        <button class="btn btn-secondary btn-sm archive-btn" data-id="${row.user_id}">
+                            <i class="fas fa-box-archive"></i> Archive
                         </button>
                     </div>`;
                 }
@@ -502,21 +549,20 @@ $(document).ready(function() {
         });
     });
 
-    // Handle Delete Button Click
-    $(document).on('click', '.delete-btn', function() {
+    // Handle Archive Button Click
+    $(document).on('click', '.archive-btn', function() {
         let userId = $(this).data('id');
-        
         Swal.fire({
             title: 'Are you sure?',
-            text: "You won't be able to revert this!",
+            text: "You can restore this user from the archive.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#B33A3A',
+            confirmButtonColor: '#6c757d',
             cancelButtonColor: '#f8f9fa',
-            confirmButtonText: '<i class="fas fa-trash me-2"></i>Yes, delete it!',
+            confirmButtonText: '<i class="fas fa-box-archive me-2"></i>Yes, archive it!',
             cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
             customClass: {
-                confirmButton: 'btn btn-danger btn-lg',
+                confirmButton: 'btn btn-secondary btn-lg',
                 cancelButton: 'btn btn-light btn-lg'
             },
             buttonsStyling: false,
@@ -531,45 +577,20 @@ $(document).ready(function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: 'delete_user.php',
+                    url: 'archive_user.php',
                     type: 'POST',
                     data: { id: userId },
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            // Reload the table or remove the row
                             $('#userTable').DataTable().ajax.reload();
-                            
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Deleted!',
-                                text: 'User has been deleted successfully.',
-                                timer: 2000,
-                                showConfirmButton: false,
-                                customClass: {
-                                    popup: 'animate__animated animate__fadeInDown animate__faster'
-                                }
-                            });
+                            showFeedbackModal('success', 'Archived!', 'User has been archived successfully.');
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: response.message || 'Failed to delete user.',
-                                customClass: {
-                                    popup: 'animate__animated animate__fadeInDown animate__faster'
-                                }
-                            });
+                            showFeedbackModal('error', 'Error!', response.message || 'Failed to archive user.');
                         }
                     },
                     error: function() {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while deleting the user.',
-                            customClass: {
-                                popup: 'animate__animated animate__fadeInDown animate__faster'
-                            }
-                        });
+                        showFeedbackModal('error', 'Error!', 'An error occurred while archiving the user.');
                     }
                 });
             }

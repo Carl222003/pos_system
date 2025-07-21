@@ -185,6 +185,17 @@ include('header.php');
 </div>
 
 <script>
+function showFeedbackModal(type, title, text) {
+  Swal.fire({
+    icon: type,
+    title: title,
+    text: text,
+    confirmButtonText: 'OK',
+    customClass: { confirmButton: 'swal2-confirm-archive' },
+    buttonsStyling: false
+  });
+}
+
 $(document).ready(function() {
     // Initialize DataTable
     var table = $('#branchProductsTable').DataTable({
@@ -209,9 +220,7 @@ $(document).ready(function() {
                         <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="${row.branch_product_id}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${row.branch_product_id}">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm archive-btn" data-id="${row.branch_product_id}">Archive</button>
                     `;
                 }
             }
@@ -227,19 +236,11 @@ $(document).ready(function() {
             data: $(this).serialize(),
             success: function(response) {
                 if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message
-                    });
+                    showFeedbackModal('success', 'Success', response.message);
                     $('#addBranchProductForm')[0].reset();
                     table.ajax.reload();
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
+                    showFeedbackModal('error', 'Error', response.message);
                 }
             }
         });
@@ -272,55 +273,39 @@ $(document).ready(function() {
             data: $('#editBranchProductForm').serialize(),
             success: function(response) {
                 if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message
-                    });
+                    showFeedbackModal('success', 'Success', response.message);
                     $('#editModal').modal('hide');
                     table.ajax.reload();
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
+                    showFeedbackModal('error', 'Error', response.message);
                 }
             }
         });
     });
 
     // Delete Branch Product
-    $('#branchProductsTable').on('click', '.delete-btn', function() {
+    $('#branchProductsTable').on('click', '.archive-btn', function() {
         var id = $(this).data('id');
         Swal.fire({
             title: 'Are you sure?',
-            text: "You won't be able to revert this!",
+            text: "You can restore this branch product from the archive.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#6c757d',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Yes, archive it!'
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: 'delete_branch_product.php',
+                    url: 'archive_branch_product.php',
                     method: 'POST',
                     data: { id: id },
                     success: function(response) {
                         if (response.success) {
-                            Swal.fire(
-                                'Deleted!',
-                                response.message,
-                                'success'
-                            );
+                            showFeedbackModal('success', 'Archived!', response.message);
                             table.ajax.reload();
                         } else {
-                            Swal.fire(
-                                'Error!',
-                                response.message,
-                                'error'
-                            );
+                            showFeedbackModal('error', 'Error!', response.message);
                         }
                     }
                 });

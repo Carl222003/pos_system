@@ -193,4 +193,11 @@ function createCashierSession($pdo, $user_id) {
     }
 }
 
+// Universal activity logger
+function logActivity($pdo, $user_id, $action, $details = '') {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $stmt = $pdo->prepare("INSERT INTO pos_activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$user_id, $action, $details, $ip]);
+}
+
 ?>
