@@ -1,0 +1,299 @@
+2025-07-24 11:30:50 POST received. id=20, restore=0
+2025-07-24 11:30:50 Archive requested for category_id=20
+2025-07-24 11:30:50 Category is already archived.
+2025-07-24 11:30:54 POST received. id=20, restore=0
+2025-07-24 11:30:54 Archive requested for category_id=20
+2025-07-24 11:30:54 Category is already archived.
+2025-07-24 11:32:15 POST received. id=20, restore=0
+2025-07-24 11:32:15 Archive requested for category_id=20
+2025-07-24 11:32:15 Category is already archived.
+2025-07-24 11:32:22 POST received. id=9, restore=1
+2025-07-24 11:32:22 Restore requested for archive_id=9
+2025-07-24 11:32:22 Restored pos_category.status to active for category_id=19
+2025-07-24 11:32:22 Deleted from archive_category where archive_id=9
+2025-07-24 11:32:27 POST received. id=10, restore=1
+2025-07-24 11:32:27 Restore requested for archive_id=10
+2025-07-24 11:32:27 Restored pos_category.status to active for category_id=20
+2025-07-24 11:32:27 Deleted from archive_category where archive_id=10
+2025-07-24 11:32:31 POST received. id=11, restore=1
+2025-07-24 11:32:31 Restore requested for archive_id=11
+2025-07-24 11:32:31 Restored pos_category.status to active for category_id=17
+2025-07-24 11:32:31 Deleted from archive_category where archive_id=11
+2025-07-24 11:32:38 POST received. id=5, restore=1
+2025-07-24 11:32:38 Restore requested for archive_id=5
+2025-07-24 11:32:38 Restored pos_category.status to active for category_id=16
+2025-07-24 11:32:38 Deleted from archive_category where archive_id=5
+2025-07-24 11:32:40 POST received. id=7, restore=1
+2025-07-24 11:32:40 Restore requested for archive_id=7
+2025-07-24 11:32:40 Restored pos_category.status to active for category_id=12
+2025-07-24 11:32:40 Deleted from archive_category where archive_id=7
+2025-07-24 11:32:54 POST received. id=17, restore=0
+2025-07-24 11:32:54 Archive requested for category_id=17
+2025-07-24 11:32:54 Inserted into archive_category: [17,"Billie","sdas","archived",1]
+2025-07-24 11:32:54 Updated pos_category.status to archived for category_id=17
+2025-07-24 11:35:02 POST received. id=17, restore=0
+2025-07-24 11:35:02 Archive requested for category_id=17
+2025-07-24 11:35:02 Category is already archived.
+2025-07-24 11:35:05 POST received. id=16, restore=0
+2025-07-24 11:35:05 Archive requested for category_id=16
+2025-07-24 11:35:05 Inserted into archive_category: [16,"Pizza","Cheesy, savory, satisfying.","archived",1]
+2025-07-24 11:35:05 Updated pos_category.status to archived for category_id=16
+2025-07-24 11:35:07 POST received. id=17, restore=0
+2025-07-24 11:35:07 Archive requested for category_id=17
+2025-07-24 11:35:07 Category is already archived.
+2025-07-24 11:35:11 POST received. id=18, restore=0
+2025-07-24 11:35:11 Archive requested for category_id=18
+2025-07-24 11:35:11 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-24 11:35:11 Updated pos_category.status to archived for category_id=18
+2025-07-24 11:35:33 POST received. id=14, restore=1
+2025-07-24 11:35:33 Restore requested for archive_id=14
+2025-07-24 11:35:33 Restored pos_category.status to active for category_id=18
+2025-07-24 11:35:33 Deleted from archive_category where archive_id=14
+2025-07-24 11:35:35 POST received. id=13, restore=1
+2025-07-24 11:35:35 Restore requested for archive_id=13
+2025-07-24 11:35:35 Restored pos_category.status to active for category_id=16
+2025-07-24 11:35:35 Deleted from archive_category where archive_id=13
+2025-07-24 11:35:37 POST received. id=12, restore=1
+2025-07-24 11:35:37 Restore requested for archive_id=12
+2025-07-24 11:35:37 Restored pos_category.status to active for category_id=17
+2025-07-24 11:35:37 Deleted from archive_category where archive_id=12
+2025-07-24 11:35:41 POST received. id=4, restore=1
+2025-07-24 11:35:41 Restore requested for archive_id=4
+2025-07-24 11:35:41 Restored pos_category.status to active for category_id=15
+2025-07-24 11:35:41 Deleted from archive_category where archive_id=4
+2025-07-24 11:35:43 POST received. id=3, restore=1
+2025-07-24 11:35:43 Restore requested for archive_id=3
+2025-07-24 11:35:43 Restored pos_category.status to active for category_id=13
+2025-07-24 11:35:43 Deleted from archive_category where archive_id=3
+2025-07-24 11:35:49 POST received. id=16, restore=0
+2025-07-24 11:35:49 Archive requested for category_id=16
+2025-07-24 11:35:49 Inserted into archive_category: [16,"Pizza","Cheesy, savory, satisfying.","archived",1]
+2025-07-24 11:35:49 Updated pos_category.status to archived for category_id=16
+2025-07-24 11:35:54 POST received. id=17, restore=0
+2025-07-24 11:35:54 Archive requested for category_id=17
+2025-07-24 11:35:54 Inserted into archive_category: [17,"Billie","sdas","archived",1]
+2025-07-24 11:35:54 Updated pos_category.status to archived for category_id=17
+2025-07-24 11:35:58 POST received. id=18, restore=0
+2025-07-24 11:35:58 Archive requested for category_id=18
+2025-07-24 11:35:58 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-24 11:35:58 Updated pos_category.status to archived for category_id=18
+2025-07-24 11:36:43 POST received. id=17, restore=1
+2025-07-24 11:36:43 Restore requested for archive_id=17
+2025-07-24 11:36:43 Restored pos_category.status to active for category_id=18
+2025-07-24 11:36:43 Deleted from archive_category where archive_id=17
+2025-07-24 11:36:45 POST received. id=16, restore=1
+2025-07-24 11:36:45 Restore requested for archive_id=16
+2025-07-24 11:36:45 Restored pos_category.status to active for category_id=17
+2025-07-24 11:36:45 Deleted from archive_category where archive_id=16
+2025-07-24 11:36:47 POST received. id=15, restore=1
+2025-07-24 11:36:47 Restore requested for archive_id=15
+2025-07-24 11:36:47 Restored pos_category.status to active for category_id=16
+2025-07-24 11:36:47 Deleted from archive_category where archive_id=15
+2025-07-24 11:37:25 POST received. id=16, restore=0
+2025-07-24 11:37:25 Archive requested for category_id=16
+2025-07-24 11:37:25 Inserted into archive_category: [16,"Pizza","Cheesy, savory, satisfying.","archived",1]
+2025-07-24 11:37:25 Updated pos_category.status to archived for category_id=16
+2025-07-24 11:37:28 POST received. id=17, restore=0
+2025-07-24 11:37:28 Archive requested for category_id=17
+2025-07-24 11:37:28 Inserted into archive_category: [17,"Billie","sdas","archived",1]
+2025-07-24 11:37:28 Updated pos_category.status to archived for category_id=17
+2025-07-24 11:37:37 POST received. id=17, restore=0
+2025-07-24 11:37:37 Archive requested for category_id=17
+2025-07-24 11:37:37 Category is already archived.
+2025-07-24 11:37:40 POST received. id=17, restore=0
+2025-07-24 11:37:40 Archive requested for category_id=17
+2025-07-24 11:37:40 Category is already archived.
+2025-07-24 11:39:11 POST received. id=18, restore=0
+2025-07-24 11:39:11 Archive requested for category_id=18
+2025-07-24 11:39:11 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-24 11:39:11 Updated pos_category.status to archived for category_id=18
+2025-07-24 11:39:19 POST received. id=20, restore=1
+2025-07-24 11:39:19 Restore requested for archive_id=20
+2025-07-24 11:39:19 Restored pos_category.status to active for category_id=18
+2025-07-24 11:39:19 Deleted from archive_category where archive_id=20
+2025-07-24 11:43:44 POST received. id=19, restore=1
+2025-07-24 11:43:44 Restore requested for archive_id=19
+2025-07-24 11:43:44 Restored pos_category.status to active for category_id=17
+2025-07-24 11:43:44 Deleted from archive_category where archive_id=19
+2025-07-24 11:47:00 POST received. id=18, restore=1
+2025-07-24 11:47:00 Restore requested for archive_id=18
+2025-07-24 11:47:00 Restored pos_category.status to active for category_id=16
+2025-07-24 11:47:00 Deleted from archive_category where archive_id=18
+2025-07-24 11:47:09 POST received. id=18, restore=0
+2025-07-24 11:47:09 Archive requested for category_id=18
+2025-07-24 11:47:09 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-24 11:47:09 Updated pos_category.status to archived for category_id=18
+2025-07-24 11:47:47 POST received. id=18, restore=0
+2025-07-24 11:47:47 Archive requested for category_id=18
+2025-07-24 11:47:47 Category is already archived.
+2025-07-24 11:49:21 POST received. id=21, restore=1
+2025-07-24 11:49:21 Restore requested for archive_id=21
+2025-07-24 11:49:21 Restored pos_category.status to active for category_id=18
+2025-07-24 11:49:21 Deleted from archive_category where archive_id=21
+2025-07-24 11:49:26 POST received. id=16, restore=0
+2025-07-24 11:49:26 Archive requested for category_id=16
+2025-07-24 11:49:26 Inserted into archive_category: [16,"Pizza","Cheesy, savory, satisfying.","archived",1]
+2025-07-24 11:49:26 Updated pos_category.status to archived for category_id=16
+2025-07-24 11:50:56 POST received. id=22, restore=1
+2025-07-24 11:50:56 Restore requested for archive_id=22
+2025-07-24 11:50:56 Restored pos_category.status to active for category_id=16
+2025-07-24 11:50:56 Deleted from archive_category where archive_id=22
+2025-07-24 11:51:21 POST received. id=19, restore=0
+2025-07-24 11:51:21 Archive requested for category_id=19
+2025-07-24 11:51:21 Inserted into archive_category: [19,"PizZ4","asdasd","archived",1]
+2025-07-24 11:51:21 Updated pos_category.status to archived for category_id=19
+2025-07-24 11:51:27 POST received. id=19, restore=0
+2025-07-24 11:51:27 Archive requested for category_id=19
+2025-07-24 11:51:27 Category is already archived.
+2025-07-24 11:51:47 POST received. id=18, restore=0
+2025-07-24 11:51:47 Archive requested for category_id=18
+2025-07-24 11:51:47 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-24 11:51:47 Updated pos_category.status to archived for category_id=18
+2025-07-24 11:53:39 POST received. id=24, restore=1
+2025-07-24 11:53:39 Restore requested for archive_id=24
+2025-07-24 11:53:39 Restored pos_category.status to active for category_id=18
+2025-07-24 11:53:39 Deleted from archive_category where archive_id=24
+2025-07-24 11:53:41 POST received. id=23, restore=1
+2025-07-24 11:53:41 Restore requested for archive_id=23
+2025-07-24 11:53:41 Restored pos_category.status to active for category_id=19
+2025-07-24 11:53:41 Deleted from archive_category where archive_id=23
+2025-07-24 11:53:53 POST received. id=16, restore=0
+2025-07-24 11:53:53 Archive requested for category_id=16
+2025-07-24 11:53:53 Inserted into archive_category: [16,"Pizza","Cheesy, savory, satisfying.","archived",1]
+2025-07-24 11:53:53 Updated pos_category.status to archived for category_id=16
+2025-07-25 14:17:36 POST received. id=25, restore=1
+2025-07-25 14:17:36 Restore requested for archive_id=25
+2025-07-25 14:17:36 Restored pos_category.status to active for category_id=16
+2025-07-25 14:17:36 Deleted from archive_category where archive_id=25
+2025-07-25 14:40:28 POST received. id=19, restore=0
+2025-07-25 14:40:28 Archive requested for category_id=19
+2025-07-25 14:40:28 Inserted into archive_category: [19,"PizZ4","asdasd","archived",1]
+2025-07-25 14:40:28 Updated pos_category.status to archived for category_id=19
+2025-07-25 14:40:32 POST received. id=26, restore=1
+2025-07-25 14:40:32 Restore requested for archive_id=26
+2025-07-25 14:40:32 Restored pos_category.status to active for category_id=19
+2025-07-25 14:40:32 Deleted from archive_category where archive_id=26
+2025-07-25 17:29:09 POST received. id=17, restore=0
+2025-07-25 17:29:09 Archive requested for category_id=17
+2025-07-25 17:29:09 Inserted into archive_category: [17,"Billie","sdas","archived",1]
+2025-07-25 17:29:09 Updated pos_category.status to archived for category_id=17
+2025-07-25 17:29:13 POST received. id=27, restore=1
+2025-07-25 17:29:13 Restore requested for archive_id=27
+2025-07-25 17:29:13 Restored pos_category.status to active for category_id=17
+2025-07-25 17:29:13 Deleted from archive_category where archive_id=27
+2025-07-26 16:21:45 POST received. id=16, restore=0
+2025-07-26 16:21:45 Archive requested for category_id=16
+2025-07-26 16:21:45 Inserted into archive_category: [16,"Pizza","Cheesy, savory, satisfying.","archived",1]
+2025-07-26 16:21:45 Updated pos_category.status to archived for category_id=16
+2025-07-26 16:21:47 POST received. id=17, restore=0
+2025-07-26 16:21:47 Archive requested for category_id=17
+2025-07-26 16:21:47 Inserted into archive_category: [17,"Billie","sdas","archived",1]
+2025-07-26 16:21:47 Updated pos_category.status to archived for category_id=17
+2025-07-26 16:21:50 POST received. id=18, restore=0
+2025-07-26 16:21:50 Archive requested for category_id=18
+2025-07-26 16:21:50 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-26 16:21:50 Updated pos_category.status to archived for category_id=18
+2025-07-26 16:33:01 POST received. id=30, restore=1
+2025-07-26 16:33:01 Restore requested for archive_id=30
+2025-07-26 16:33:01 Restored pos_category.status to active for category_id=18
+2025-07-26 16:33:01 Deleted from archive_category where archive_id=30
+2025-07-26 16:33:03 POST received. id=29, restore=1
+2025-07-26 16:33:03 Restore requested for archive_id=29
+2025-07-26 16:33:03 Restored pos_category.status to active for category_id=17
+2025-07-26 16:33:03 Deleted from archive_category where archive_id=29
+2025-07-26 16:33:05 POST received. id=28, restore=1
+2025-07-26 16:33:05 Restore requested for archive_id=28
+2025-07-26 16:33:05 Restored pos_category.status to active for category_id=16
+2025-07-26 16:33:05 Deleted from archive_category where archive_id=28
+2025-07-26 16:33:12 POST received. id=16, restore=0
+2025-07-26 16:33:12 Archive requested for category_id=16
+2025-07-26 16:33:12 Inserted into archive_category: [16,"Pizza","Cheesy, savory, satisfying.","archived",1]
+2025-07-26 16:33:12 Updated pos_category.status to archived for category_id=16
+2025-07-26 16:36:14 POST received. id=17, restore=0
+2025-07-26 16:36:14 Archive requested for category_id=17
+2025-07-26 16:36:14 Inserted into archive_category: [17,"Billie","sdas","archived",1]
+2025-07-26 16:36:14 Updated pos_category.status to archived for category_id=17
+2025-07-26 16:38:23 POST received. id=18, restore=0
+2025-07-26 16:38:23 Archive requested for category_id=18
+2025-07-26 16:38:23 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-26 16:38:23 Updated pos_category.status to archived for category_id=18
+2025-07-26 16:38:29 POST received. id=33, restore=1
+2025-07-26 16:38:29 Restore requested for archive_id=33
+2025-07-26 16:38:29 Restored pos_category.status to active for category_id=18
+2025-07-26 16:38:29 Deleted from archive_category where archive_id=33
+2025-07-26 16:38:31 POST received. id=32, restore=1
+2025-07-26 16:38:31 Restore requested for archive_id=32
+2025-07-26 16:38:31 Restored pos_category.status to active for category_id=17
+2025-07-26 16:38:31 Deleted from archive_category where archive_id=32
+2025-07-26 16:38:34 POST received. id=31, restore=1
+2025-07-26 16:38:34 Restore requested for archive_id=31
+2025-07-26 16:38:34 Restored pos_category.status to active for category_id=16
+2025-07-26 16:38:34 Deleted from archive_category where archive_id=31
+2025-07-26 16:47:49 POST received. id=17, restore=0
+2025-07-26 16:47:49 Archive requested for category_id=17
+2025-07-26 16:47:49 Inserted into archive_category: [17,"Billie","sdas","archived",1]
+2025-07-26 16:47:49 Updated pos_category.status to archived for category_id=17
+2025-07-26 16:47:55 POST received. id=34, restore=1
+2025-07-26 16:47:55 Restore requested for archive_id=34
+2025-07-26 16:47:55 Restored pos_category.status to active for category_id=17
+2025-07-26 16:47:55 Deleted from archive_category where archive_id=34
+2025-07-26 16:51:31 POST received. id=17, restore=0
+2025-07-26 16:51:31 Archive requested for category_id=17
+2025-07-26 16:51:31 Inserted into archive_category: [17,"Billie","sdas","archived",1]
+2025-07-26 16:51:31 Updated pos_category.status to archived for category_id=17
+2025-07-26 16:53:15 POST received. id=21, restore=0
+2025-07-26 16:53:15 Archive requested for category_id=21
+2025-07-26 16:53:15 Inserted into archive_category: [21,"adidas","sda","archived",1]
+2025-07-26 16:53:15 Updated pos_category.status to archived for category_id=21
+2025-07-26 16:53:18 POST received. id=20, restore=0
+2025-07-26 16:53:18 Archive requested for category_id=20
+2025-07-26 16:53:18 Inserted into archive_category: [20,"dsadsad","dasd","archived",1]
+2025-07-26 16:53:18 Updated pos_category.status to archived for category_id=20
+2025-07-26 16:53:38 POST received. id=18, restore=0
+2025-07-26 16:53:38 Archive requested for category_id=18
+2025-07-26 16:53:38 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-26 16:53:38 Updated pos_category.status to archived for category_id=18
+2025-07-26 16:53:47 POST received. id=38, restore=1
+2025-07-26 16:53:47 Restore requested for archive_id=38
+2025-07-26 16:53:47 Restored pos_category.status to active for category_id=18
+2025-07-26 16:53:47 Deleted from archive_category where archive_id=38
+2025-07-27 17:36:31 POST received. id=37, restore=1
+2025-07-27 17:36:31 Restore requested for archive_id=37
+2025-07-27 17:36:31 Restored pos_category.status to active for category_id=20
+2025-07-27 17:36:31 Deleted from archive_category where archive_id=37
+2025-07-27 17:36:41 POST received. id=15, restore=0
+2025-07-27 17:36:41 Archive requested for category_id=15
+2025-07-27 17:36:41 Inserted into archive_category: [15,"Pizza","Cheesy, savory, satisfying.","archived",1]
+2025-07-27 17:36:41 Updated pos_category.status to archived for category_id=15
+2025-07-27 17:36:47 POST received. id=20, restore=0
+2025-07-27 17:36:47 Archive requested for category_id=20
+2025-07-27 17:36:47 Inserted into archive_category: [20,"dsadsad","dasd","archived",1]
+2025-07-27 17:36:47 Updated pos_category.status to archived for category_id=20
+2025-07-27 17:49:36 POST received. id=12, restore=0
+2025-07-27 17:49:36 Archive requested for category_id=12
+2025-07-27 17:49:36 Inserted into archive_category: [12,"Halo-Halo","Colorful, refreshing, sweet.","archived",1]
+2025-07-27 17:49:36 Updated pos_category.status to archived for category_id=12
+2025-07-27 17:49:42 POST received. id=41, restore=1
+2025-07-27 17:49:42 Restore requested for archive_id=41
+2025-07-27 17:49:42 Restored pos_category.status to active for category_id=12
+2025-07-27 17:49:42 Deleted from archive_category where archive_id=41
+2025-07-27 17:49:47 POST received. id=40, restore=1
+2025-07-27 17:49:47 Restore requested for archive_id=40
+2025-07-27 17:49:47 Restored pos_category.status to active for category_id=20
+2025-07-27 17:49:47 Deleted from archive_category where archive_id=40
+2025-07-27 17:53:49 POST received. id=39, restore=1
+2025-07-27 17:53:49 Restore requested for archive_id=39
+2025-07-27 17:53:49 Restored pos_category.status to active for category_id=15
+2025-07-27 17:53:49 Deleted from archive_category where archive_id=39
+2025-07-27 17:57:33 POST received. id=36, restore=1
+2025-07-27 17:57:33 Restore requested for archive_id=36
+2025-07-27 17:57:33 Restored pos_category.status to active for category_id=21
+2025-07-27 17:57:33 Deleted from archive_category where archive_id=36
+2025-07-27 17:59:36 POST received. id=20, restore=0
+2025-07-27 17:59:36 Archive requested for category_id=20
+2025-07-27 17:59:36 Inserted into archive_category: [20,"dsadsad","dasd","archived",1]
+2025-07-27 17:59:36 Updated pos_category.status to archived for category_id=20
+2025-07-27 18:04:27 POST received. id=18, restore=0
+2025-07-27 18:04:27 Archive requested for category_id=18
+2025-07-27 18:04:27 Inserted into archive_category: [18,"desserts","dasd","archived",1]
+2025-07-27 18:04:27 Updated pos_category.status to archived for category_id=18

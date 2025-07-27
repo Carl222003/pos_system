@@ -6,6 +6,53 @@ $page_title = "Cashier Performance";
 include 'header.php';
 ?>
 
+<style>
+    .performance-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff;
+        border-radius: 1.2rem;
+        box-shadow: 0 2px 12px rgba(139, 69, 67, 0.07);
+        padding: 1.2rem 2rem 1.2rem 1.5rem;
+        margin-bottom: 1.2rem;
+        min-width: 220px;
+        min-height: 90px;
+    }
+    .performance-card .card-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .performance-card .card-title {
+        font-size: 1.05rem;
+        color: #3a3a3a;
+        font-weight: 500;
+        margin-bottom: 0.2rem;
+    }
+    .performance-card .card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #223;
+    }
+    .performance-card .card-icon {
+        margin-left: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #eaf3fa;
+        font-size: 1.5rem;
+        color: #3498db;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.08);
+    }
+    .performance-card .card-icon.green { background: #eafaf1; color: #27ae60; }
+    .performance-card .card-icon.yellow { background: #fff9e5; color: #f1c40f; }
+    .performance-card .card-icon.purple { background: #f5eafd; color: #9b59b6; }
+</style>
+
 <div class="container-fluid px-4">
     <h1 class="mt-4">Cashier Performance Dashboard</h1>
     
@@ -25,35 +72,39 @@ include 'header.php';
                 <div class="card-body">
                     <div class="row g-4">
                         <div class="col-md-3">
-                            <div class="card bg-primary text-white">
-                                <div class="card-body">
-                                    <h6>Active Cashiers</h6>
-                                    <h2 id="activeCashiers">0</h2>
+                            <div class="performance-card">
+                                <div class="card-info">
+                                    <div class="card-title">Active Cashiers</div>
+                                    <div class="card-value" id="activeCashiers">0</div>
                                 </div>
+                                <div class="card-icon"><i class="fas fa-user-friends"></i></div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-success text-white">
-                                <div class="card-body">
-                                    <h6>Total Transactions</h6>
-                                    <h2 id="totalTransactions">0</h2>
+                            <div class="performance-card">
+                                <div class="card-info">
+                                    <div class="card-title">Total Transactions</div>
+                                    <div class="card-value" id="totalTransactions">0</div>
                                 </div>
+                                <div class="card-icon green"><i class="fas fa-receipt"></i></div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-info text-white">
-                                <div class="card-body">
-                                    <h6>Avg. Transaction Time</h6>
-                                    <h2 id="avgTransactionTime">0.0m</h2>
+                            <div class="performance-card">
+                                <div class="card-info">
+                                    <div class="card-title">Avg. Transaction Time</div>
+                                    <div class="card-value" id="avgTransactionTime">0.0m</div>
                                 </div>
+                                <div class="card-icon yellow"><i class="fas fa-clock"></i></div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-warning text-white">
-                                <div class="card-body">
-                                    <h6>Total Sales</h6>
-                                    <h2 id="totalSales">₱0.00</h2>
+                            <div class="performance-card">
+                                <div class="card-info">
+                                    <div class="card-title">Total Sales</div>
+                                    <div class="card-value" id="totalSales">₱0.00</div>
                                 </div>
+                                <div class="card-icon purple"><i class="fas fa-coins"></i></div>
                             </div>
                         </div>
                     </div>

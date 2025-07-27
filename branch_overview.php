@@ -96,7 +96,7 @@ include('header.php');
                         <button class="btn btn-primary btn-sm view-sales-btn" data-bs-toggle="modal" data-bs-target="#salesModal" data-branch-id="<?php echo $branch['branch_id']; ?>" data-branch-name="<?php echo htmlspecialchars($branch['branch_name']); ?>">
                             <i class="fas fa-chart-line me-1"></i> View Sales
                         </button>
-                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='branch_inventory.php?id=<?php echo $branch['branch_id']; ?>'">
+                        <button class="btn btn-secondary btn-sm view-inventory-btn" data-branch-id="<?php echo $branch['branch_id']; ?>">
                             <i class="fas fa-boxes me-1"></i> View Inventory
                         </button>
                     </div>
@@ -269,6 +269,21 @@ include('header.php');
             </div>
         </div>
     </div>
+</div>
+
+<!-- Inventory Modal -->
+<div class="modal fade" id="inventoryModal" tabindex="-1" aria-labelledby="inventoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-maroon text-white">
+        <h5 class="modal-title" id="inventoryModalLabel"><i class="fas fa-boxes me-2"></i>Branch Inventory</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="inventoryModalBody">
+        <div class="text-center p-4">Loading...</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -797,6 +812,16 @@ $(document).ready(function() {
     $('#salesModal').on('hidden.bs.modal', function() {
         currentBranchId = null;
         destroyCharts();
+    });
+
+    $(document).on('click', '.view-inventory-btn', function(e) {
+        e.preventDefault();
+        var branchId = $(this).data('branch-id');
+        $('#inventoryModalBody').html('<div class="text-center p-4">Loading...</div>');
+        $('#inventoryModal').modal('show');
+        $.get('get_branch_inventory.php', { id: branchId }, function(data) {
+            $('#inventoryModalBody').html(data);
+        });
     });
 });
 </script>

@@ -16,20 +16,20 @@ $dir = $_GET['order'][0]['dir'];
 
 $searchValue = $_GET['search']['value'];
 
-// Get total records
-$totalRecordsStmt = $pdo->query("SELECT COUNT(*) FROM pos_category");
+// Get total records (exclude archived)
+$totalRecordsStmt = $pdo->query("SELECT COUNT(*) FROM pos_category WHERE status = 'active' OR status = 'inactive'");
 $totalRecords = $totalRecordsStmt->fetchColumn();
 
-// Get total filtered records
-$filterQuery = "SELECT COUNT(*) FROM pos_category WHERE 1=1";
+// Get total filtered records (exclude archived)
+$filterQuery = "SELECT COUNT(*) FROM pos_category WHERE (status = 'active' OR status = 'inactive')";
 if (!empty($searchValue)) {
     $filterQuery .= " AND (category_name LIKE '%$searchValue%' OR description LIKE '%$searchValue%' OR status LIKE '%$searchValue%')";
 }
 $totalFilteredRecordsStmt = $pdo->query($filterQuery);
 $totalFilteredRecords = $totalFilteredRecordsStmt->fetchColumn();
 
-// Fetch data
-$dataQuery = "SELECT category_id, category_name, description, status FROM pos_category WHERE 1=1";
+// Fetch data (exclude archived)
+$dataQuery = "SELECT category_id, category_name, description, status FROM pos_category WHERE (status = 'active' OR status = 'inactive')";
 if (!empty($searchValue)) {
     $dataQuery .= " AND (category_name LIKE '%$searchValue%' OR description LIKE '%$searchValue%' OR status LIKE '%$searchValue%')";
 }

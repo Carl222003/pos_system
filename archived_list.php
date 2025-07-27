@@ -231,12 +231,27 @@ include('header.php');
     background: none !important;
     cursor: pointer !important;
 }
+.swal2-confirm-green {
+    background-color: #4A7C59 !important;
+    color: #fff !important;
+    border-radius: 0.75rem !important;
+    padding: 0.75rem 1.5rem !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(74, 124, 89, 0.15) !important;
+}
+.swal2-confirm-green:focus {
+    box-shadow: 0 0 0 0.25rem rgba(74, 124, 89, 0.25) !important;
+}
 </style>
 <div class="container-fluid px-4">
     <h1 class="section-title"><span class="section-icon"><i class="fas fa-archive"></i></span>Archived Lists</h1>
     <ul class="nav nav-tabs mb-3" id="archiveTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="cat-tab" data-bs-toggle="tab" data-bs-target="#cat" type="button" role="tab"><span class="tab-icon"><i class="fas fa-list-alt"></i></span>Categories</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="ingredient-tab" data-bs-toggle="tab" data-bs-target="#ingredient" type="button" role="tab"><span class="tab-icon"><i class="fas fa-carrot"></i></span>Ingredients</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab"><span class="tab-icon"><i class="fas fa-user"></i></span>Users</button>
@@ -285,6 +300,53 @@ include('header.php');
                             }
                         } else {
                             echo '<tr><td colspan="4" class="text-center text-danger">archive_category table does not exist.</td></tr>';
+                        }
+                        ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Ingredients -->
+        <div class="tab-pane fade" id="ingredient" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div><i class="fas fa-box-archive me-1"></i> Archived Ingredient List</div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Ingredient Name</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        if ($pdo->query("SHOW TABLES LIKE 'archive_ingredient'")->rowCount()) {
+                            $stmt = $pdo->prepare("SELECT ai.*, pc.category_name FROM archive_ingredient ai LEFT JOIN pos_category pc ON ai.category_id = pc.category_id");
+                            $stmt->execute();
+                            $archived = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            if (count($archived) === 0) {
+                                echo '<tr><td colspan="6" class="text-center text-muted">No archived ingredients found.</td></tr>';
+                            } else {
+                                foreach ($archived as $ingredient) {
+                                    echo '<tr>';
+                                    echo '<td>' . htmlspecialchars($ingredient['ingredient_name']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($ingredient['category_name']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($ingredient['ingredient_quantity']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($ingredient['ingredient_unit']) . '</td>';
+                                    echo '<td><span class="badge bg-secondary">Archived</span></td>';
+                                    echo '<td><button class="btn btn-restore btn-sm restore-btn" data-id="' . $ingredient['archive_id'] . '" data-type="ingredient"><i class="fas fa-undo"></i> Restore</button></td>';
+                                    echo '</tr>';
+                                }
+                            }
+                        } else {
+                            echo '<tr><td colspan="6" class="text-center text-danger">archive_ingredient table does not exist.</td></tr>';
                         }
                         ?>
                         </tbody>
@@ -512,9 +574,12 @@ function renderArchivedProductTable(page) {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Restored!',
-                                text: 'Record has been restored.',
-                                timer: 2000,
-                                showConfirmButton: false
+                                text: 'Product has been restored.',
+                                showConfirmButton: true,
+                                confirmButtonText: 'OK',
+                                customClass: {
+                                    confirmButton: 'swal2-confirm-green'
+                                }
                             }).then(() => location.reload());
                         } else {
                             Swal.fire({
@@ -550,5 +615,133 @@ function createRipple(e) {
     button.appendChild(circle);
     setTimeout(() => circle.remove(), 500);
 }
+// Restore button for archived categories
+$(document).on('click', '.restore-btn[data-type="category"]', function() {
+    var archiveId = $(this).data('id');
+    Swal.fire({
+        title: 'Restore?',
+        text: 'This will move the category back to the active list.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#4A7C59',
+        cancelButtonColor: '#f8f9fa',
+        confirmButtonText: '<i class="fas fa-undo me-2"></i>Yes, restore it!',
+        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
+        customClass: {
+            confirmButton: 'btn btn-restore btn-lg',
+            cancelButton: 'btn btn-light btn-lg'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'archive_category.php',
+                type: 'POST',
+                data: { id: archiveId, restore: 1 },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Restored!',
+                            text: 'Category has been restored.',
+                            showConfirmButton: true,
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                confirmButton: 'swal2-confirm-green'
+                            }
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: response.message || 'Failed to restore category.'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    let msg = 'An error occurred while restoring the category.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: msg
+                    });
+                }
+            });
+        }
+    });
+});
+// Add this event handler for archiving products
+$(document).on('click', '.archive-btn[data-type="product"]', function() {
+    var archiveId = $(this).data('id');
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'You can restore this product from the archive.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#B33A3A',
+        cancelButtonColor: '#f8f9fa',
+        confirmButtonText: '<i class="fas fa-box-archive me-2"></i>Yes, archive it!',
+        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
+        customClass: {
+            confirmButton: 'swal2-confirm-archive',
+            cancelButton: 'btn btn-light btn-lg'
+        },
+        buttonsStyling: false,
+        padding: '2rem',
+        width: 400,
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown animate__faster'
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp animate__faster'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'archive_product.php',
+                type: 'POST',
+                data: { product_id: archiveId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        // Remove the product from the archivedProducts array and refresh the table
+                        const idx = archivedProducts.findIndex(p => p.archive_id == archiveId);
+                        if (idx !== -1) {
+                            archivedProducts.splice(idx, 1);
+                        }
+                        renderArchivedProductTable(currentPage);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Archived!',
+                            text: 'Product has been archived successfully.',
+                            showConfirmButton: true,
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                confirmButton: 'swal2-confirm-green'
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: response.message || 'Failed to archive product.'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    let msg = 'An error occurred while archiving the product.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: msg
+                    });
+                }
+            });
+        }
+    });
+});
 </script>
 <?php include('footer.php'); ?> 

@@ -233,6 +233,57 @@ if ($modal) {
         border-color: #723937;
         text-decoration: underline;
     }
+    /* Match Edit Ingredient modal buttons to Add Ingredient modal style */
+    .modal-footer .btn-primary,
+    .modal-footer .btn-secondary {
+        background: #8B4543 !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 600;
+        border-radius: 0.6rem !important;
+        padding: 0.7rem 2rem !important;
+        font-size: 1.1rem !important;
+        box-shadow: 0 2px 8px 0 rgba(139, 69, 67, 0.08) !important;
+        transition: background 0.2s, box-shadow 0.2s;
+    }
+    .modal-footer .btn-primary:hover, .modal-footer .btn-primary:focus,
+    .modal-footer .btn-secondary:hover, .modal-footer .btn-secondary:focus {
+        background: #723937 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 16px 0 rgba(139, 69, 67, 0.13) !important;
+    }
+    /* Edit Ingredient modal footer buttons: match Add Ingredient modal style */
+    .modal-footer {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 1.5rem 2rem 1.5rem !important;
+        background: none;
+        border: none;
+    }
+    .modal-footer .btn-primary,
+    .modal-footer .btn-secondary {
+        background: #8B4543 !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 600;
+        border-radius: 0.6rem !important;
+        padding: 1.2rem 2.5rem !important;
+        font-size: 1.25rem !important;
+        box-shadow: 0 2px 8px 0 rgba(139, 69, 67, 0.08) !important;
+        transition: background 0.2s, box-shadow 0.2s;
+        min-width: 160px;
+        width: 100%;
+        text-align: center;
+        display: block;
+    }
+    .modal-footer .btn-primary:hover, .modal-footer .btn-primary:focus,
+    .modal-footer .btn-secondary:hover, .modal-footer .btn-secondary:focus {
+        background: #723937 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 16px 0 rgba(139, 69, 67, 0.13) !important;
+    }
     </style>
     <div class="ingredient-modal-header">
         <span class="ingredient-header-icon"><i class="fas fa-carrot"></i></span>
@@ -356,12 +407,10 @@ if ($message !== '') {
                         </select>
                     </div>
                 </div>
+                <!-- Modal Footer -->
                 <div class="modal-footer">
-                    <input type="hidden" name="ingredient_id" value="<?php echo htmlspecialchars($ingredient_id); ?>">
-                    <button type="submit" name="action" value="restock" class="btn btn-success">Restock</button>
-                    <button type="submit" name="action" value="deduct" class="btn btn-danger">Deduct</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
-                    <a href="ingredients.php" class="btn btn-secondary">Close</a>
                 </div>
             </form>
         </div>
@@ -371,3 +420,38 @@ if ($message !== '') {
 <?php
 include('footer.php');
 ?>
+
+<style>
+.modal-footer .btn-primary,
+.modal-footer .btn-secondary {
+    background: #8B4543 !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 600;
+    border-radius: 0.8rem !important;
+    padding: 1.2rem 2.5rem !important;
+    font-size: 1.25rem !important;
+    box-shadow: 0 2px 8px 0 rgba(139, 69, 67, 0.08) !important;
+    transition: background 0.2s, box-shadow 0.2s;
+    min-width: 160px;
+    width: 100%;
+    text-align: center;
+    display: block;
+    margin: 0;
+}
+.modal-footer {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1.5rem 2rem 1.5rem !important;
+    background: none;
+    border: none;
+}
+.modal-footer .btn-primary:hover, .modal-footer .btn-primary:focus,
+.modal-footer .btn-secondary:hover, .modal-footer .btn-secondary:focus {
+    background: #723937 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 16px 0 rgba(139, 69, 67, 0.13) !important;
+}
+</style>

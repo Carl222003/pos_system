@@ -14,6 +14,10 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch categories for the filter
+$categoryStmt = $pdo->query("SELECT category_name FROM pos_category WHERE status = 'active' ORDER BY category_name");
+$categories = $categoryStmt->fetchAll(PDO::FETCH_COLUMN);
+
 // Helper to group logs by entity
 function groupLogsByTable($logs) {
     $groups = [
@@ -243,11 +247,62 @@ $groupedLogs = groupLogsByTable($logs);
             <?php foreach ($groupedLogs as $tab => $tabLogs): ?>
             <div class="tab-pane fade<?= $tab === 'Users' ? ' show active' : '' ?>" id="<?= strtolower($tab) ?>" role="tabpanel">
                 <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="color: #8B4543;">
                         <div><i class="fas fa-clipboard-list me-1"></i> <?= htmlspecialchars($tab) ?> Activity Log</div>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered table-hover">
+                        <?php if ($tab === 'Products'): ?>
+                            <?php
+                            $actions = [];
+                            $details = [];
+                            foreach ($tabLogs as $log) {
+                                $actions[] = $log['action'];
+                                $details[] = $log['details'];
+                            }
+                            $actions = array_unique($actions);
+                            $details = array_unique($details);
+                            sort($actions);
+                            sort($details);
+                            ?>
+                            <div class="d-flex align-items-center mb-3 gap-2" style="position: relative;">
+                                <button id="productsFilterBtn" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" style="border-radius: 50%; width: 38px; height: 38px; box-shadow: 0 2px 8px rgba(139,69,67,0.08); border: 1.5px solid #8B4543; color: #8B4543; font-size: 1.2em; transition: background 0.18s, color 0.18s;" title="Show Filters">
+                                    <i class="fas fa-filter"></i>
+                                </button>
+                                <span class="ms-2" style="font-weight: 500; color: #8B4543;">Filter</span>
+                                <div id="productsFilterPanel" class="card shadow-sm p-3" style="display: none; position: absolute; left: 50px; top: 0; min-width: 320px; z-index: 10; border-radius: 1rem; border: 1px solid #e0e0e0; background: #fff;">
+                                    <div class="mb-2">
+                                        <label for="filterActionSelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Action</label>
+                                        <select id="filterActionSelect" class="form-select">
+                                            <option value="">All Actions</option>
+                                            <?php foreach ($actions as $action): ?>
+                                                <option value="<?= htmlspecialchars($action) ?>"><?= htmlspecialchars($action) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="filterDetailsSelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Details</label>
+                                        <select id="filterDetailsSelect" class="form-select">
+                                            <option value="">All Details</option>
+                                            <?php foreach ($details as $detail): ?>
+                                                <option value="<?= htmlspecialchars($detail) ?>"><?= htmlspecialchars($detail) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="filterCategorySelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Category</label>
+                                        <select id="filterCategorySelect" class="form-select">
+                                            <option value="">All Categories</option>
+                                            <?php foreach ($categories as $category): ?>
+                                                <option value="<?= htmlspecialchars($category) ?>"><?= htmlspecialchars($category) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <button id="applyProductsFilter" class="btn btn-primary w-100" style="background: #8B4543; border: none; border-radius: 0.7rem; font-weight: 600;">Apply Filter</button>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                        <input type="text" class="form-control mb-3 activity-log-search" placeholder="Search <?= htmlspecialchars($tab) ?> logs..." data-table="<?= strtolower($tab) ?>">
+                        <table class="table table-bordered table-hover activity-log-table" id="table-<?= strtolower($tab) ?>">
                             <thead>
                                 <tr>
                                     <th>Date/Time</th>
@@ -282,5 +337,119 @@ $groupedLogs = groupLogsByTable($logs);
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://kit.fontawesome.com/2c36e9b7b1.js" crossorigin="anonymous"></script>
+<script>
+function filterProductsLogTable() {
+    var table = document.getElementById('table-products');
+    var search = document.querySelector('.activity-log-search[data-table="products"]').value.toLowerCase();
+    var action = document.querySelector('.activity-log-action-filter[data-table="products"]').value.toLowerCase();
+    var user = document.querySelector('.activity-log-user-filter[data-table="products"]').value.toLowerCase();
+    var category = document.getElementById('filterCategorySelect') ? document.getElementById('filterCategorySelect').value.toLowerCase() : '';
+    var rows = table.querySelectorAll('tbody tr');
+    rows.forEach(function(row) {
+        var text = row.textContent.toLowerCase();
+        var actionText = row.children[2] ? row.children[2].textContent.toLowerCase() : '';
+        var userText = row.children[1] ? row.children[1].textContent.toLowerCase() : '';
+        var detailsText = row.children[3] ? row.children[3].textContent.toLowerCase() : '';
+        var show = true;
+        if (search && text.indexOf(search) === -1) show = false;
+        if (action && actionText !== action) show = false;
+        if (user && userText !== user) show = false;
+        if (category && text.indexOf(category) === -1) show = false;
+        if (show || row.classList.contains('no-logs-row')) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+document.querySelectorAll('.activity-log-search').forEach(function(input) {
+    input.addEventListener('input', function() {
+        var table = input.getAttribute('data-table');
+        if (table === 'products') {
+            filterProductsLogTable();
+        } else {
+            var tableId = 'table-' + table;
+            var tableElem = document.getElementById(tableId);
+            var filter = input.value.toLowerCase();
+            var rows = tableElem.querySelectorAll('tbody tr');
+            rows.forEach(function(row) {
+                var text = row.textContent.toLowerCase();
+                if (text.indexOf(filter) > -1 || row.classList.contains('no-logs-row')) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    });
+});
+document.querySelectorAll('.activity-log-action-filter, .activity-log-user-filter').forEach(function(select) {
+    select.addEventListener('change', filterProductsLogTable);
+});
+
+// Filter panel logic for Products tab
+(function() {
+    var filterBtn = document.getElementById('productsFilterBtn');
+    var filterPanel = document.getElementById('productsFilterPanel');
+    var applyBtn = document.getElementById('applyProductsFilter');
+    var actionSelect = document.getElementById('filterActionSelect');
+    var detailsSelect = document.getElementById('filterDetailsSelect');
+    var categorySelect = document.getElementById('filterCategorySelect');
+    var searchInput = document.querySelector('.activity-log-search[data-table="products"]');
+    var table = document.getElementById('table-products');
+
+    if (filterBtn && filterPanel && applyBtn && actionSelect && detailsSelect && categorySelect && table) {
+        filterBtn.addEventListener('click', function(e) {
+            filterPanel.style.display = filterPanel.style.display === 'none' ? 'block' : 'none';
+            if (filterPanel.style.display === 'block') {
+                actionSelect.focus();
+            }
+            e.stopPropagation();
+        });
+        applyBtn.addEventListener('click', function() {
+            filterProductsLogTable();
+            filterPanel.style.display = 'none';
+        });
+        // Hide panel when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!filterPanel.contains(e.target) && e.target !== filterBtn) {
+                filterPanel.style.display = 'none';
+            }
+        });
+        // Prevent click inside panel from closing it
+        filterPanel.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    function filterProductsLogTable() {
+        var search = searchInput ? searchInput.value.toLowerCase() : '';
+        var action = actionSelect.value;
+        var details = detailsSelect.value;
+        var category = categorySelect ? categorySelect.value : '';
+        var rows = table.querySelectorAll('tbody tr');
+        rows.forEach(function(row) {
+            var text = row.textContent.toLowerCase();
+            var actionText = row.children[2] ? row.children[2].textContent : '';
+            var detailsText = row.children[3] ? row.children[3].textContent : '';
+            var show = true;
+            if (search && text.indexOf(search) === -1) show = false;
+            if (action && actionText !== action) show = false;
+            if (details && detailsText !== details) show = false;
+            if (category && text.indexOf(category) === -1) show = false;
+            if (show || row.classList.contains('no-logs-row')) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    // Also re-apply filter when using the search bar
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterProductsLogTable();
+        });
+    }
+})();
+</script>
 </body>
 </html> 

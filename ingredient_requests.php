@@ -350,10 +350,39 @@ h1 {
 .gap-2 {
     gap: 0.5rem !important;
 }
+
+.big-section-title {
+    color: #8B4543;
+    font-size: 2.5rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.5px;
+}
+.big-section-icon {
+    font-size: 2.5rem;
+    color: #8B4543;
+    display: flex;
+    align-items: center;
+}
+.big-section-underline {
+    border: none;
+    border-top: 5px solid #e5d6d6;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
 </style>
 
 <div class="container-fluid px-4">
-    <h1 class="mt-4" style="color: #8B4543; font-size: 1.25rem; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 500; background-color: #F8F9FA; padding: 1rem;">| List of Request Ingredients</h1>
+    <div class="big-section-title">
+      <span class="big-section-icon"><i class="fas fa-list"></i></span>
+      List of Request Ingredients
+    </div>
+    <hr class="big-section-underline">
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
@@ -518,6 +547,7 @@ $(document).ready(function() {
                 notes: notes
             },
             success: function(response) {
+                console.log(response); // Add this line
                 if (response.success) {
                     $('#statusModal').modal('hide');
                     table.ajax.reload();

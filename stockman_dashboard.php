@@ -11,139 +11,217 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true 
 include('header.php');
 ?>
 
-<div class="container-fluid px-4">
-    <h1 class="mt-4" style="color: #8B4543; font-size: 1.25rem; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 500; background-color: #F8F9FA; padding: 1rem;">
-        | Stock Management Dashboard
-    </h1>
-
-    <!-- Overview Cards -->
-    <div class="row">
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-primary text-white mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-0">Total Items</h5>
-                            <h2 class="mb-0" id="totalItems">0</h2>
-                        </div>
-                        <i class="fa-solid fa-boxes fa-2x"></i>
-                    </div>
+<style>
+.stockman-dashboard-bg {
+    background: #f8f5f5;
+    min-height: 100vh;
+    padding-bottom: 2rem;
+}
+.stockman-section-title {
+    color: #8B4543;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    margin-bottom: 2rem;
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    position: relative;
+    background: none;
+    border: none;
+    animation: fadeInDown 0.7s;
+}
+.stockman-section-title .section-icon {
+    font-size: 1.5em;
+    color: #8B4543;
+    opacity: 0.92;
+}
+.stockman-section-title::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: -7px;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #8B4543 0%, #b97a6a 100%);
+    opacity: 0.18;
+}
+.stockman-card {
+    background: #fff;
+    border-radius: 1.1rem;
+    box-shadow: 0 2px 12px rgba(139, 69, 67, 0.07);
+    margin-bottom: 2rem;
+    border: 1.5px solid #e5d6d6;
+}
+.stockman-card .card-header {
+    background: #8B4543;
+    color: #fff;
+    border-radius: 1.1rem 1.1rem 0 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1.2rem 1.5rem;
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+.stockman-card .card-body {
+    padding: 1.5rem;
+}
+.stockman-overview-cards {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+.stockman-overview-card {
+    flex: 1 1 220px;
+    background: #fff;
+    border-radius: 1.1rem;
+    box-shadow: 0 2px 12px rgba(139, 69, 67, 0.07);
+    padding: 1.5rem 2.2rem 1.5rem 2.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    min-width: 220px;
+    max-width: 320px;
+    border-left: 7px solid #8B4543;
+    position: relative;
+}
+.stockman-overview-card .icon {
+    font-size: 2.2rem;
+    color: #8B4543;
+    opacity: 0.85;
+}
+.stockman-overview-card .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+.stockman-overview-card .card-title {
+    font-size: 1.1rem;
+    color: #8B4543;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+.stockman-overview-card .card-value {
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #3C2A2A;
+}
+@media (max-width: 900px) {
+    .stockman-overview-cards { flex-direction: column; gap: 1.2rem; }
+    .stockman-overview-card { max-width: 100%; }
+}
+</style>
+<div class="stockman-dashboard-bg">
+    <div class="container-fluid px-4">
+        <div class="stockman-section-title">
+            <span class="section-icon"><i class="fas fa-clipboard-list"></i></span>
+            Stock Management Dashboard
+        </div>
+        <div class="stockman-overview-cards">
+            <div class="stockman-overview-card">
+                <span class="icon"><i class="fas fa-boxes"></i></span>
+                <div class="card-content">
+                    <span class="card-title">Total Items</span>
+                    <span class="card-value" id="totalItems">0</span>
+                </div>
+            </div>
+            <div class="stockman-overview-card">
+                <span class="icon"><i class="fas fa-exclamation-triangle"></i></span>
+                <div class="card-content">
+                    <span class="card-title">Low Stock Items</span>
+                    <span class="card-value" id="lowStockItems">0</span>
+                </div>
+            </div>
+            <div class="stockman-overview-card">
+                <span class="icon"><i class="fas fa-exchange-alt"></i></span>
+                <div class="card-content">
+                    <span class="card-title">Stock Movements</span>
+                    <span class="card-value" id="stockMovements">0</span>
+                </div>
+            </div>
+            <div class="stockman-overview-card">
+                <span class="icon"><i class="fas fa-clock"></i></span>
+                <div class="card-content">
+                    <span class="card-title">Expiring Items</span>
+                    <span class="card-value" id="expiringItems">0</span>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-warning text-white mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-0">Low Stock Items</h5>
-                            <h2 class="mb-0" id="lowStockItems">0</h2>
-                        </div>
-                        <i class="fa-solid fa-exclamation-triangle fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-success text-white mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-0">Stock Movements</h5>
-                            <h2 class="mb-0" id="stockMovements">0</h2>
-                        </div>
-                        <i class="fa-solid fa-exchange-alt fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-danger text-white mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-0">Expiring Items</h5>
-                            <h2 class="mb-0" id="expiringItems">0</h2>
-                        </div>
-                        <i class="fa-solid fa-clock fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stock Management Section -->
-    <div class="row">
-        <div class="col-xl-8">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <i class="fa-solid fa-boxes me-1"></i>
+        <div class="row">
+            <div class="col-xl-8">
+                <div class="stockman-card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-boxes me-1"></i>
                         Stock Inventory
+                        <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#addStockModal">
+                            <i class="fas fa-plus"></i> Add Stock
+                        </button>
                     </div>
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStockModal">
-                        <i class="fa-solid fa-plus"></i> Add Stock
-                    </button>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="stockTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Current Stock</th>
+                                        <th>Minimum Stock</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Stock items will be loaded here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover" id="stockTable">
-                            <thead>
-                                <tr>
-                                    <th>Item Name</th>
-                                    <th>Current Stock</th>
-                                    <th>Minimum Stock</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Stock items will be loaded here dynamically -->
-                            </tbody>
-                        </table>
+            </div>
+            <div class="col-xl-4">
+                <div class="stockman-card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie me-1"></i>
+                        Stock Status
+                    </div>
+                    <div class="card-body">
+                        <canvas id="stockStatusChart" width="100%" height="300"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fa-solid fa-chart-pie me-1"></i>
-                    Stock Status
-                </div>
-                <div class="card-body">
-                    <canvas id="stockStatusChart" width="100%" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Stock Movements -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fa-solid fa-history me-1"></i>
-                    Recent Stock Movements
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover" id="movementsTable">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Item</th>
-                                    <th>Type</th>
-                                    <th>Quantity</th>
-                                    <th>Previous Stock</th>
-                                    <th>New Stock</th>
-                                    <th>Reference</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Stock movements will be loaded here dynamically -->
-                            </tbody>
-                        </table>
+        <div class="row">
+            <div class="col-12">
+                <div class="stockman-card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-history me-1"></i>
+                        Recent Stock Movements
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="movementsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Item</th>
+                                        <th>Type</th>
+                                        <th>Quantity</th>
+                                        <th>Previous Stock</th>
+                                        <th>New Stock</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Stock movements will be loaded here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

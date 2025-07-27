@@ -595,6 +595,11 @@ $(document).on('click', '#addIngredientBtn', function(e) {
     });
 });
 
+// Fix: Clear modal body when modal is hidden so it can be opened again
+$('#addIngredientModal').on('hidden.bs.modal', function () {
+    $('#addIngredientModalBody').html('');
+});
+
 // Handle Add Ingredient form submission via AJAX
 $(document).on('submit', '#addIngredientForm', function(e) {
     e.preventDefault();

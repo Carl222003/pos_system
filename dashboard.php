@@ -12,7 +12,7 @@ if ($_SESSION['user_type'] !== 'Admin') {
 checkAdminLogin();
 
 $categorySql = "SELECT COUNT(*) FROM pos_category WHERE status = 'active'";
-$productSql = "SELECT COUNT(*) FROM pos_product";
+$productSql = "SELECT COUNT(*) FROM pos_product WHERE product_status = 'Active'";
 $userSql = "SELECT COUNT(*) FROM pos_user";
 $branchSql = "SELECT COUNT(*) FROM pos_branch WHERE status = 'Active'";
 $orderSql = isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'User' ?
@@ -88,6 +88,14 @@ $confData = getConfigData($pdo);
 // Get initial data
 $stmt = $pdo->query("SELECT COUNT(*) FROM pos_user WHERE user_type = 'Cashier' AND user_status = 'Active'");
 $total_cashiers = $stmt->fetchColumn();
+
+// Fetch all inventory items
+$inventoryStmt = $pdo->query("SELECT i.*, c.category_name FROM pos_inventory i LEFT JOIN pos_category c ON i.category_id = c.category_id ORDER BY i.item_name ASC");
+$inventory = $inventoryStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch all ingredient movements
+$movementStmt = $pdo->query("SELECT l.*, u.user_name, ing.ingredient_name FROM ingredient_movement_log l LEFT JOIN pos_user u ON l.user_id = u.user_id LEFT JOIN ingredients ing ON l.ingredient_id = ing.ingredient_id ORDER BY l.created_at DESC");
+$movements = $movementStmt->fetchAll(PDO::FETCH_ASSOC);
 
 include('header.php');
 ?>
@@ -2043,5 +2051,72 @@ function renderCashierName(name, profileImage, userId) {
 }
 // In the JS that populates the cashier table, use renderCashierName for the cashier column.
 </script>
+
+<!-- Admin Inventory Section -->
+<div class="container my-4">
+  <h2 class="mb-3" style="color:#8B4543;">Inventory Overview</h2>
+  <div class="card mb-4">
+    <div class="card-header bg-maroon text-white">Current Inventory</div>
+    <div class="card-body">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Category</th>
+            <th>Current Stock</th>
+            <th>Minimum Stock</th>
+            <th>Status</th>
+            <th>Expiry Date</th>
+            <th>Last Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($inventory as $item): ?>
+            <tr>
+              <td><?= htmlspecialchars($item['item_name']) ?></td>
+              <td><?= htmlspecialchars($item['category_name']) ?></td>
+              <td><?= htmlspecialchars($item['current_stock']) ?></td>
+              <td><?= htmlspecialchars($item['minimum_stock']) ?></td>
+              <td><?= htmlspecialchars($item['status']) ?></td>
+              <td><?= htmlspecialchars($item['expiry_date']) ?></td>
+              <td><?= htmlspecialchars($item['last_updated']) ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header bg-maroon text-white">Ingredient Movement Log</div>
+    <div class="card-body">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Date/Time</th>
+            <th>User</th>
+            <th>Ingredient</th>
+            <th>Action</th>
+            <th>Qty Before</th>
+            <th>Qty After</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($movements as $log): ?>
+            <tr>
+              <td><?= htmlspecialchars($log['created_at']) ?></td>
+              <td><?= htmlspecialchars($log['user_name']) ?></td>
+              <td><?= htmlspecialchars($log['item_name']) ?></td>
+              <td><?= htmlspecialchars($log['action']) ?></td>
+              <td><?= htmlspecialchars($log['quantity_before']) ?></td>
+              <td><?= htmlspecialchars($log['quantity_after']) ?></td>
+              <td><?= htmlspecialchars($log['notes']) ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <?php include('footer.php'); ?>

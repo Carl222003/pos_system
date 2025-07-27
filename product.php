@@ -666,6 +666,46 @@ body {
         from { opacity: 0; transform: translateY(-18px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+.glow-next-btn {
+  background: #00c853;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 2em;
+  padding: 0.7em 2.2em 0.7em 1.5em;
+  box-shadow: 0 0 18px 2px #00c85399;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  transition: background 0.2s, box-shadow 0.2s;
+  letter-spacing: 1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.glow-next-btn:hover {
+  background: #00e676;
+  box-shadow: 0 0 28px 6px #00e676cc;
+}
+
+.glow-next-btn .arrows {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin-left: 0.2em;
+  letter-spacing: -2px;
+  color: #fff;
+  text-shadow: 0 0 8px #00e67699;
+}
+.section-underline {
+    border: none;
+    border-top: 4px solid #e5d6d6;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
 </style>
 
 <script>
@@ -843,8 +883,8 @@ $(document).ready(function() {
     });
 
     // Delete Product
-    $('#productTable').on('click', '.archive-btn', function() {
-        var id = $(this).data('id');
+    $(document).on('click', '.archive-btn', function() {
+        let productId = $(this).data('id');
         Swal.fire({
             title: 'Are you sure?',
             text: "This product will be archived and can be restored later!",
@@ -864,17 +904,20 @@ $(document).ready(function() {
                 $.ajax({
                     url: 'archive_product.php',
                     type: 'POST',
-                    data: { product_id: id },
+                    data: { product_id: productId },
+                    dataType: 'json',
                     success: function(response) {
                         if (response.success) {
+                            $('#productTable').DataTable().ajax.reload(); // This removes the row!
                             showFeedbackModal('success', 'Archived!', 'Product has been archived successfully.');
-                            productTable.ajax.reload();
                         } else {
-                            showFeedbackModal('error', 'Error!', response.message || 'An error occurred while archiving the product.');
+                            showFeedbackModal('error', 'Error!', response.message || 'Failed to archive product.');
                         }
                     },
-                    error: function() {
-                        showFeedbackModal('error', 'Error!', 'An error occurred while archiving the product.');
+                    error: function(xhr) {
+                        let msg = 'An error occurred while archiving the product.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                        showFeedbackModal('error', 'Error!', msg);
                     }
                 });
             }
@@ -887,6 +930,23 @@ $(document).ready(function() {
         
         viewProduct(id);
     });
+
+    // Filter functionality
+    // productTable.ajax.reload(); // This line is removed as per the edit hint
+
+    // Category filter
+    // $('#filterCategory').on('change', function() { // This block is removed as per the edit hint
+    //     var val = $(this).val();
+    //     productTable.column(0).search(val, false, false).draw();
+    // });
+    // Status filter
+    // $('#filterStatus').on('change', function() { // This block is removed as per the edit hint
+    //     var val = $(this).val();
+    //     productTable.column(5).search(val, false, false).draw();
+    // });
+
+    // Initial filter application
+    productTable.ajax.reload();
 });
 
 // Update the view product function

@@ -858,16 +858,21 @@ $(document).ready(function() {
                 url: 'archive_category.php',
                 type: 'POST',
                 data: { id: categoryId },
+                dataType: 'json',
                 success: function(response) {
+                        console.log('Archive response:', response); // Debugging line
                         if (response.success) {
-                            $('#categoryTable').DataTable().ajax.reload();
+                            // Force DataTable to reload and remove archived row
+                            $('#categoryTable').DataTable().ajax.reload(null, false);
                             showFeedbackModal('success', 'Archived!', 'Category has been archived successfully.');
                         } else {
-                            showFeedbackModal('error', 'Error!', 'Failed to archive category.');
+                            showFeedbackModal('error', 'Error!', response.message || 'Failed to archive category.');
                         }
                     },
-                    error: function() {
-                        showFeedbackModal('error', 'Error!', 'An error occurred while archiving the category.');
+                    error: function(xhr) {
+                        let msg = 'An error occurred while archiving the category.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                        showFeedbackModal('error', 'Error!', msg);
                     }
                 });
             }
