@@ -1,0 +1,7 @@
+category,product_name,price,description,ingredients,status
+Pizza,Margherita Pizza,450.00,Classic Italian pizza with tomato sauce and mozzarella cheese,"Tomato sauce, mozzarella cheese, basil",Available
+Pizza,Pepperoni Pizza,550.00,Spicy pepperoni pizza with melted cheese,"Pepperoni, mozzarella cheese, tomato sauce",Available
+Halo-Halo,Ube Halo-Halo,95.00,Traditional Filipino dessert with ube ice cream,"Ube ice cream, sweet beans, jelly, shaved ice",Available
+Halo-Halo,Classic Halo-Halo,85.00,Traditional Filipino dessert with various toppings,"Ice cream, sweet beans, jelly, shaved ice, leche flan",Available
+Beverages,Coke,35.00,Refreshing carbonated soft drink,"Carbonated water, sugar, caramel color",Available
+Beverages,Sprite,35.00,Clear lemon-lime soft drink,"Carbonated water, sugar, natural flavors",Available 

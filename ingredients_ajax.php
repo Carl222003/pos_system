@@ -23,18 +23,20 @@ $columns = [
 $orderColumn = isset($columns[$orderColumnIndex]) ? $columns[$orderColumnIndex] : 'ingredient_id';
 
 // Get total records
-$totalRecordsStmt = $pdo->query("SELECT COUNT(*) FROM ingredients");
+$totalRecordsStmt = $pdo->query("SELECT COUNT(*) FROM ingredients WHERE ingredient_status != 'archived'");
 $totalRecords = $totalRecordsStmt->fetchColumn();
 
 // Get total filtered records
 $filterQuery = "SELECT COUNT(*) FROM ingredients i
                 LEFT JOIN pos_category c ON i.category_id = c.category_id
-                WHERE 1=1";
+                LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
+                WHERE i.ingredient_status != 'archived'";
 
 if (!empty($searchValue)) {
     $filterQuery .= " AND (i.ingredient_name LIKE :search 
                            OR c.category_name LIKE :search 
-                           OR i.ingredient_status LIKE :search)";
+                           OR i.ingredient_status LIKE :search
+                           OR b.branch_name LIKE :search)";
 }
 
 $filterStmt = $pdo->prepare($filterQuery);
@@ -46,15 +48,18 @@ $totalFilteredRecords = $filterStmt->fetchColumn();
 
 // Fetch data with ordering and pagination
 $dataQuery = "SELECT i.ingredient_id, c.category_name, i.ingredient_name, 
-                     i.ingredient_quantity, i.ingredient_unit, i.ingredient_status 
+                     i.ingredient_quantity, i.ingredient_unit, i.ingredient_status,
+                     b.branch_name, i.branch_id
               FROM ingredients i 
               LEFT JOIN pos_category c ON i.category_id = c.category_id 
-              WHERE 1=1";
+              LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
+              WHERE i.ingredient_status != 'archived'";
 
 if (!empty($searchValue)) {
     $dataQuery .= " AND (i.ingredient_name LIKE :search 
                          OR c.category_name LIKE :search 
-                         OR i.ingredient_status LIKE :search)";
+                         OR i.ingredient_status LIKE :search
+                         OR b.branch_name LIKE :search)";
 }
 
 $dataQuery .= " ORDER BY $orderColumn $orderDir LIMIT :start, :limit";

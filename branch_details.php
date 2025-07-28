@@ -43,6 +43,67 @@ include('header.php');
     </div>
 </div>
 
+<!-- Edit Branch Modal -->
+<div class="modal fade" id="editBranchModal" tabindex="-1" aria-labelledby="editBranchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="margin: 0 auto;">
+      <div class="modal-header" style="background: #8B4543; color: #fff;">
+        <h5 class="modal-title" id="editBranchModalLabel">Edit Branch</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editBranchForm">
+        <div class="modal-body">
+          <input type="hidden" name="branch_id" id="editBranchId">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Branch Name</label>
+              <input type="text" name="branch_name" id="editBranchName" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Branch Code</label>
+              <input type="text" name="branch_code" id="editBranchCode" class="form-control" required>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Contact Number</label>
+              <input type="text" name="contact_number" id="editContactNumber" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" id="editEmail" class="form-control">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Complete Address</label>
+              <input type="text" name="complete_address" id="editCompleteAddress" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Operating Hours</label>
+              <input type="text" name="operating_hours" id="editOperatingHours" class="form-control">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select name="status" id="editStatus" class="form-select">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: #6c757d; color: #fff;">Close</button>
+          <button type="submit" class="btn" style="background: #8B4543; color: #fff;">Update Branch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <style>
 /* Modern Card and Table Styling */
 :root {
@@ -290,6 +351,12 @@ include('header.php');
         from { opacity: 0; transform: translateY(-18px); }
         to { opacity: 1; transform: translateY(0); }
     }
+  /* Center the modal content and adjust width for better appearance */
+  @media (min-width: 992px) {
+    #editBranchModal .modal-dialog {
+      max-width: 650px;
+    }
+  }
 </style>
 
 <script>
@@ -302,6 +369,18 @@ function showFeedbackModal(type, title, text) {
     customClass: { confirmButton: 'swal2-confirm-archive' },
     buttonsStyling: false
   });
+}
+
+// Custom function for Archive button
+function archiveBranchCustomAction(branchId) {
+    console.log('Archive button clicked for branch ID:', branchId);
+    // Add more custom actions here if needed
+}
+
+// Function to handle archive errors
+function handleArchiveError(message) {
+    showFeedbackModal('error', 'Error!', message);
+    // Add more custom error handling here if needed
 }
 
 $(document).ready(function() {
@@ -332,7 +411,7 @@ $(document).ready(function() {
                 "render": function(data, type, row) {
                     return `
                         <div class="text-center">
-                            <a href="edit_branch.php?id=${row.branch_id}" class="btn btn-warning btn-sm">
+                            <a href="#" class="btn btn-warning btn-sm edit-branch-btn" data-id="${row.branch_id}">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
                             <button class="btn btn-secondary btn-sm archive-btn" data-id="${row.branch_id}">Archive</button>
@@ -348,6 +427,9 @@ $(document).ready(function() {
     // Handle Delete Button Click
     $(document).on('click', '.archive-btn', function() {
         let branchId = $(this).data('id');
+        
+        // Custom function before confirmation dialog
+        archiveBranchCustomAction(branchId);
         
         Swal.fire({
             title: 'Are you sure?',
@@ -384,15 +466,55 @@ $(document).ready(function() {
                             
                             showFeedbackModal('success', 'Archived!', 'Branch has been archived successfully.');
                         } else {
-                            showFeedbackModal('error', 'Error!', response.message || 'Failed to archive branch.');
+                            handleArchiveError(response.message || 'Failed to archive branch.');
                         }
                     },
-                    error: function() {
-                        showFeedbackModal('error', 'Error!', 'An error occurred while archiving the branch.');
+                    error: function(xhr, status, error) {
+                        let errorMsg = 'An error occurred while archiving the branch.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        handleArchiveError(errorMsg);
                     }
                 });
             }
         });
+    });
+
+    // Edit button handler for modal
+    $(document).on('click', '.edit-branch-btn', function(e) {
+        e.preventDefault();
+        const branchId = $(this).data('id');
+        // Fetch branch data via AJAX
+        $.get('get_branch_details.php', { id: branchId }, function(response) {
+            if (response.success) {
+                const b = response.data;
+                $('#editBranchId').val(b.branch_id);
+                $('#editBranchName').val(b.branch_name);
+                $('#editBranchCode').val(b.branch_code);
+                $('#editContactNumber').val(b.contact_number);
+                $('#editEmail').val(b.email);
+                $('#editCompleteAddress').val(b.complete_address);
+                $('#editOperatingHours').val(b.operating_hours);
+                $('#editStatus').val(b.status);
+                $('#editBranchModal').modal('show');
+            } else {
+                showFeedbackModal('error', 'Error!', response.message || 'Failed to fetch branch details.');
+            }
+        }, 'json');
+    });
+    // Submit edit form via AJAX
+    $('#editBranchForm').on('submit', function(e) {
+        e.preventDefault();
+        $.post('update_branch.php', $(this).serialize(), function(response) {
+            if (response.success) {
+                $('#editBranchModal').modal('hide');
+                $('#branchTable').DataTable().ajax.reload();
+                showFeedbackModal('success', 'Updated!', 'Branch details updated successfully.');
+            } else {
+                showFeedbackModal('error', 'Error!', response.message || 'Failed to update branch.');
+            }
+        }, 'json');
     });
 });
 </script>

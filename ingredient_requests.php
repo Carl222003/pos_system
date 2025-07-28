@@ -547,18 +547,36 @@ $(document).ready(function() {
                 notes: notes
             },
             success: function(response) {
-                console.log(response); // Add this line
+                console.log(response);
                 if (response.success) {
                     $('#statusModal').modal('hide');
                     table.ajax.reload();
-                    // Show success message
-                    alert('Status updated successfully');
+                    // Show success message using SweetAlert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Request status updated successfully',
+                        confirmButtonColor: '#8B4543'
+                    });
                 } else {
-                    alert('Error updating status: ' + response.message);
+                    // Show error message using SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: response.message || 'Error updating status',
+                        confirmButtonColor: '#8B4543'
+                    });
                 }
             },
-            error: function() {
-                alert('Error updating status');
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', xhr.responseText);
+                // Show error message using SweetAlert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to update status. Please try again.',
+                    confirmButtonColor: '#8B4543'
+                });
             }
         });
     });

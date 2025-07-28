@@ -98,6 +98,58 @@ include('header.php');
     opacity: 0.85;
 }
 .stockman-overview-card .card-content {
+}
+
+/* Status badge styling */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.badge.bg-success {
+    background-color: #28a745 !important;
+    color: white;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+    color: white;
+}
+
+/* Maroon Button */
+.btn-maroon {
+    background: #8B4543;
+    border: none;
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-maroon:hover {
+    background: #7a3d3b;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(139, 69, 67, 0.15);
+}
+
+/* Modal Header */
+.bg-maroon {
+    background: #8B4543 !important;
+}
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
@@ -160,18 +212,15 @@ include('header.php');
                     <div class="card-header">
                         <i class="fas fa-boxes me-1"></i>
                         Stock Inventory
-                        <button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#addStockModal">
-                            <i class="fas fa-plus"></i> Add Stock
-                        </button>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover" id="stockTable">
                                 <thead>
                                     <tr>
-                                        <th>Item Name</th>
+                                        <th>Ingredient Name</th>
                                         <th>Current Stock</th>
-                                        <th>Minimum Stock</th>
+                                        <th>Category</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -200,25 +249,23 @@ include('header.php');
             <div class="col-12">
                 <div class="stockman-card mb-4">
                     <div class="card-header">
-                        <i class="fas fa-history me-1"></i>
-                        Recent Stock Movements
+                        <i class="fas fa-clipboard-check me-1"></i>
+                        Request Stock Updates
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover" id="movementsTable">
+                            <table class="table table-bordered table-hover" id="requestsTable">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Item</th>
-                                        <th>Type</th>
-                                        <th>Quantity</th>
-                                        <th>Previous Stock</th>
-                                        <th>New Stock</th>
-                                        <th>Reference</th>
+                                        <th>Date Requested</th>
+                                        <th>Ingredients</th>
+                                        <th>Status</th>
+                                        <th>Notes</th>
+                                        <th>Updated By</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Stock movements will be loaded here dynamically -->
+                                    <!-- Request updates will be loaded here dynamically -->
                                 </tbody>
                             </table>
                         </div>
@@ -229,37 +276,7 @@ include('header.php');
     </div>
 </div>
 
-<!-- Add Stock Modal -->
-<div class="modal fade" id="addStockModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Stock</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addStockForm">
-                    <div class="mb-3">
-                        <label for="itemName" class="form-label">Item Name</label>
-                        <input type="text" class="form-control" id="itemName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">Quantity</label>
-                        <input type="number" class="form-control" id="quantity" min="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="minimumStock" class="form-label">Minimum Stock Level</label>
-                        <input type="number" class="form-control" id="minimumStock" min="0" required>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveStockBtn">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <script>
 $(document).ready(function() {
@@ -269,7 +286,7 @@ $(document).ready(function() {
         order: [[0, 'asc']]
     });
 
-    $('#movementsTable').DataTable({
+    $('#requestsTable').DataTable({
         pageLength: 10,
         order: [[0, 'desc']]
     });
@@ -311,68 +328,124 @@ $(document).ready(function() {
 
         // Update stock table
         $.get('get_stock_items.php', function(response) {
-            const tbody = $('#stockTable tbody');
-            tbody.empty();
+            if (response.success) {
+                const tbody = $('#stockTable tbody');
+                tbody.empty();
 
-            response.items.forEach(item => {
-                const statusClass = item.current_stock <= item.minimum_stock ? 'text-danger' : 'text-success';
-                tbody.append(`
-                    <tr>
-                        <td>${item.item_name}</td>
-                        <td>${item.current_stock}</td>
-                        <td>${item.minimum_stock}</td>
-                        <td><span class="${statusClass}">${item.status}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="adjustStock(${item.id})">
-                                <i class="fa-solid fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `);
-            });
+                if (response.items.length === 0) {
+                    tbody.append(`
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No ingredients found</td>
+                        </tr>
+                    `);
+                } else {
+                    response.items.forEach(item => {
+                        let statusClass = 'text-success';
+                        let statusBadge = '';
+                        
+                        switch (item.status) {
+                            case 'Out of Stock':
+                                statusClass = 'text-danger';
+                                statusBadge = '<span class="badge bg-danger">Out of Stock</span>';
+                                break;
+                            case 'Low Stock':
+                                statusClass = 'text-warning';
+                                statusBadge = '<span class="badge bg-warning">Low Stock</span>';
+                                break;
+                            case 'Adequate':
+                                statusClass = 'text-success';
+                                statusBadge = '<span class="badge bg-success">Adequate</span>';
+                                break;
+                        }
+                        
+                        tbody.append(`
+                            <tr>
+                                <td><strong>${item.item_name}</strong></td>
+                                <td>${item.current_stock}</td>
+                                <td>${item.category_name}</td>
+                                <td>${statusBadge}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="adjustStock(${item.id})" title="Adjust Stock">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewDetails(${item.id})" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="requestStock(${item.id})" title="Request Stock">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                }
+            } else {
+                console.error('Error loading stock items:', response.error);
+            }
         });
 
-        // Update movements table
-        $.get('get_stock_movements.php', function(response) {
-            const tbody = $('#movementsTable tbody');
-            tbody.empty();
+        // Update requests table
+        $.get('get_stockman_requests.php', function(response) {
+            if (response.success) {
+                const tbody = $('#requestsTable tbody');
+                tbody.empty();
 
-            response.movements.forEach(movement => {
-                const typeClass = movement.type === 'IN' ? 'text-success' : 'text-danger';
-                tbody.append(`
-                    <tr>
-                        <td>${movement.date}</td>
-                        <td>${movement.item_name}</td>
-                        <td><span class="${typeClass}">${movement.type}</span></td>
-                        <td>${movement.quantity}</td>
-                        <td>${movement.previous_stock}</td>
-                        <td>${movement.new_stock}</td>
-                        <td>${movement.reference}</td>
-                    </tr>
-                `);
-            });
+                if (response.data.length === 0) {
+                    tbody.append(`
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No requests found</td>
+                        </tr>
+                    `);
+                } else {
+                    response.data.forEach(request => {
+                        tbody.append(`
+                            <tr>
+                                <td>${request.request_date}</td>
+                                <td>${request.ingredients}</td>
+                                <td>${request.status}</td>
+                                <td>${request.notes}</td>
+                                <td>${request.updated_by}</td>
+                            </tr>
+                        `);
+                    });
+                }
+            } else {
+                console.error('Error loading requests:', response.error);
+            }
         });
     }
 
-    // Save stock button click handler
-    $('#saveStockBtn').click(function() {
-        const formData = {
-            item_name: $('#itemName').val(),
-            quantity: $('#quantity').val(),
-            minimum_stock: $('#minimumStock').val()
-        };
 
-        $.post('add_stock_item.php', formData, function(response) {
-            if (response.success) {
-                $('#addStockModal').modal('hide');
-                $('#addStockForm')[0].reset();
-                updateDashboard();
-                alert('Stock item added successfully!');
-            } else {
-                alert('Error: ' + response.message);
-            }
+
+    // Action functions
+    window.adjustStock = function(ingredientId) {
+        // Show adjust stock modal
+        $('#adjustStockModalBody').html('<div class="text-center p-4">Loading...</div>');
+        $('#adjustStockModal').modal('show');
+        $.get('adjust_stock_modal.php', { id: ingredientId }, function(data) {
+            $('#adjustStockModalBody').html(data);
         });
-    });
+    };
+
+    window.viewDetails = function(ingredientId) {
+        // Show ingredient details modal
+        $('#viewDetailsModalBody').html('<div class="text-center p-4">Loading...</div>');
+        $('#viewDetailsModal').modal('show');
+        $.get('view_ingredient_details.php', { id: ingredientId }, function(data) {
+            $('#viewDetailsModalBody').html(data);
+        });
+    };
+
+    window.requestStock = function(ingredientId) {
+        // Show request stock modal with pre-selected ingredient
+        $('#requestStockModalBody').html('<div class="text-center p-4">Loading...</div>');
+        $('#requestStockModal').modal('show');
+        $.get('request_stock_modal.php', { ingredient_id: ingredientId }, function(data) {
+            $('#requestStockModalBody').html(data);
+        });
+    };
 
     // Initial load
     updateDashboard();
@@ -381,5 +454,38 @@ $(document).ready(function() {
     setInterval(updateDashboard, 300000);
 });
 </script>
+
+<!-- Adjust Stock Modal -->
+<div class="modal fade" id="adjustStockModal" tabindex="-1" aria-labelledby="adjustStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body" id="adjustStockModalBody">
+                <!-- AJAX-loaded content here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal fade" id="viewDetailsModal" tabindex="-1" aria-labelledby="viewDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-body" id="viewDetailsModalBody">
+                <!-- AJAX-loaded content here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Stock Modal -->
+<div class="modal fade" id="requestStockModal" tabindex="-1" aria-labelledby="requestStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body" id="requestStockModalBody">
+                <!-- AJAX-loaded content here -->
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php include('footer.php'); ?> 

@@ -338,8 +338,8 @@ include('header.php');
                                     echo '<tr>';
                                     echo '<td>' . htmlspecialchars($ingredient['ingredient_name']) . '</td>';
                                     echo '<td>' . htmlspecialchars($ingredient['category_name']) . '</td>';
-                                    echo '<td>' . htmlspecialchars($ingredient['ingredient_quantity']) . '</td>';
-                                    echo '<td>' . htmlspecialchars($ingredient['ingredient_unit']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($ingredient['quantity']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($ingredient['unit']) . '</td>';
                                     echo '<td><span class="badge bg-secondary">Archived</span></td>';
                                     echo '<td><button class="btn btn-restore btn-sm restore-btn" data-id="' . $ingredient['archive_id'] . '" data-type="ingredient"><i class="fas fa-undo"></i> Restore</button></td>';
                                     echo '</tr>';
@@ -546,7 +546,13 @@ function renderArchivedProductTable(page) {
             const id = this.getAttribute('data-id');
             const type = this.getAttribute('data-type');
             let url = '';
+            // Always call custom function for branch restore
+            if (type === 'branch') {
+                restoreBranchCustomAction(id);
+                url = 'archive_branch.php';
+            }
             if (type === 'product') url = 'archive_product.php';
+            if (type === 'ingredient') url = 'archive_ingredient.php';
             Swal.fire({
                 title: 'Restore?',
                 text: 'This will move the record back to the active list.',
@@ -571,16 +577,43 @@ function renderArchivedProductTable(page) {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Restored!',
-                                text: 'Product has been restored.',
-                                showConfirmButton: true,
-                                confirmButtonText: 'OK',
-                                customClass: {
-                                    confirmButton: 'swal2-confirm-green'
-                                }
-                            }).then(() => location.reload());
+                            if (type === 'branch') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Restored!',
+                                    text: 'Branch has been restored.',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'OK',
+                                    customClass: {
+                                        confirmButton: 'swal2-confirm-green'
+                                    }
+                                });
+                                // Remove the row from the table
+                                const row = btn.closest('tr');
+                                if (row) row.remove();
+                            } else if (type === 'ingredient') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Restored!',
+                                    text: 'Ingredient has been restored.',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'OK',
+                                    customClass: {
+                                        confirmButton: 'swal2-confirm-green'
+                                    }
+                                }).then(() => location.reload());
+                            } else {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Restored!',
+                                    text: 'Product has been restored.',
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'OK',
+                                    customClass: {
+                                        confirmButton: 'swal2-confirm-green'
+                                    }
+                                }).then(() => location.reload());
+                            }
                         } else {
                             Swal.fire({
                                 icon: 'error',
@@ -618,6 +651,8 @@ function createRipple(e) {
 // Restore button for archived categories
 $(document).on('click', '.restore-btn[data-type="category"]', function() {
     var archiveId = $(this).data('id');
+    // Custom function for category restore
+    restoreCategoryCustomAction(archiveId);
     Swal.fire({
         title: 'Restore?',
         text: 'This will move the category back to the active list.',
@@ -743,5 +778,17 @@ $(document).on('click', '.archive-btn[data-type="product"]', function() {
         }
     });
 });
+// Custom function for Restore Branch button
+function restoreBranchCustomAction(archiveId) {
+    // Custom logic for branch restore goes here
+    console.log('Restore button clicked for branch archive ID:', archiveId);
+    // Example: send analytics, log, or trigger other actions
+}
+// Custom function for Restore Category button
+function restoreCategoryCustomAction(archiveId) {
+    // Custom logic for category restore goes here
+    console.log('Restore button clicked for category archive ID:', archiveId);
+    // Example: send analytics, log, or trigger other actions
+}
 </script>
 <?php include('footer.php'); ?> 

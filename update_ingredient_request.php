@@ -33,7 +33,40 @@ try {
     $stmt->bindParam(':request_id', $requestId);
 
     if ($stmt->execute()) {
-        echo json_encode(array('success' => true));
+        // If status is approved, update ingredient quantities
+        if ($status === 'approved') {
+            $request_info = $pdo->prepare("SELECT branch_id, ingredients FROM ingredient_requests WHERE request_id = ?");
+            $request_info->execute([$requestId]);
+            $request_data = $request_info->fetch(PDO::FETCH_ASSOC);
+            
+            if ($request_data) {
+                $ingredients_json = json_decode($request_data['ingredients'], true);
+                
+                if ($ingredients_json && is_array($ingredients_json)) {
+                    foreach ($ingredients_json as $ingredient) {
+                        if (isset($ingredient['ingredient_id']) && isset($ingredient['quantity'])) {
+                            // Update ingredient quantity
+                            $update_ingredient = $pdo->prepare("UPDATE ingredients SET ingredient_quantity = ingredient_quantity + ? WHERE ingredient_id = ?");
+                            $update_ingredient->execute([$ingredient['quantity'], $ingredient['ingredient_id']]);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Log the activity
+        $request_info = $pdo->prepare("SELECT branch_id, ingredients FROM ingredient_requests WHERE request_id = ?");
+        $request_info->execute([$requestId]);
+        $request_data = $request_info->fetch(PDO::FETCH_ASSOC);
+        
+        if ($request_data) {
+            $branch_name = $pdo->query("SELECT branch_name FROM pos_branch WHERE branch_id = " . $request_data['branch_id'])->fetchColumn();
+            $action_message = $status === 'approved' ? "Approved and updated ingredient quantities" : "Updated ingredient request status";
+            logActivity($pdo, $updatedBy, $action_message, "Request ID: $requestId, Status: $status, Branch: $branch_name");
+        }
+        
+        $message = $status === 'approved' ? 'Request approved and ingredient quantities updated' : 'Status updated successfully';
+        echo json_encode(array('success' => true, 'message' => $message));
     } else {
         throw new Exception('Failed to update request status');
     }

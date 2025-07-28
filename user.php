@@ -370,7 +370,12 @@ h1 {
                         <i class="fas fa-users me-1"></i>
                         User List
                     </div>
-                    <!-- Removed Add User button -->
+                    <div>
+                        <a href="assign_branches_to_users.php" class="btn btn-warning btn-sm">
+                            <i class="fas fa-building me-1"></i>
+                            Assign Branches
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <table id="userTable" class="table table-bordered table-hover">

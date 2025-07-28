@@ -441,12 +441,6 @@
                                 <?php if(isset($_SESSION['user_type'])): ?>
                                     <?php if($_SESSION['user_type'] === 'Stockman'): ?>
                                         <li class="menu-item">
-                                            <a href="request_stock.php" class="menu-link">
-                                                <i class="fa-solid fa-paper-plane"></i>
-                                                <span>Request Stock</span>
-                                            </a>
-                                        </li>
-                                        <li class="menu-item">
                                             <a href="ingredients.php" class="menu-link">
                                                 <i class="fa-solid fa-mortar-pestle"></i>
                                                 <span>Available Ingredients</span>

@@ -75,16 +75,10 @@ function checkCashierLogin() {
         $hasActiveSession = $stmt->fetchColumn() > 0;
 
         if (!$hasActiveSession) {
-            // Get cashier's branch
-            $stmt = $pdo->prepare("
-                SELECT branch_id 
-                FROM pos_cashier_details 
-                WHERE user_id = ?
-            ");
-            $stmt->execute([$_SESSION['user_id']]);
-            $cashier = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Get cashier's branch from session
+            $branch_id = $_SESSION['branch_id'] ?? null;
 
-            if (!$cashier) {
+            if (!$branch_id) {
                 // Instead of redirecting, just return false
                 $_SESSION['error'] = 'Cashier not assigned to any branch';
                 return false;
@@ -103,7 +97,7 @@ function checkCashierLogin() {
                 INSERT INTO pos_cashier_sessions (user_id, branch_id, login_time, is_active) 
                 VALUES (?, ?, CURRENT_TIMESTAMP, TRUE)
             ");
-            if (!$stmt->execute([$_SESSION['user_id'], $cashier['branch_id']])) {
+            if (!$stmt->execute([$_SESSION['user_id'], $branch_id])) {
                 $_SESSION['error'] = 'Failed to create cashier session';
                 return false;
             }

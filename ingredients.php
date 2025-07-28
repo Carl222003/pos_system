@@ -26,6 +26,67 @@ include('header.php');
     --warning-color: #C4804D;
 }
 
+/* Modal Design Styles (copied from Add Category) */
+.modal-header {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.bg-maroon {
+    background-color: #8B4543;
+}
+
+.btn-maroon {
+    background-color: #8B4543;
+    color: white;
+}
+
+.btn-maroon:hover {
+    background-color: #723937;
+    color: white;
+}
+
+/* Form Control Styles */
+.form-control, .form-select {
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    background-color: white;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(139, 69, 67, 0.25);
+    border-color: rgba(139, 69, 67, 0.5);
+}
+
+/* Button Styles */
+.btn-lg {
+    border-radius: 0.375rem;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.9rem;
+}
+
+.btn-light {
+    background-color: #f8f9fa;
+    border: none;
+}
+
+.btn-light:hover {
+    background-color: #e9ecef;
+}
+
+/* Modal Animation */
+.modal.fade .modal-dialog {
+    transform: scale(0.95);
+    transition: transform 0.2s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
 .card {
     box-shadow: 0 0.15rem 1.75rem 0 rgba(139, 69, 67, 0.15);
     border: none;
@@ -421,9 +482,14 @@ h1 {
                         <i class="fas fa-mortar-pestle me-1"></i>
                         Ingredient List
                     </div>
-                    <a href="#" class="btn btn-success" id="addIngredientBtn">
-                        <i class="fas fa-plus me-1"></i> Add Ingredient
-                    </a>
+                    <div>
+                        <a href="#" class="btn btn-success" id="addIngredientBtn">
+                            <i class="fas fa-plus me-1"></i> Add Ingredient
+                        </a>
+                        <a href="#" class="btn btn-primary ms-2" id="importCsvBtn">
+                            <i class="fas fa-file-import me-1"></i> Insert CSV
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <table id="ingredientTable" class="table table-bordered table-hover">
@@ -434,6 +500,7 @@ h1 {
                                 <th>Ingredient Name</th>
                                 <th>Quantity</th>
                                 <th>Unit</th>
+                                <th>Branch</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -457,11 +524,118 @@ h1 {
 
 <!-- Add Ingredient Modal -->
 <div class="modal fade" id="addIngredientModal" tabindex="-1" aria-labelledby="addIngredientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 0.5rem;">
+            <!-- Modal Header -->
+            <div class="modal-header bg-maroon text-white py-3">
+                <h5 class="modal-title" id="addIngredientModalLabel">
+                    <i class="fas fa-carrot me-2"></i>Add Ingredient
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body bg-light p-3">
+                <form id="addIngredientForm">
+                    <div class="row">
+                        <!-- Left Column -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="category_id" class="form-label fw-medium">Category Name</label>
+                                <select name="category_id" id="category_id" class="form-select border-0 shadow-sm" required>
+                                    <option value="">Select Category</option>
+                                    <?php 
+                                    $categories = $pdo->query("SELECT category_id, category_name FROM pos_category WHERE status = 'active' ORDER BY category_name")->fetchAll(PDO::FETCH_ASSOC);
+                                    foreach ($categories as $category): ?>
+                                        <option value="<?php echo htmlspecialchars($category['category_id']); ?>"><?php echo htmlspecialchars($category['category_name']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ingredient_name" class="form-label fw-medium">Ingredient Name</label>
+                                <input type="text" name="ingredient_name" id="ingredient_name" class="form-control border-0 shadow-sm" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ingredient_quantity" class="form-label fw-medium">Quantity</label>
+                                <input type="number" name="ingredient_quantity" id="ingredient_quantity" class="form-control border-0 shadow-sm" min="0" step="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="date_added" class="form-label fw-medium">Date Added</label>
+                                <input type="date" name="date_added" id="date_added" class="form-control border-0 shadow-sm" value="<?php echo date('Y-m-d'); ?>" readonly>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ingredient_unit" class="form-label fw-medium">Unit</label>
+                                <input type="text" name="ingredient_unit" id="ingredient_unit" class="form-control border-0 shadow-sm" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="consume_before" class="form-label fw-medium">Consume Before Date</label>
+                                <input type="date" name="consume_before" id="consume_before" class="form-control border-0 shadow-sm" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="branch_id" class="form-label fw-medium">Branch</label>
+                                <select name="branch_id" id="branch_id" class="form-select border-0 shadow-sm" required>
+                                    <option value="">Select Branch</option>
+                                    <?php 
+                                    $branches = $pdo->query("SELECT branch_id, branch_name FROM pos_branch WHERE status = 'Active' ORDER BY branch_name")->fetchAll(PDO::FETCH_ASSOC);
+                                    foreach ($branches as $branch): ?>
+                                        <option value="<?php echo htmlspecialchars($branch['branch_id']); ?>"><?php echo htmlspecialchars($branch['branch_name']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ingredient_status" class="form-label fw-medium">Status</label>
+                                <select name="ingredient_status" id="ingredient_status" class="form-select border-0 shadow-sm">
+                                    <option value="Available">Available</option>
+                                    <option value="Out of Stock">Out of Stock</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer border-0 px-3 pb-3 pt-0">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-maroon px-4" id="saveIngredient">
+                    <i class="fas fa-save me-2"></i>Save Ingredient
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import CSV/Excel Modal -->
+<div class="modal fade" id="importCsvModal" tabindex="-1" aria-labelledby="importCsvModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-body" id="addIngredientModalBody">
-        <!-- AJAX-loaded content will go here -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="importCsvModalLabel">Import Ingredients from CSV/Excel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      <form id="importCsvForm" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="csvFile" class="form-label">Select CSV or Excel file</label>
+            <input type="file" class="form-control" id="csvFile" name="csvFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
+            <div class="form-text">Accepted formats: .csv, .xlsx</div>
+          </div>
+          <div class="alert alert-info small">
+            <b>Template columns:</b> category_id, ingredient_name, ingredient_quantity, ingredient_unit, [notes]<br>
+            <a href="sample_ingredients_import.csv" download>Download sample CSV</a>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Import</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -497,6 +671,7 @@ $(document).ready(function() {
             { "data": "ingredient_name" },
             { "data": "ingredient_quantity" },
             { "data": "ingredient_unit" },
+            { "data": "branch_name" },
             {
                 "data": null,
                 "render": function(data, type, row) {
@@ -589,29 +764,71 @@ $(document).on('click', '#editIngredientModalBody .btn-cancel', function(e) {
 
 $(document).on('click', '#addIngredientBtn', function(e) {
     e.preventDefault();
-    $.get('add_ingredient.php', function(data) {
-        $('#addIngredientModalBody').html(data);
-        $('#addIngredientModal').modal('show');
+    $('#addIngredientModal').modal('show');
+});
+
+// Add modal hidden event handlers
+$('#addIngredientModal').on('hidden.bs.modal', function () {
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
+});
+
+
+
+// Handle Add Ingredient button click
+$('#saveIngredient').click(function() {
+    var formData = $('#addIngredientForm').serialize();
+    
+    $.ajax({
+        url: 'add_ingredient.php',
+        type: 'POST',
+        data: formData,
+        success: function(response) {
+            if (response.success) {
+                // Properly hide modal and remove backdrop
+                $('#addIngredientModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+                
+                $('#addIngredientForm')[0].reset();
+                $('#ingredientTable').DataTable().ajax.reload();
+                Swal.fire('Success', 'Ingredient saved successfully!', 'success');
+            } else {
+                Swal.fire('Error', response.message || 'Failed to add ingredient.', 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'An error occurred while processing your request.', 'error');
+        }
     });
 });
 
-// Fix: Clear modal body when modal is hidden so it can be opened again
-$('#addIngredientModal').on('hidden.bs.modal', function () {
-    $('#addIngredientModalBody').html('');
+$(document).on('click', '#importCsvBtn', function(e) {
+    e.preventDefault();
+    $('#importCsvModal').modal('show');
 });
 
-// Handle Add Ingredient form submission via AJAX
-$(document).on('submit', '#addIngredientForm', function(e) {
+$('#importCsvForm').on('submit', function(e) {
     e.preventDefault();
-    var formData = $(this).serialize();
-    $.post('add_ingredient.php', formData, function(response) {
-        if(response.success) {
-            $('#addIngredientModal').modal('hide');
-            $('#ingredientTable').DataTable().ajax.reload();
-            Swal.fire('Success', 'Ingredient added!', 'success');
-        } else {
-            Swal.fire('Error', response.message || 'Failed to add ingredient.', 'error');
+    var formData = new FormData(this);
+    $.ajax({
+        url: 'import_ingredients.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response.success) {
+                $('#importCsvModal').modal('hide');
+                $('#ingredientTable').DataTable().ajax.reload();
+                Swal.fire('Success', 'Ingredients imported!', 'success');
+            } else {
+                Swal.fire('Error', response.message || 'Failed to import ingredients.', 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'Failed to import ingredients.', 'error');
         }
-    }, 'json');
+    });
 });
 </script>

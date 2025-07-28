@@ -41,11 +41,34 @@ try {
     // Format data for DataTables
     $data = array();
     foreach ($requests as $request) {
+        // Parse ingredients JSON and get ingredient names
+        $ingredients_list = [];
+        $ingredients_json = json_decode($request['ingredients'], true);
+        
+        if ($ingredients_json && is_array($ingredients_json)) {
+            foreach ($ingredients_json as $ingredient) {
+                if (isset($ingredient['ingredient_id']) && isset($ingredient['quantity'])) {
+                    // Get ingredient name from database
+                    $stmt_ingredient = $pdo->prepare("SELECT ingredient_name, ingredient_unit FROM ingredients WHERE ingredient_id = ?");
+                    $stmt_ingredient->execute([$ingredient['ingredient_id']]);
+                    $ingredient_info = $stmt_ingredient->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($ingredient_info) {
+                        $ingredients_list[] = $ingredient_info['ingredient_name'] . ' (' . $ingredient['quantity'] . ' ' . $ingredient_info['ingredient_unit'] . ')';
+                    } else {
+                        $ingredients_list[] = 'Unknown Ingredient (ID: ' . $ingredient['ingredient_id'] . ') - ' . $ingredient['quantity'];
+                    }
+                }
+            }
+        }
+        
+        $ingredients_display = !empty($ingredients_list) ? implode(', ', $ingredients_list) : 'No ingredients specified';
+        
         $data[] = array(
             'request_id' => $request['request_id'],
             'branch_name' => $request['branch_name'],
             'request_date' => $request['request_date'],
-            'ingredients' => $request['ingredients'],
+            'ingredients' => $ingredients_display,
             'status' => $request['status']
         );
     }

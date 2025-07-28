@@ -8,9 +8,9 @@ try {
     // Validate required fields
     $required_fields = ['user_name', 'user_email', 'user_password', 'user_type', 'contact_number'];
     
-    // Add cashier-specific required fields
-    if ($_POST['user_type'] === 'Cashier') {
-        $cashier_fields = [
+    // Add cashier and stockman-specific required fields
+    if ($_POST['user_type'] === 'Cashier' || $_POST['user_type'] === 'Stockman') {
+        $work_fields = [
             'branch_id',
             'employee_id',
             'date_hired',
@@ -18,7 +18,7 @@ try {
             'emergency_number',
             'address'
         ];
-        $required_fields = array_merge($required_fields, $cashier_fields);
+        $required_fields = array_merge($required_fields, $work_fields);
     }
 
     foreach ($required_fields as $field) {
@@ -52,6 +52,7 @@ try {
             contact_number,
             profile_image,
             user_status,
+            branch_id,
             created_at
         ) VALUES (
             :user_name,
@@ -61,6 +62,7 @@ try {
             :contact_number,
             :profile_image,
             'Active',
+            :branch_id,
             NOW()
         )
     ");
@@ -92,7 +94,8 @@ try {
         'user_password' => password_hash($_POST['user_password'], PASSWORD_DEFAULT),
         'user_type' => $_POST['user_type'],
         'contact_number' => $_POST['contact_number'],
-        'profile_image' => $profile_image
+        'profile_image' => $profile_image,
+        'branch_id' => ($_POST['user_type'] === 'Cashier' || $_POST['user_type'] === 'Stockman') ? $_POST['branch_id'] : null
     ]);
 
     $user_id = $pdo->lastInsertId();

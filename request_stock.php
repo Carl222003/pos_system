@@ -17,11 +17,31 @@ if (!$isAjax) {
 // Fetch all active categories (show even if no ingredients)
 $categories = $pdo->query("SELECT category_id, category_name FROM pos_category WHERE status = 'active' ORDER BY category_name")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch all ingredients with category info (any status)
-$ingredients = $pdo->query("SELECT i.ingredient_id, i.ingredient_name, i.ingredient_unit, i.ingredient_quantity, i.ingredient_status, i.category_id, c.category_name
-    FROM ingredients i
-    LEFT JOIN pos_category c ON i.category_id = c.category_id
-    ORDER BY c.category_name, i.ingredient_name")->fetchAll(PDO::FETCH_ASSOC);
+// Fetch all ingredients with category info for this stockman's branch
+$user_id = $_SESSION['user_id'];
+$branch_id = $_SESSION['branch_id'] ?? null;
+
+// If branch_id is not in session, try to fetch from user record
+if (!$branch_id) {
+    $stmt = $pdo->prepare('SELECT branch_id FROM pos_user WHERE user_id = ?');
+    $stmt->execute([$user_id]);
+    $branch_id = $stmt->fetchColumn();
+}
+
+// Get pre-selected ingredient if provided
+$pre_selected_ingredient = $_GET['ingredient_id'] ?? null;
+
+if (!$branch_id) {
+    $ingredients = [];
+} else {
+    $stmt = $pdo->prepare("SELECT i.ingredient_id, i.ingredient_name, i.ingredient_unit, i.ingredient_quantity, i.ingredient_status, i.category_id, c.category_name
+        FROM ingredients i
+        LEFT JOIN pos_category c ON i.category_id = c.category_id
+        WHERE i.branch_id = ?
+        ORDER BY c.category_name, i.ingredient_name");
+    $stmt->execute([$branch_id]);
+    $ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 <style>
 .stockman-card {
@@ -138,14 +158,14 @@ $ingredients = $pdo->query("SELECT i.ingredient_id, i.ingredient_name, i.ingredi
                 <label for="ingredients" class="form-label">Select Ingredients</label>
                 <div id="ingredient-list">
                     <?php foreach ($ingredients as $ingredient): ?>
-                        <div class="row mb-2 align-items-center ingredient-row ingredient-cat-<?php echo $ingredient['category_id']; ?><?php if ($ingredient['ingredient_status'] !== 'Active') echo ' unavailable'; ?>" style="display:none;">
+                        <div class="row mb-2 align-items-center ingredient-row ingredient-cat-<?php echo $ingredient['category_id']; ?><?php if ($ingredient['ingredient_status'] !== 'Available') echo ' unavailable'; ?>" style="display:none;">
                             <div class="col-md-6">
-                                <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>" <?php if ($ingredient['ingredient_status'] !== 'Active') echo 'disabled'; ?>>
+                                <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
                                 <label for="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
                                     <strong><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
                                     <span class="text-muted">(<?php echo htmlspecialchars($ingredient['ingredient_unit']); ?>)</span>
-                                    <span class="ingredient-status <?php echo ($ingredient['ingredient_status'] === 'Active') ? 'available' : 'unavailable'; ?>">
-                                        <?php if ($ingredient['ingredient_status'] === 'Active') {
+                                    <span class="ingredient-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
+                                        <?php if ($ingredient['ingredient_status'] === 'Available') {
                                             echo 'Available: ' . htmlspecialchars($ingredient['ingredient_quantity']);
                                         } else {
                                             echo 'Unavailable';
@@ -155,7 +175,7 @@ $ingredients = $pdo->query("SELECT i.ingredient_id, i.ingredient_name, i.ingredi
                                 </label>
                             </div>
                             <div class="col-md-4">
-                                <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Quantity" <?php if ($ingredient['ingredient_status'] !== 'Active') echo 'disabled'; ?>>
+                                <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Quantity" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -186,6 +206,30 @@ $(document).ready(function() {
             $('#ingredient-list .ingredient-cat-' + catId).show();
         }
     });
+
+    // Pre-select ingredient if provided in URL
+    <?php if ($pre_selected_ingredient): ?>
+    $(document).ready(function() {
+        // Find the ingredient and its category
+        const ingredientRow = $('.ingredient-row:has(#ingredient_<?php echo $pre_selected_ingredient; ?>)');
+        if (ingredientRow.length > 0) {
+            const categoryId = ingredientRow.attr('class').match(/ingredient-cat-(\d+)/)[1];
+            
+            // Select the category
+            $('#categorySelect').val(categoryId).trigger('change');
+            
+            // Check the ingredient and enable quantity input
+            setTimeout(function() {
+                const checkbox = $('#ingredient_<?php echo $pre_selected_ingredient; ?>');
+                checkbox.prop('checked', true).trigger('change');
+                
+                // Focus on quantity input
+                const qtyInput = checkbox.closest('.row').find('input[type="number"]');
+                qtyInput.focus();
+            }, 100);
+        }
+    });
+    <?php endif; ?>
 });
 </script>
 <?php

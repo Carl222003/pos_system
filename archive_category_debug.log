@@ -297,3 +297,15 @@
 2025-07-27 18:04:27 Archive requested for category_id=18
 2025-07-27 18:04:27 Inserted into archive_category: [18,"desserts","dasd","archived",1]
 2025-07-27 18:04:27 Updated pos_category.status to archived for category_id=18
+2025-07-28 15:37:06 POST received. id=35, restore=1
+2025-07-28 15:37:06 Restore requested for archive_id=35
+2025-07-28 15:37:06 Restored pos_category.status to active for category_id=17
+2025-07-28 15:37:06 Deleted from archive_category where archive_id=35
+2025-07-28 15:39:16 POST received. id=21, restore=0
+2025-07-28 15:39:16 Archive requested for category_id=21
+2025-07-28 15:39:16 Inserted into archive_category: [21,"adidas","sda","archived",1]
+2025-07-28 15:39:16 Updated pos_category.status to archived for category_id=21
+2025-07-28 16:36:31 POST received. id=44, restore=1
+2025-07-28 16:36:31 Restore requested for archive_id=44
+2025-07-28 16:36:31 Restored pos_category.status to active for category_id=21
+2025-07-28 16:36:31 Deleted from archive_category where archive_id=44

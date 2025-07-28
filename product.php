@@ -26,10 +26,16 @@ include('header.php');
                 <i class="fas fa-utensils me-2 text-white"></i>
                 <span class="text-white">Product List</span>
             </div>
-            <button type="button" class="btn btn-success d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                <i class="fas fa-plus"></i>
-                <span>Add Product</span>
-            </button>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-success d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Product</span>
+                </button>
+                <button type="button" class="btn btn-info d-flex align-items-center gap-2" id="importCsvBtn">
+                    <i class="fas fa-file-csv"></i>
+                    <span>Insert CSV</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -947,6 +953,36 @@ $(document).ready(function() {
 
     // Initial filter application
     productTable.ajax.reload();
+    
+    // Import CSV functionality
+    $(document).on('click', '#importCsvBtn', function(e) {
+        e.preventDefault();
+        $('#importCsvModal').modal('show');
+    });
+
+    $('#importCsvForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        $.ajax({
+            url: 'import_products.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    $('#importCsvModal').modal('hide');
+                    productTable.ajax.reload();
+                    Swal.fire('Success', 'Products imported!', 'success');
+                } else {
+                    Swal.fire('Error', response.message || 'Failed to import products.', 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('Error', 'Failed to import products.', 'error');
+            }
+        });
+    });
 });
 
 // Update the view product function
@@ -1013,5 +1049,34 @@ function viewProduct(id) {
     });
 }
 </script>
+
+<!-- Import CSV/Excel Modal -->
+<div class="modal fade" id="importCsvModal" tabindex="-1" aria-labelledby="importCsvModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importCsvModalLabel">Import Products from CSV</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="importCsvForm" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="csvFile" class="form-label">Select CSV or Excel file</label>
+            <input type="file" class="form-control" id="csvFile" name="csvFile" accept=".csv" required>
+            <div class="form-text">Accepted format: .csv only</div>
+          </div>
+          <div class="alert alert-info small">
+            <b>Template columns:</b> category, product_name, price, description, ingredients, status<br>
+            <a href="sample_products_import.csv" download>Download sample CSV</a>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Import</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <?php include('footer.php'); ?>

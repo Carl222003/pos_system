@@ -149,6 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $_SESSION['user_name'] = $user['user_name'];
                     $_SESSION['user_type'] = $user['user_type'];
                     $_SESSION['user_email'] = $user['user_email'];
+                    $_SESSION['branch_id'] = $user['branch_id'];
                     $_SESSION['user_logged_in'] = true;
                     
                     // Clear CAPTCHA session after successful login
@@ -156,16 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     // Redirect based on user type
                     if ($user['user_type'] === 'Cashier') {
-                        // Get cashier's branch
-                        $stmt = $pdo->prepare("
-                            SELECT branch_id 
-                            FROM pos_cashier_details 
-                            WHERE user_id = ?
-                        ");
-                        $stmt->execute([$user['user_id']]);
-                        $cashier = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                        if ($cashier) {
+                        // Use branch_id from user record
+                        if ($user['branch_id']) {
                             // End any existing active sessions for this cashier
                             $stmt = $pdo->prepare("
                                 UPDATE pos_cashier_sessions 
@@ -182,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 (user_id, branch_id, login_time, is_active) 
                                 VALUES (?, ?, CURRENT_TIMESTAMP, TRUE)
                             ");
-                            $stmt->execute([$user['user_id'], $cashier['branch_id']]);
+                            $stmt->execute([$user['user_id'], $user['branch_id']]);
                         }
 
                         // Redirect to sales page or stored redirect URL

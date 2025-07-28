@@ -12,40 +12,52 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true 
 header('Content-Type: application/json');
 
 try {
-    // Get all active inventory items
-    $stmt = $pdo->query("
+    $user_id = $_SESSION['user_id'];
+    $branch_id = $_SESSION['branch_id'] ?? null;
+
+    // If branch_id is not in session, try to fetch from user record
+    if (!$branch_id) {
+        $stmt = $pdo->prepare('SELECT branch_id FROM pos_user WHERE user_id = ?');
+        $stmt->execute([$user_id]);
+        $branch_id = $stmt->fetchColumn();
+    }
+
+    if (!$branch_id) {
+        echo json_encode(['error' => 'Branch not found for this user']);
+        exit();
+    }
+
+    // Get all ingredients for this stockman's branch
+    $stmt = $pdo->prepare("
         SELECT 
-            i.inventory_id as id,
-            i.item_name,
-            i.current_stock,
-            i.minimum_stock,
+            i.ingredient_id as id,
+            i.ingredient_name as item_name,
+            i.ingredient_quantity as current_stock,
+            i.ingredient_unit,
             CASE 
-                WHEN i.current_stock = 0 THEN 'Out of Stock'
-                WHEN i.current_stock <= i.minimum_stock THEN 'Low Stock'
+                WHEN i.ingredient_quantity = 0 THEN 'Out of Stock'
+                WHEN i.ingredient_quantity <= 5 THEN 'Low Stock'
                 ELSE 'Adequate'
             END as status,
-            i.expiry_date,
-            i.last_updated
-        FROM pos_inventory i
-        WHERE i.status = 'Active'
-        ORDER BY i.item_name ASC
+            i.ingredient_status,
+            i.category_id,
+            c.category_name
+        FROM ingredients i
+        LEFT JOIN pos_category c ON i.category_id = c.category_id
+        WHERE i.ingredient_status = 'Available' 
+        AND i.branch_id = ?
+        ORDER BY c.category_name ASC, i.ingredient_name ASC
     ");
+    $stmt->execute([$branch_id]);
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Format dates and add additional information
+    // Format data for display
     foreach ($items as &$item) {
-        $item['expiry_date'] = $item['expiry_date'] ? date('Y-m-d', strtotime($item['expiry_date'])) : null;
-        $item['last_updated'] = date('Y-m-d H:i:s', strtotime($item['last_updated']));
+        // Add unit to item name for better display
+        $item['item_name'] = $item['item_name'] . ' (' . $item['ingredient_unit'] . ')';
         
-        // Calculate days until expiry
-        if ($item['expiry_date']) {
-            $expiry = new DateTime($item['expiry_date']);
-            $today = new DateTime();
-            $days_until_expiry = $today->diff($expiry)->days;
-            $item['days_until_expiry'] = $days_until_expiry;
-        } else {
-            $item['days_until_expiry'] = null;
-        }
+        // Add category info
+        $item['category_name'] = $item['category_name'] ?: 'Uncategorized';
     }
 
     echo json_encode([
