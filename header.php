@@ -446,6 +446,12 @@
                                                 <span>Available Ingredients</span>
                                             </a>
                                         </li>
+                                        <li class="menu-item">
+                                            <a href="stockman_activity_log.php" class="menu-link">
+                                                <i class="fa-solid fa-clipboard-list"></i>
+                                                <span>Activity Log</span>
+                                            </a>
+                                        </li>
                                     <?php endif; ?>
                                     <?php if($_SESSION['user_type'] === 'Admin'): ?>
                                         <li class="menu-item">

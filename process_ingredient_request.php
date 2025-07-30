@@ -21,13 +21,25 @@ $branch_id = $_SESSION['branch_id'] ?? null;
 
 // If branch_id is not in session, try to fetch from user record
 if (!$branch_id) {
-    $stmt = $pdo->prepare('SELECT branch_id FROM pos_user WHERE user_id = ?');
-    $stmt->execute([$user_id]);
-    $branch_id = $stmt->fetchColumn();
+    try {
+        $stmt = $pdo->prepare('SELECT branch_id FROM pos_user WHERE user_id = ?');
+        $stmt->execute([$user_id]);
+        $branch_id = $stmt->fetchColumn();
+    } catch (Exception $e) {
+        // If there's an error getting branch_id, try to get the first available branch
+        $branchStmt = $pdo->query('SELECT branch_id FROM pos_branch LIMIT 1');
+        $branch_id = $branchStmt->fetchColumn();
+        
+        if ($branch_id) {
+            // Update the user's branch_id
+            $updateStmt = $pdo->prepare('UPDATE pos_user SET branch_id = ? WHERE user_id = ?');
+            $updateStmt->execute([$branch_id, $user_id]);
+        }
+    }
 }
 
 if (!$branch_id) {
-    echo json_encode(['success' => false, 'message' => 'Branch not found for this user.']);
+    echo json_encode(['success' => false, 'message' => 'No branch available. Please contact administrator.']);
     exit();
 }
 
@@ -69,6 +81,16 @@ try {
         'pending',
         $notes
     ]);
+    
+    // Log the activity
+    $request_id = $pdo->lastInsertId();
+    $ingredient_count = count($ingredient_list);
+    $branch_name = $pdo->query("SELECT branch_name FROM pos_branch WHERE branch_id = $branch_id")->fetchColumn();
+    
+    if (function_exists('logActivity')) {
+        logActivity($pdo, $user_id, "Submitted ingredient request", "Request ID: $request_id, Ingredients: $ingredient_count items, Branch: $branch_name", $branch_id);
+    }
+    
     echo json_encode(['success' => true, 'message' => 'Request submitted successfully.']);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);

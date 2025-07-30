@@ -100,6 +100,11 @@ include('header.php');
     padding: 1.5rem;
 }
 
+/* Hide the "Show" dropdown */
+.dataTables_length {
+    display: none !important;
+}
+
 .dataTables_length select {
     padding: 0.5rem 2.5rem 0.5rem 1rem;
     font-size: 0.875rem;
@@ -178,6 +183,20 @@ include('header.php');
     color: var(--border-color) !important;
     border-color: var(--border-color);
     cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Ensure pagination buttons are clickable when enabled */
+.dataTables_paginate .paginate_button:not(.disabled) {
+    cursor: pointer;
+    opacity: 1;
+}
+
+.dataTables_paginate .paginate_button:not(.disabled):hover {
+    color: var(--primary-color) !important;
+    background: var(--hover-color);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
 }
 
 /* Buttons */
@@ -421,6 +440,8 @@ h1 {
                                     <th>Date Requested</th>
                                     <th>Ingredients</th>
                                     <th>Status</th>
+                                    <th>Delivery Status</th>
+                                    <th>Updated By</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -470,18 +491,77 @@ h1 {
     </div>
 </div>
 
+<!-- Delivery Status Update Modal -->
+<div class="modal fade" id="deliveryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-truck me-1"></i>
+                    Update Delivery Status
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="deliveryForm">
+                    <input type="hidden" id="deliveryRequestId">
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Status</label>
+                        <select class="form-select" id="deliveryStatus">
+                            <option value="pending">Pending</option>
+                            <option value="on_delivery">On Delivery</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="returned">Returned</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Date</label>
+                        <input type="datetime-local" class="form-control" id="deliveryDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Notes</label>
+                        <textarea class="form-control" id="deliveryNotes" rows="3" placeholder="Enter delivery notes, return reasons, or cancellation details..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info" id="updateDelivery">
+                    <i class="fas fa-save me-1"></i>
+                    Update Delivery
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 $(document).ready(function() {
     // Initialize DataTable
     const table = $('#requestsTable').DataTable({
         processing: true,
-        serverSide: true,
+        serverSide: false, // Client-side processing
+        pageLength: 10, // Reduced page length to show pagination
+        lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]], // Available page lengths
         ajax: {
             url: 'ingredient_requests_ajax.php',
             type: 'POST',
             data: function(d) {
                 d.branch = $('#branchFilter').val();
                 d.status = $('#statusFilter').val();
+                console.log('DataTable AJAX request:', d);
+            },
+            dataSrc: function(json) {
+                console.log('DataTable AJAX response:', json);
+                console.log('Total records:', json.recordsTotal);
+                console.log('Filtered records:', json.recordsFiltered);
+                console.log('Data length:', json.data.length);
+                return json.data || [];
+            },
+            error: function(xhr, error, thrown) {
+                console.error('DataTable AJAX error:', error, thrown);
+                console.error('Response:', xhr.responseText);
             }
         },
         columns: [
@@ -505,15 +585,45 @@ $(document).ready(function() {
                 }
             },
             {
+                data: 'delivery_status',
+                render: function(data) {
+                    const deliveryStatusClasses = {
+                        'pending': 'bg-secondary',
+                        'on_delivery': 'bg-info',
+                        'delivered': 'bg-success',
+                        'returned': 'bg-warning',
+                        'cancelled': 'bg-danger'
+                    };
+                    const deliveryStatusText = {
+                        'pending': 'PENDING',
+                        'on_delivery': 'ON DELIVERY',
+                        'delivered': 'DELIVERED',
+                        'returned': 'RETURNED',
+                        'cancelled': 'CANCELLED'
+                    };
+                    return `<span class="badge ${deliveryStatusClasses[data] || 'bg-secondary'}">${deliveryStatusText[data] || 'PENDING'}</span>`;
+                }
+            },
+            { 
+                data: 'updated_by',
+                render: function(data) {
+                    return data || 'N/A';
+                }
+            },
+            {
                 data: null,
                 render: function(data) {
+                    let buttons = '';
                     if (data.status === 'pending') {
-                        return `
-                            <button class="btn btn-primary btn-sm update-status" data-id="${data.request_id}">
-                                <i class="fas fa-edit"></i> Update Status
-                            </button>`;
+                        buttons += `<button class="btn btn-primary btn-sm update-status me-1" data-id="${data.request_id}">
+                            <i class="fas fa-edit"></i> Update Status
+                        </button>`;
                     }
-                    return '';
+                    // Add archive button for all requests
+                    buttons += `<button class="btn btn-secondary btn-sm archive-request" data-id="${data.request_id}">
+                        <i class="fas fa-box-archive"></i> Archive
+                    </button>`;
+                    return buttons;
                 }
             }
         ],
@@ -525,11 +635,71 @@ $(document).ready(function() {
         table.ajax.reload();
     });
 
+    // Auto-refresh every 30 seconds to show new requests
+    setInterval(function() {
+        table.ajax.reload(null, false); // false = stay on current page
+    }, 30000);
+
+    // Manual refresh on page focus (when user comes back to tab)
+    $(window).focus(function() {
+        table.ajax.reload(null, false);
+    });
+
     // Status update handler
     $(document).on('click', '.update-status', function() {
         const requestId = $(this).data('id');
         $('#requestId').val(requestId);
         $('#statusModal').modal('show');
+    });
+
+    // Archive request handler
+    $(document).on('click', '.archive-request', function() {
+        const requestId = $(this).data('id');
+        
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This request will be archived and moved to the archive list.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#8B4543',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-box-archive me-2"></i>Yes, archive it!',
+            cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: 'archive_ingredient_request.php',
+                    method: 'POST',
+                    data: { request_id: requestId },
+                    success: function(response) {
+                        if (response.success) {
+                            table.ajax.reload();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Archived!',
+                                text: 'Request has been archived successfully.',
+                                confirmButtonColor: '#8B4543'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: response.message || 'Failed to archive request.',
+                                confirmButtonColor: '#8B4543'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Failed to archive request. Please try again.',
+                            confirmButtonColor: '#8B4543'
+                        });
+                    }
+                });
+            }
+        });
     });
 
     // Update status submission
@@ -575,6 +745,57 @@ $(document).ready(function() {
                     icon: 'error',
                     title: 'Error!',
                     text: 'Failed to update status. Please try again.',
+                    confirmButtonColor: '#8B4543'
+                });
+            }
+        });
+    });
+
+    // Update delivery submission
+    $('#updateDelivery').click(function() {
+        const requestId = $('#deliveryRequestId').val();
+        const deliveryStatus = $('#deliveryStatus').val();
+        const deliveryDate = $('#deliveryDate').val();
+        const deliveryNotes = $('#deliveryNotes').val();
+
+        $.ajax({
+            url: 'update_delivery_status.php',
+            method: 'POST',
+            data: {
+                request_id: requestId,
+                delivery_status: deliveryStatus,
+                delivery_date: deliveryDate,
+                delivery_notes: deliveryNotes
+            },
+            success: function(response) {
+                console.log(response);
+                if (response.success) {
+                    $('#deliveryModal').modal('hide');
+                    table.ajax.reload();
+                    // Show success message using SweetAlert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Delivery status updated successfully',
+                        confirmButtonColor: '#8B4543'
+                    });
+                } else {
+                    // Show error message using SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: response.message || 'Error updating delivery status',
+                        confirmButtonColor: '#8B4543'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', xhr.responseText);
+                // Show error message using SweetAlert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to update delivery status. Please try again.',
                     confirmButtonColor: '#8B4543'
                 });
             }

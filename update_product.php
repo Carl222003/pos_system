@@ -93,6 +93,31 @@ try {
         'product_id' => $productId
     ]);
 
+    // Handle branch assignments
+    if (isset($_POST['branches'])) {
+        // First, remove all existing branch assignments for this product
+        $delete_stmt = $pdo->prepare("DELETE FROM product_branch WHERE product_id = ?");
+        $delete_stmt->execute([$productId]);
+        
+        // Then add new branch assignments
+        if (is_array($_POST['branches']) && !empty($_POST['branches'])) {
+            $branch_stmt = $pdo->prepare("INSERT INTO product_branch (product_id, branch_id) VALUES (?, ?)");
+            
+            foreach ($_POST['branches'] as $branch_id) {
+                if (is_numeric($branch_id)) {
+                    try {
+                        $branch_stmt->execute([$productId, $branch_id]);
+                    } catch (PDOException $e) {
+                        // Ignore duplicate entry errors
+                        if ($e->getCode() != 23000) {
+                            throw $e;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'Product updated successfully'

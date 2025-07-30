@@ -39,8 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $ingredient_name = trim($_POST['ingredient_name']);
     $ingredient_unit = trim($_POST['ingredient_unit']);
     $ingredient_status = $_POST['ingredient_status'];
-    $action = $_POST['action'] ?? ''; // Determine restock or deduct action
-    $change_quantity = (float) $_POST['change_quantity']; // Convert to float
+    $change_quantity = isset($_POST['change_quantity']) ? (float) $_POST['change_quantity'] : 0; // Convert to float, default to 0
 
     // Validate fields
     if (empty($category_id)) {
@@ -56,28 +55,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors[] = 'Quantity cannot be negative.';
     }
 
-    // Adjust quantity based on restock or deduct action
-    if ($action === "restock") {
+    // Adjust quantity if change_quantity is provided
+    if ($change_quantity > 0) {
         $ingredient_quantity += $change_quantity;
-    } elseif ($action === "deduct") {
-        if ($ingredient_quantity >= $change_quantity) {
-            $ingredient_quantity -= $change_quantity;
-        } else {
-            $errors[] = 'Cannot deduct more than available quantity.';
-        }
     }
 
     if (empty($errors)) {
         $stmt = $pdo->prepare("UPDATE ingredients SET category_id = ?, ingredient_name = ?, ingredient_quantity = ?, ingredient_unit = ?, ingredient_status = ? WHERE ingredient_id = ?");
         $stmt->execute([$category_id, $ingredient_name, $ingredient_quantity, $ingredient_unit, $ingredient_status, $ingredient_id]);
-        header("Location: ingredients.php");
-        exit;
-    } else {
-        $message = '<ul class="list-unstyled">';
-        foreach ($errors as $error) {
-            $message .= '<li>' . $error . '</li>';
+        
+        // Check if this is an AJAX request (modal mode)
+        if (isset($_GET['modal']) && $_GET['modal'] == 1) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'message' => 'Ingredient updated successfully']);
+            exit;
+        } else {
+            header("Location: ingredients.php");
+            exit;
         }
-        $message .= '</ul>';
+    } else {
+        if (isset($_GET['modal']) && $_GET['modal'] == 1) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
+            exit;
+        } else {
+            $message = '<ul class="list-unstyled">';
+            foreach ($errors as $error) {
+                $message .= '<li>' . $error . '</li>';
+            }
+            $message .= '</ul>';
+        }
     }
 }
 

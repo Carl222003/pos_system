@@ -262,6 +262,9 @@ include('header.php');
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="branch-tab" data-bs-toggle="tab" data-bs-target="#branch" type="button" role="tab"><span class="tab-icon"><i class="fas fa-store-alt"></i></span>Branches</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="request-tab" data-bs-toggle="tab" data-bs-target="#request" type="button" role="tab"><span class="tab-icon"><i class="fas fa-clipboard-list"></i></span>Request Stock</button>
+        </li>
     </ul>
     <div class="tab-content" id="archiveTabsContent">
         <!-- Categories -->
@@ -448,6 +451,110 @@ include('header.php');
                             }
                         } else {
                             echo '<tr><td colspan="5" class="text-center text-danger">archive_branch table does not exist.</td></tr>';
+                        }
+                        ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Request Stock -->
+        <div class="tab-pane fade" id="request" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div><i class="fas fa-box-archive me-1"></i> Archived Request Stock List</div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Branch</th>
+                                <th>Date Requested</th>
+                                <th>Ingredients</th>
+                                <th>Status</th>
+                                <th>Delivery Status</th>
+                                <th>Updated By</th>
+                                <th>Archived By</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        if ($pdo->query("SHOW TABLES LIKE 'archive_ingredient_requests'")->rowCount()) {
+                            $stmt = $pdo->prepare("
+                                SELECT ar.*, b.branch_name, u1.user_name as updated_by_name, u2.user_name as archived_by_name
+                                FROM archive_ingredient_requests ar 
+                                LEFT JOIN pos_branch b ON ar.branch_id = b.branch_id 
+                                LEFT JOIN pos_user u1 ON ar.updated_by = u1.user_id
+                                LEFT JOIN pos_user u2 ON ar.archived_by = u2.user_id
+                                ORDER BY ar.archived_at DESC
+                            ");
+                            $stmt->execute();
+                            $archived = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            if (count($archived) === 0) {
+                                echo '<tr><td colspan="8" class="text-center text-muted">No archived request stocks found.</td></tr>';
+                            } else {
+                                foreach ($archived as $request) {
+                                    // Parse ingredients JSON and get ingredient names
+                                    $ingredients_list = [];
+                                    $ingredients_json = json_decode($request['ingredients'], true);
+                                    
+                                    if ($ingredients_json && is_array($ingredients_json)) {
+                                        foreach ($ingredients_json as $ingredient) {
+                                            if (isset($ingredient['ingredient_id']) && isset($ingredient['quantity'])) {
+                                                // Get ingredient name from database
+                                                $stmt_ingredient = $pdo->prepare("SELECT ingredient_name, ingredient_unit FROM ingredients WHERE ingredient_id = ?");
+                                                $stmt_ingredient->execute([$ingredient['ingredient_id']]);
+                                                $ingredient_info = $stmt_ingredient->fetch(PDO::FETCH_ASSOC);
+                                                
+                                                if ($ingredient_info) {
+                                                    $ingredients_list[] = $ingredient_info['ingredient_name'] . ' (' . $ingredient['quantity'] . ' ' . $ingredient_info['ingredient_unit'] . ')';
+                                                } else {
+                                                    $ingredients_list[] = 'Unknown Ingredient (ID: ' . $ingredient['ingredient_id'] . ') - ' . $ingredient['quantity'];
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    $ingredients_display = !empty($ingredients_list) ? implode(', ', $ingredients_list) : 'No ingredients specified';
+                                    
+                                    // Format delivery status
+                                    $delivery_status_badge = '';
+                                    switch ($request['delivery_status'] ?? 'pending') {
+                                        case 'pending':
+                                            $delivery_status_badge = '<span class="badge bg-secondary">PENDING</span>';
+                                            break;
+                                        case 'on_delivery':
+                                            $delivery_status_badge = '<span class="badge bg-info">ON DELIVERY</span>';
+                                            break;
+                                        case 'delivered':
+                                            $delivery_status_badge = '<span class="badge bg-success">DELIVERED</span>';
+                                            break;
+                                        case 'returned':
+                                            $delivery_status_badge = '<span class="badge bg-warning">RETURNED</span>';
+                                            break;
+                                        case 'cancelled':
+                                            $delivery_status_badge = '<span class="badge bg-danger">CANCELLED</span>';
+                                            break;
+                                        default:
+                                            $delivery_status_badge = '<span class="badge bg-secondary">PENDING</span>';
+                                    }
+                                    
+                                    echo '<tr>';
+                                    echo '<td>' . htmlspecialchars($request['branch_name'] ?: 'Unknown Branch') . '</td>';
+                                    echo '<td>' . date('M j, Y g:i A', strtotime($request['request_date'])) . '</td>';
+                                    echo '<td>' . htmlspecialchars($ingredients_display) . '</td>';
+                                    echo '<td><span class="badge bg-' . ($request['status'] === 'approved' ? 'success' : ($request['status'] === 'rejected' ? 'danger' : 'warning')) . '">' . strtoupper($request['status']) . '</span></td>';
+                                    echo '<td>' . $delivery_status_badge . '</td>';
+                                    echo '<td>' . htmlspecialchars($request['updated_by_name'] ?: 'N/A') . '</td>';
+                                    echo '<td>' . htmlspecialchars($request['archived_by_name'] ?: 'N/A') . '</td>';
+                                    echo '<td><button class="btn btn-restore btn-sm restore-btn" data-id="' . $request['archive_id'] . '" data-type="request"><i class="fas fa-undo"></i> Restore</button></td>';
+                                    echo '</tr>';
+                                }
+                            }
+                        } else {
+                            echo '<tr><td colspan="8" class="text-center text-danger">archive_ingredient_requests table does not exist.</td></tr>';
                         }
                         ?>
                         </tbody>
@@ -790,5 +897,63 @@ function restoreCategoryCustomAction(archiveId) {
     console.log('Restore button clicked for category archive ID:', archiveId);
     // Example: send analytics, log, or trigger other actions
 }
+
+// Restore button for archived request stocks
+$(document).on('click', '.restore-btn[data-type="request"]', function() {
+    var archiveId = $(this).data('id');
+    Swal.fire({
+        title: 'Restore?',
+        text: 'This will move the request stock back to the active list.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#4A7C59',
+        cancelButtonColor: '#f8f9fa',
+        confirmButtonText: '<i class="fas fa-undo me-2"></i>Yes, restore it!',
+        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
+        customClass: {
+            confirmButton: 'btn btn-restore btn-lg',
+            cancelButton: 'btn btn-light btn-lg'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'restore_ingredient_request.php',
+                type: 'POST',
+                data: { archive_id: archiveId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Restored!',
+                            text: 'Request stock has been restored.',
+                            showConfirmButton: true,
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                confirmButton: 'swal2-confirm-green'
+                            }
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: response.message || 'Failed to restore request stock.'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    let msg = 'An error occurred while restoring the request stock.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: msg
+                    });
+                }
+            });
+        }
+    });
+});
 </script>
 <?php include('footer.php'); ?> 

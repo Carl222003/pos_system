@@ -50,6 +50,7 @@ include('header.php');
                     <th style="color: #8B4543;">PRICE</th>
                     <th style="color: #8B4543;">DESCRIPTION</th>
                     <th style="color: #8B4543;">INGREDIENTS</th>
+                    <th style="color: #8B4543;">BRANCHES</th>
                     <th style="color: #8B4543;">STATUS</th>
                     <th style="color: #8B4543;">IMAGE</th>
                     <th style="color: #8B4543;">ACTION</th>
@@ -65,65 +66,90 @@ include('header.php');
 
 <!-- Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-            <form id="addProductForm" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="category_id" class="form-label">Category</label>
-                        <select class="form-select" id="category_id" name="category_id" required>
-                            <option value="">Select Category</option>
-                            <?php foreach ($categories as $category): ?>
-                                <option value="<?= htmlspecialchars($category['category_id']) ?>">
-                                    <?= htmlspecialchars($category['category_name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="product_name" class="form-label">Product Name</label>
-                        <input type="text" class="form-control" id="product_name" name="product_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="product_price" class="form-label">Price</label>
-                        <input type="number" class="form-control" id="product_price" name="product_price" step="0.01" min="0" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="product_status" class="form-label">Status</label>
-                        <select class="form-select" id="product_status" name="product_status" required>
-                            <option value="Available">Available</option>
-                            <option value="Unavailable">Unavailable</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="ingredients" class="form-label">Ingredients</label>
-                        <textarea class="form-control" id="ingredients" name="ingredients" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="product_image" class="form-label">Product Image</label>
-                        <input type="file" class="form-control" id="product_image" name="product_image" accept="image/*">
+                <form id="addProductForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <!-- Left Column -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="category_id" class="form-label">Category</label>
+                                <select class="form-select" id="category_id" name="category_id" required>
+                                    <option value="">Select Category</option>
+                                    <?php foreach ($categories as $category): ?>
+                                        <option value="<?= htmlspecialchars($category['category_id']) ?>">
+                                            <?= htmlspecialchars($category['category_name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="product_name" class="form-label">Product Name</label>
+                                <input type="text" class="form-control" id="product_name" name="product_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="product_price" class="form-label">Price</label>
+                                <input type="number" class="form-control" id="product_price" name="product_price" step="0.01" min="0" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="product_status" class="form-label">Status</label>
+                                <select class="form-select" id="product_status" name="product_status" required>
+                                    <option value="Available">Available</option>
+                                    <option value="Unavailable">Unavailable</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="product_image" class="form-label">Product Image</label>
+                                <input type="file" class="form-control" id="product_image" name="product_image" accept="image/*">
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ingredients" class="form-label">Ingredients</label>
+                                <textarea class="form-control" id="ingredients" name="ingredients" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="branches" class="form-label">Available Branches</label>
+                                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <?php 
+                                    $branches = $pdo->query("SELECT branch_id, branch_name FROM pos_branch WHERE status = 'Active' ORDER BY branch_name")->fetchAll(PDO::FETCH_ASSOC);
+                                    foreach ($branches as $branch): ?>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="branches[]" value="<?= $branch['branch_id'] ?>" id="branch_<?= $branch['branch_id'] ?>">
+                                            <label class="form-check-label" for="branch_<?= $branch['branch_id'] ?>">
+                                                <?= htmlspecialchars($branch['branch_name']) ?>
+                                            </label>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <small class="text-muted">Select which branches will have this product available</small>
+                            </div>
+                        </div>
                     </div>
                 </form>
-                </div>
-                <div class="modal-footer">
+            </div>
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveProduct">Add Product</button>
-                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Edit Product Modal -->
 <div class="modal fade" id="editProductModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Product</h5>
@@ -132,53 +158,74 @@ include('header.php');
             <div class="modal-body">
                 <form id="editProductForm" enctype="multipart/form-data">
                     <input type="hidden" id="edit_product_id" name="product_id">
-                    <div class="row mb-3">
+                    <div class="row">
+                        <!-- Left Column -->
                         <div class="col-md-6">
-                            <label for="edit_category_id" class="form-label">Category</label>
-                            <select class="form-select" id="edit_category_id" name="category_id" required>
-                                <option value="">Select Category</option>
-                                <?php foreach ($categories as $category): ?>
-                                    <option value="<?= htmlspecialchars($category['category_id']) ?>">
-                                        <?= htmlspecialchars($category['category_name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <div class="mb-3">
+                                <label for="edit_category_id" class="form-label">Category</label>
+                                <select class="form-select" id="edit_category_id" name="category_id" required>
+                                    <option value="">Select Category</option>
+                                    <?php foreach ($categories as $category): ?>
+                                        <option value="<?= htmlspecialchars($category['category_id']) ?>">
+                                            <?= htmlspecialchars($category['category_name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit_product_name" class="form-label">Product Name</label>
+                                <input type="text" class="form-control" id="edit_product_name" name="product_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit_product_price" class="form-label">Price</label>
+                                <input type="number" class="form-control" id="edit_product_price" name="product_price" step="0.01" min="0" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit_product_status" class="form-label">Status</label>
+                                <select class="form-select" id="edit_product_status" name="product_status" required>
+                                    <option value="Available">Available</option>
+                                    <option value="Unavailable">Unavailable</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit_product_image" class="form-label">Product Image</label>
+                                <input type="file" class="form-control" id="edit_product_image" name="product_image" accept="image/*">
+                                <div id="currentImage" class="mt-2"></div>
+                            </div>
                         </div>
+                        
+                        <!-- Right Column -->
                         <div class="col-md-6">
-                            <label for="edit_product_name" class="form-label">Product Name</label>
-                            <input type="text" class="form-control" id="edit_product_name" name="product_name" required>
+                            <div class="mb-3">
+                                <label for="edit_description" class="form-label">Description</label>
+                                <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit_ingredients" class="form-label">Ingredients</label>
+                                <textarea class="form-control" id="edit_ingredients" name="ingredients" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="edit_branches" class="form-label">Available Branches</label>
+                                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <?php 
+                                    $edit_branches = $pdo->query("SELECT branch_id, branch_name FROM pos_branch WHERE status = 'Active' ORDER BY branch_name")->fetchAll(PDO::FETCH_ASSOC);
+                                    foreach ($edit_branches as $branch): ?>
+                                        <div class="form-check">
+                                            <input class="form-check-input edit-branch-checkbox" type="checkbox" name="branches[]" value="<?= $branch['branch_id'] ?>" id="edit_branch_<?= $branch['branch_id'] ?>">
+                                            <label class="form-check-label" for="edit_branch_<?= $branch['branch_id'] ?>">
+                                                <?= htmlspecialchars($branch['branch_name']) ?>
+                                            </label>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <small class="text-muted">Select which branches will have this product available</small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="edit_product_price" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="edit_product_price" name="product_price" step="0.01" min="0" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="edit_product_status" class="form-label">Status</label>
-                            <select class="form-select" id="edit_product_status" name="product_status" required>
-                            <option value="Available">Available</option>
-                                <option value="Unavailable">Unavailable</option>
-                        </select>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_description" class="form-label">Description</label>
-                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_ingredients" class="form-label">Ingredients</label>
-                        <textarea class="form-control" id="edit_ingredients" name="ingredients" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_product_image" class="form-label">Product Image</label>
-                        <input type="file" class="form-control" id="edit_product_image" name="product_image" accept="image/*">
-                        <div id="currentImage" class="mt-2"></div>
                     </div>
                 </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="updateProduct">Update Product</button>
             </div>
         </div>
@@ -744,6 +791,12 @@ $(document).ready(function() {
             { data: 'description' },
             { data: 'ingredients' },
             { 
+                data: 'branch_names',
+                render: function(data) {
+                    return data ? data : '<span class="text-muted">No branches assigned</span>';
+                }
+            },
+            { 
                 data: 'product_status',
                 render: function(data) {
                     if (data === 'Available') {
@@ -843,6 +896,16 @@ $(document).ready(function() {
                         $('#currentImage').html(`<img src="${product.product_image}" alt="Current Image" style="max-height: 100px;">`);
                     } else {
                         $('#currentImage').html('No current image');
+                    }
+                    
+                    // Reset all branch checkboxes
+                    $('.edit-branch-checkbox').prop('checked', false);
+                    
+                    // Check the branches that are assigned to this product
+                    if (product.branches && Array.isArray(product.branches)) {
+                        product.branches.forEach(function(branchId) {
+                            $(`#edit_branch_${branchId}`).prop('checked', true);
+                        });
                     }
                     
                     $('#editProductModal').modal('show');

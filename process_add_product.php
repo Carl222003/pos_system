@@ -86,6 +86,24 @@ try {
 
     $product_id = $pdo->lastInsertId();
 
+    // Handle branch assignments
+    if (isset($_POST['branches']) && is_array($_POST['branches'])) {
+        $branch_stmt = $pdo->prepare("INSERT INTO product_branch (product_id, branch_id) VALUES (?, ?)");
+        
+        foreach ($_POST['branches'] as $branch_id) {
+            if (is_numeric($branch_id)) {
+                try {
+                    $branch_stmt->execute([$product_id, $branch_id]);
+                } catch (PDOException $e) {
+                    // Ignore duplicate entry errors
+                    if ($e->getCode() != 23000) {
+                        throw $e;
+                    }
+                }
+            }
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'Product added successfully',

@@ -1,43 +1,30 @@
 <?php
 require_once 'db_connect.php';
-require_once 'auth_function.php';
 
-checkAdminLogin();
-
-header('Content-Type: application/json');
+echo "<h2>Test AJAX Response Format</h2>";
 
 try {
-    // Get filter parameters
-    $branch = isset($_POST['branch']) ? $_POST['branch'] : 'all';
-    $status = isset($_POST['status']) ? $_POST['status'] : 'all';
+    // Simulate the AJAX request
+    $_POST['draw'] = 1;
+    $_POST['start'] = 0;
+    $_POST['length'] = 10;
+    $_POST['branch'] = 'all';
+    $_POST['status'] = 'all';
     
-    // Base query
+    // Get all requests
     $query = "SELECT r.*, b.branch_name, u.user_name as updated_by_name
               FROM ingredient_requests r 
               LEFT JOIN pos_branch b ON r.branch_id = b.branch_id 
               LEFT JOIN pos_user u ON r.updated_by = u.user_id
-              WHERE 1=1";
+              WHERE 1=1
+              ORDER BY r.request_date DESC";
     
-    // Apply filters
-    if ($branch !== 'all') {
-        $query .= " AND r.branch_id = :branch";
-    }
-    if ($status !== 'all') {
-        $query .= " AND r.status = :status";
-    }
-    
-    // Prepare and execute query
     $stmt = $pdo->prepare($query);
-    
-    if ($branch !== 'all') {
-        $stmt->bindParam(':branch', $branch);
-    }
-    if ($status !== 'all') {
-        $stmt->bindParam(':status', $status);
-    }
-    
     $stmt->execute();
     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    echo "<h3>1. Raw Database Results:</h3>";
+    echo "<p>Total requests from database: " . count($requests) . "</p>";
     
     // Format data for DataTables
     $data = array();
@@ -76,15 +63,51 @@ try {
         );
     }
     
-    // For client-side processing, return all data
-    echo json_encode(array(
+    echo "<h3>2. Formatted Data:</h3>";
+    echo "<p>Formatted data count: " . count($data) . "</p>";
+    
+    // Show first 5 entries
+    echo "<table border='1' style='border-collapse: collapse; width: 100%;'>";
+    echo "<tr><th>ID</th><th>Branch</th><th>Date</th><th>Status</th></tr>";
+    for ($i = 0; $i < min(5, count($data)); $i++) {
+        echo "<tr>";
+        echo "<td>{$data[$i]['request_id']}</td>";
+        echo "<td>{$data[$i]['branch_name']}</td>";
+        echo "<td>{$data[$i]['request_date']}</td>";
+        echo "<td>{$data[$i]['status']}</td>";
+        echo "</tr>";
+    }
+    echo "</table>";
+    
+    // Final JSON response
+    $response = array(
         'draw' => isset($_POST['draw']) ? intval($_POST['draw']) : 0,
         'recordsTotal' => count($data),
         'recordsFiltered' => count($data),
         'data' => $data
-    ));
-
+    );
+    
+    echo "<h3>3. Final JSON Response:</h3>";
+    echo "<p>recordsTotal: " . $response['recordsTotal'] . "</p>";
+    echo "<p>recordsFiltered: " . $response['recordsFiltered'] . "</p>";
+    echo "<p>data count: " . count($response['data']) . "</p>";
+    
+    echo "<h3>4. Expected Pagination:</h3>";
+    $pageLength = 10;
+    $totalPages = ceil($response['recordsTotal'] / $pageLength);
+    echo "<p>With $pageLength entries per page and {$response['recordsTotal']} total records:</p>";
+    echo "<p>Total pages: $totalPages</p>";
+    
+    if ($totalPages > 1) {
+        echo "<p style='color: green;'>✅ Pagination should work! Previous/Next buttons should be clickable.</p>";
+    } else {
+        echo "<p style='color: orange;'>⚠️ Only one page of data. Pagination buttons will be disabled.</p>";
+    }
+    
+    echo "<h3 style='color: green;'>✅ Test completed!</h3>";
+    echo "<p><a href='ingredient_requests.php'>Go to Admin Ingredient Requests Page</a></p>";
+    
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(array('error' => $e->getMessage()));
-} 
+    echo "<p style='color: red;'>❌ Error: " . $e->getMessage() . "</p>";
+}
+?> 

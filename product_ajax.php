@@ -76,8 +76,12 @@ try {
         p.description,
         p.ingredients,
         p.product_status,
-        p.product_image
-    " . $baseQuery . $searchCondition;
+        p.product_image,
+        GROUP_CONCAT(b.branch_name SEPARATOR ', ') as branch_names
+    " . $baseQuery . "
+    LEFT JOIN product_branch pb ON p.product_id = pb.product_id
+    LEFT JOIN pos_branch b ON pb.branch_id = b.branch_id" . $searchCondition . "
+    GROUP BY p.product_id";
     
     // Add ordering
     $query .= " ORDER BY " . $orderColumnName . " " . $orderDir;

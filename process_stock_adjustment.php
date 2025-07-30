@@ -122,7 +122,7 @@ try {
     $ingredient_name = $ingredient['ingredient_name'];
     $status_change = $ingredient['ingredient_status'] !== $final_status ? " (Status: {$ingredient['ingredient_status']} → $final_status)" : "";
     $activity_message = "Stock adjustment: $ingredient_name - $adjustment_type $adjustment_quantity {$ingredient['ingredient_unit']}$status_change (Reason: $adjustment_reason)";
-    logActivity($pdo, $stockman_id, "Stock Adjustment", $activity_message);
+    logActivity($pdo, $stockman_id, "Stock Adjustment", $activity_message, $branch_id);
 
     $status_message = $ingredient['ingredient_status'] !== $final_status ? " Status updated to: $final_status." : "";
     echo json_encode([

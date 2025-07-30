@@ -1,94 +1,61 @@
 <?php
 require_once 'db_connect.php';
 
+// Simple script to fix the delivery status columns
+echo "<h2>Fixing Delivery Status Columns</h2>";
+
 try {
-    // Enable error reporting
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
+    // Check if delivery_status column exists
+    $check_column = $pdo->query("SHOW COLUMNS FROM ingredient_requests LIKE 'delivery_status'");
+    $column_exists = $check_column->fetch();
     
-    echo "<h2>Database Fix Operations Log:</h2>";
-    
-    // 1. Check if table exists
-    $stmt = $pdo->query("SHOW TABLES LIKE 'pos_order'");
-    $tableExists = $stmt->rowCount() > 0;
-    
-    if (!$tableExists) {
-        echo "Creating pos_order table...<br>";
-        
-        $sql = "CREATE TABLE pos_order (
-            order_id INT PRIMARY KEY AUTO_INCREMENT,
-            order_number VARCHAR(50) NOT NULL,
-            order_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-            order_type ENUM('Dine-in', 'Takeout', 'Delivery', 'Grab Food') NOT NULL DEFAULT 'Dine-in',
-            payment_method VARCHAR(50) NOT NULL DEFAULT 'Cash',
-            order_status VARCHAR(20) NOT NULL DEFAULT 'Completed',
-            order_created_by INT NOT NULL,
-            order_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-        
-        $pdo->exec($sql);
-        echo "Table created successfully!<br>";
+    if (!$column_exists) {
+        echo "<p>Adding delivery_status column...</p>";
+        $pdo->exec("ALTER TABLE ingredient_requests 
+                   ADD COLUMN delivery_status ENUM('pending', 'on_delivery', 'delivered', 'returned', 'cancelled') DEFAULT 'pending' 
+                   AFTER status");
+        echo "<p style='color: green;'>✓ delivery_status column added successfully</p>";
     } else {
-        echo "Table pos_order exists.<br>";
-        
-        // 2. Check if order_type column exists
-        $stmt = $pdo->query("SHOW COLUMNS FROM pos_order LIKE 'order_type'");
-        $columnExists = $stmt->rowCount() > 0;
-        
-        if (!$columnExists) {
-            echo "Adding order_type column...<br>";
-            
-            // Drop the column if it somehow exists but is malformed
-            try {
-                $pdo->exec("ALTER TABLE pos_order DROP COLUMN IF EXISTS order_type");
-            } catch (PDOException $e) {
-                // Ignore error if column doesn't exist
-            }
-            
-            // Add the column
-            $sql = "ALTER TABLE pos_order 
-                    ADD COLUMN order_type ENUM('Dine-in', 'Takeout', 'Delivery', 'Grab Food') 
-                    NOT NULL DEFAULT 'Dine-in' AFTER order_total";
-            $pdo->exec($sql);
-            echo "Column added successfully!<br>";
-            
-            // Update existing records
-            $sql = "UPDATE pos_order SET order_type = 'Dine-in'";
-            $pdo->exec($sql);
-            echo "Existing records updated.<br>";
-        } else {
-            echo "Column order_type already exists.<br>";
-        }
+        echo "<p style='color: blue;'>✓ delivery_status column already exists</p>";
     }
     
-    // 3. Verify the structure
-    echo "<h3>Current Table Structure:</h3>";
-    $stmt = $pdo->query("DESCRIBE pos_order");
-    echo "<pre>";
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        print_r($row);
+    // Check if delivery_date column exists
+    $check_date = $pdo->query("SHOW COLUMNS FROM ingredient_requests LIKE 'delivery_date'");
+    $date_exists = $check_date->fetch();
+    
+    if (!$date_exists) {
+        echo "<p>Adding delivery_date column...</p>";
+        $pdo->exec("ALTER TABLE ingredient_requests 
+                   ADD COLUMN delivery_date TIMESTAMP NULL 
+                   AFTER delivery_status");
+        echo "<p style='color: green;'>✓ delivery_date column added successfully</p>";
+    } else {
+        echo "<p style='color: blue;'>✓ delivery_date column already exists</p>";
     }
-    echo "</pre>";
     
-    // 4. Show sample data
-    echo "<h3>Sample Data (First 5 rows):</h3>";
-    $stmt = $pdo->query("SELECT * FROM pos_order LIMIT 5");
-    echo "<pre>";
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        print_r($row);
+    // Check if delivery_notes column exists
+    $check_notes = $pdo->query("SHOW COLUMNS FROM ingredient_requests LIKE 'delivery_notes'");
+    $notes_exists = $check_notes->fetch();
+    
+    if (!$notes_exists) {
+        echo "<p>Adding delivery_notes column...</p>";
+        $pdo->exec("ALTER TABLE ingredient_requests 
+                   ADD COLUMN delivery_notes TEXT NULL 
+                   AFTER delivery_date");
+        echo "<p style='color: green;'>✓ delivery_notes column added successfully</p>";
+    } else {
+        echo "<p style='color: blue;'>✓ delivery_notes column already exists</p>";
     }
-    echo "</pre>";
     
-    echo "<h3>Status: Database structure has been verified and fixed.</h3>";
-    echo "You can now return to the dashboard page.";
+    // Update existing records
+    echo "<p>Updating existing records...</p>";
+    $pdo->exec("UPDATE ingredient_requests SET delivery_status = 'pending' WHERE delivery_status IS NULL");
+    echo "<p style='color: green;'>✓ Existing records updated</p>";
     
-} catch (PDOException $e) {
-    echo "<h3>Error:</h3>";
-    echo $e->getMessage();
-    echo "<br><br>";
-    echo "<h4>Additional Debug Information:</h4>";
-    echo "<pre>";
-    print_r($e->errorInfo);
-    echo "</pre>";
+    echo "<h3 style='color: green;'>Database fix completed successfully!</h3>";
+    echo "<p><a href='ingredient_requests.php'>Go back to Ingredient Requests</a></p>";
+    
+} catch (Exception $e) {
+    echo "<p style='color: red;'>Error: " . $e->getMessage() . "</p>";
 }
 ?> 

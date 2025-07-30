@@ -87,6 +87,24 @@ include('header.php');
     transform: scale(1);
 }
 
+/* Modal Backdrop Fix */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+/* Ensure proper modal cleanup */
+body.modal-open {
+    overflow: hidden;
+}
+
+body:not(.modal-open) {
+    overflow: auto;
+}
+
 .card {
     box-shadow: 0 0.15rem 1.75rem 0 rgba(139, 69, 67, 0.15);
     border: none;
@@ -365,23 +383,54 @@ h1 {
     background: #fff;
 }
 
+/* View Button Styles */
+.btn-view {
+    background: var(--primary-color) !important;
+    color: white !important;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+}
+
+.btn-view:hover, .btn-view:focus {
+    background: var(--primary-dark) !important;
+    color: white !important;
+    transform: translateY(-1px);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(139, 69, 67, 0.15);
+}
+
+.btn-view:active {
+    transform: translateY(0);
+}
+
+.btn-view i {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
 .btn-edit {
     background: #C4804D !important;
     color: #fff !important;
     border: none;
     border-radius: 0.75rem;
+    width: 32px;
+    height: 32px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
-    gap: 0.4em;
-    font-weight: 500;
-    font-size: 1rem;
-    padding: 0.5rem 1.25rem;
+    justify-content: center;
+    margin: 0 2px;
     box-shadow: 0 0.15rem 1.75rem 0 rgba(196, 128, 77, 0.10);
     transition: background 0.2s, color 0.2s;
 }
 .btn-edit i {
     color: #fff !important;
-    font-size: 1.2em;
+    font-size: 0.875rem;
+    margin: 0;
 }
 .btn-edit:hover, .btn-edit:focus {
     background: #a96a3d !important;
@@ -397,18 +446,20 @@ h1 {
     color: #fff !important;
     border: none;
     border-radius: 0.75rem;
+    width: 32px;
+    height: 32px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
-    gap: 0.4em;
-    font-weight: 500;
-    font-size: 1rem;
-    padding: 0.5rem 1.25rem;
+    justify-content: center;
+    margin: 0 2px;
     box-shadow: 0 0.15rem 1.75rem 0 rgba(108, 117, 125, 0.10);
     transition: background 0.2s, color 0.2s;
 }
 .btn-archive i {
     color: #fff !important;
-    font-size: 1.2em;
+    font-size: 0.875rem;
+    margin: 0;
 }
 .btn-archive:hover, .btn-archive:focus {
     background: #5a6268 !important;
@@ -517,6 +568,23 @@ h1 {
     <div class="modal-content">
       <div class="modal-body" id="editIngredientModalBody">
         <!-- AJAX-loaded content here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Ingredient Modal -->
+<div class="modal fade" id="viewIngredientModal" tabindex="-1" aria-labelledby="viewIngredientModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-maroon text-white">
+        <h5 class="modal-title" id="viewIngredientModalLabel">
+          <i class="fas fa-eye me-2"></i>Ingredient Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="viewIngredientModalBody">
+        <!-- Content will be loaded here -->
       </div>
     </div>
   </div>
@@ -677,11 +745,14 @@ $(document).ready(function() {
                 "render": function(data, type, row) {
                     return `
                         <div class="text-center">
-                            <button class="btn btn-edit btn-sm edit-ingredient-btn" data-id="${row.ingredient_id}">
-                                <i class="fas fa-edit"></i> Edit
+                            <button class="btn btn-view btn-sm view-ingredient-btn" data-id="${row.ingredient_id}" title="View Details">
+                                <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-archive btn-sm archive-btn" data-id="${row.ingredient_id}">
-                                <i class="fas fa-box-archive"></i> Archive
+                            <button class="btn btn-edit btn-sm edit-ingredient-btn" data-id="${row.ingredient_id}" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-archive btn-sm archive-btn" data-id="${row.ingredient_id}" title="Archive">
+                                <i class="fas fa-box-archive"></i>
                             </button>
                         </div>`;
                 }
@@ -731,15 +802,71 @@ $(document).on('click', '.edit-ingredient-btn', function(e) {
     });
 });
 
+// View ingredient button handler
+$(document).on('click', '.view-ingredient-btn', function(e) {
+    e.preventDefault();
+    var ingredientId = $(this).data('id');
+    $('#viewIngredientModalBody').html('<div class="text-center p-4">Loading...</div>');
+    $('#viewIngredientModal').modal('show');
+    $.get('view_ingredient.php', { id: ingredientId }, function(data) {
+        $('#viewIngredientModalBody').html(data);
+    });
+});
+
+// Handle view ingredient modal close button
+$(document).on('click', '#viewIngredientModal .btn-outline-secondary', function(e) {
+    e.preventDefault();
+    $('#viewIngredientModal').modal('hide');
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
+});
+
+
+
 $(document).on('submit', '#editIngredientModalBody form', function(e) {
     e.preventDefault();
     var form = $(this);
     var formData = form.serialize();
-    $.post(form.attr('action'), formData, function(response) {
-        showFeedbackModal('success', 'Saved!', 'Ingredient has been updated successfully.');
-        $('#editIngredientModal').modal('hide');
-        $('#ingredientTable').DataTable().ajax.reload();
-    }, 'json');
+    
+    $.ajax({
+        url: form.attr('action'),
+        type: 'POST',
+        data: formData,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                // Properly hide modal and remove backdrop
+                $('#editIngredientModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+                
+                // Refresh the DataTable
+                $('#ingredientTable').DataTable().ajax.reload();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Saved!',
+                    text: response.message,
+                    confirmButtonColor: '#8B4543'
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: response.message,
+                    confirmButtonColor: '#8B4543'
+                });
+            }
+        },
+        error: function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while updating the ingredient.',
+                confirmButtonColor: '#8B4543'
+            });
+        }
+    });
 });
 // Intercept Cancel button
 $(document).on('click', '#editIngredientModalBody .btn-cancel', function(e) {
@@ -769,6 +896,16 @@ $(document).on('click', '#addIngredientBtn', function(e) {
 
 // Add modal hidden event handlers
 $('#addIngredientModal').on('hidden.bs.modal', function () {
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
+});
+
+$('#editIngredientModal').on('hidden.bs.modal', function () {
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
+});
+
+$('#viewIngredientModal').on('hidden.bs.modal', function () {
     $('body').removeClass('modal-open');
     $('.modal-backdrop').remove();
 });

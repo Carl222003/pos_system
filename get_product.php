@@ -35,6 +35,17 @@ try {
         $product['product_image'] = $product['product_image'];
     }
 
+    // Get branch assignments for this product
+    $branch_stmt = $pdo->prepare("
+        SELECT branch_id 
+        FROM product_branch 
+        WHERE product_id = ?
+    ");
+    $branch_stmt->execute([$productId]);
+    $branches = $branch_stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    $product['branches'] = $branches;
+
     echo json_encode([
         'success' => true,
         'data' => $product

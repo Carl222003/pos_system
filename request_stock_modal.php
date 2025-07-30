@@ -14,23 +14,40 @@ $pre_selected_ingredient = $_GET['ingredient_id'] ?? null;
 // Fetch all active categories
 $categories = $pdo->query("SELECT category_id, category_name FROM pos_category WHERE status = 'active' ORDER BY category_name")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch all ingredients for this stockman's branch
+// Fetch ingredients for this stockman's branch
 if (!$branch_id) {
     $ingredients = [];
 } else {
-    $stmt = $pdo->prepare("SELECT i.ingredient_id, i.ingredient_name, i.ingredient_unit, i.ingredient_quantity, i.ingredient_status, i.category_id, c.category_name
-        FROM ingredients i
-        LEFT JOIN pos_category c ON i.category_id = c.category_id
-        WHERE i.branch_id = ?
-        ORDER BY c.category_name, i.ingredient_name");
-    $stmt->execute([$branch_id]);
-    $ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($pre_selected_ingredient) {
+        // If specific ingredient is selected, fetch only that ingredient
+        $stmt = $pdo->prepare("SELECT i.ingredient_id, i.ingredient_name, i.ingredient_unit, i.ingredient_quantity, i.ingredient_status, i.category_id, c.category_name
+            FROM ingredients i
+            LEFT JOIN pos_category c ON i.category_id = c.category_id
+            WHERE i.branch_id = ? AND i.ingredient_id = ?
+            ORDER BY i.ingredient_name");
+        $stmt->execute([$branch_id, $pre_selected_ingredient]);
+        $ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        // Fetch all ingredients
+        $stmt = $pdo->prepare("SELECT i.ingredient_id, i.ingredient_name, i.ingredient_unit, i.ingredient_quantity, i.ingredient_status, i.category_id, c.category_name
+            FROM ingredients i
+            LEFT JOIN pos_category c ON i.category_id = c.category_id
+            WHERE i.branch_id = ?
+            ORDER BY c.category_name, i.ingredient_name");
+        $stmt->execute([$branch_id]);
+        $ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>
 
 <div class="modal-header bg-maroon text-white">
     <h5 class="modal-title">
-        <i class="fas fa-clipboard-list me-2"></i>Request Stock
+        <i class="fas fa-clipboard-list me-2"></i>
+        <?php if ($pre_selected_ingredient): ?>
+            Request Stock - <?php echo htmlspecialchars($ingredients[0]['ingredient_name'] ?? 'Ingredient'); ?>
+        <?php else: ?>
+            Request Stock
+        <?php endif; ?>
     </h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
@@ -38,40 +55,74 @@ if (!$branch_id) {
 <div class="modal-body">
     <form id="requestStockModalForm">
         <div class="mb-3">
-            <label for="categorySelect" class="form-label fw-medium">Select Category</label>
-            <select id="categorySelect" class="form-select border-0 shadow-sm" required>
-                <option value="">-- Select Category --</option>
-                <?php foreach ($categories as $cat): ?>
-                    <option value="<?php echo $cat['category_id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        
-        <div class="mb-3">
-            <label for="ingredients" class="form-label fw-medium">Select Ingredients</label>
+            <label for="ingredients" class="form-label fw-medium">
+                <?php if ($pre_selected_ingredient): ?>
+                    Request Quantity for <?php echo htmlspecialchars($ingredients[0]['ingredient_name'] ?? 'Ingredient'); ?>
+                <?php else: ?>
+                    Select Ingredients
+                <?php endif; ?>
+            </label>
             <div id="ingredient-list">
-                <?php foreach ($ingredients as $ingredient): ?>
-                    <div class="row mb-2 align-items-center ingredient-row ingredient-cat-<?php echo $ingredient['category_id']; ?><?php if ($ingredient['ingredient_status'] !== 'Available') echo ' unavailable'; ?>" style="display:none;">
-                        <div class="col-md-6">
-                            <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
-                            <label for="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
-                                <strong><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
-                                <span class="text-muted">(<?php echo htmlspecialchars($ingredient['ingredient_unit']); ?>)</span>
-                                <span class="ingredient-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
-                                    <?php if ($ingredient['ingredient_status'] === 'Available') {
-                                        echo 'Available: ' . htmlspecialchars($ingredient['ingredient_quantity']);
-                                    } else {
-                                        echo 'Unavailable';
-                                    } ?>
-                                </span><br>
-                                <small>Category: <?php echo htmlspecialchars($ingredient['category_name']); ?></small>
-                            </label>
+                <?php if ($pre_selected_ingredient): ?>
+                    <!-- Single ingredient view -->
+                    <?php foreach ($ingredients as $ingredient): ?>
+                        <div class="row mb-3 align-items-center ingredient-row<?php if ($ingredient['ingredient_status'] !== 'Available') echo ' unavailable'; ?>">
+                            <div class="col-md-8">
+                                <div class="ingredient-info">
+                                    <h6 class="mb-1">
+                                        <strong><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
+                                        <span class="text-muted">(<?php echo htmlspecialchars($ingredient['ingredient_unit']); ?>)</span>
+                                    </h6>
+                                    <p class="mb-2 text-muted">
+                                        Category: <?php echo htmlspecialchars($ingredient['category_name']); ?>
+                                    </p>
+                                    <p class="mb-0">
+                                        <span class="ingredient-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
+                                            <?php if ($ingredient['ingredient_status'] === 'Available') {
+                                                echo 'Current Stock: ' . htmlspecialchars($ingredient['ingredient_quantity']);
+                                            } else {
+                                                echo 'Currently Unavailable';
+                                            } ?>
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="quantity_<?php echo $ingredient['ingredient_id']; ?>" class="form-label">Request Quantity</label>
+                                <input type="number" class="form-control border-0 shadow-sm" 
+                                       name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" 
+                                       id="quantity_<?php echo $ingredient['ingredient_id']; ?>"
+                                       min="1" placeholder="Enter quantity" 
+                                       <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
+                                <input type="hidden" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>">
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <input type="number" class="form-control border-0 shadow-sm" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Quantity" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <!-- Multiple ingredients view -->
+                    <?php foreach ($ingredients as $ingredient): ?>
+                        <div class="row mb-2 align-items-center ingredient-row<?php if ($ingredient['ingredient_status'] !== 'Available') echo ' unavailable'; ?>">
+                            <div class="col-md-6">
+                                <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
+                                <label for="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
+                                    <strong><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
+                                    <span class="text-muted">(<?php echo htmlspecialchars($ingredient['ingredient_unit']); ?>)</span>
+                                    <span class="ingredient-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
+                                        <?php if ($ingredient['ingredient_status'] === 'Available') {
+                                            echo 'Available: ' . htmlspecialchars($ingredient['ingredient_quantity']);
+                                        } else {
+                                            echo 'Unavailable';
+                                        } ?>
+                                    </span><br>
+                                    <small>Category: <?php echo htmlspecialchars($ingredient['category_name']); ?></small>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" class="form-control border-0 shadow-sm" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Quantity" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
         
@@ -118,43 +169,20 @@ if (!$branch_id) {
 
 <script>
 $(document).ready(function() {
-    // Enable quantity input only if ingredient is checked
+    <?php if ($pre_selected_ingredient): ?>
+    // Single ingredient view - focus on quantity input
+    $(document).ready(function() {
+        const qtyInput = $('#quantity_<?php echo $pre_selected_ingredient; ?>');
+        if (qtyInput.length > 0) {
+            qtyInput.focus();
+        }
+    });
+    <?php else: ?>
+    // Multiple ingredients view - enable quantity input only if ingredient is checked
     $('#ingredient-list input[type="checkbox"]').change(function() {
         const qtyInput = $(this).closest('.row').find('input[type="number"]');
         qtyInput.prop('disabled', !this.checked);
         if (!this.checked) qtyInput.val('');
-    });
-
-    // Category filter logic
-    $('#categorySelect').on('change', function() {
-        var catId = $(this).val();
-        $('#ingredient-list .ingredient-row').hide();
-        if (catId) {
-            $('#ingredient-list .ingredient-cat-' + catId).show();
-        }
-    });
-
-    // Pre-select ingredient if provided in URL
-    <?php if ($pre_selected_ingredient): ?>
-    $(document).ready(function() {
-        // Find the ingredient and its category
-        const ingredientRow = $('.ingredient-row:has(#ingredient_<?php echo $pre_selected_ingredient; ?>)');
-        if (ingredientRow.length > 0) {
-            const categoryId = ingredientRow.attr('class').match(/ingredient-cat-(\d+)/)[1];
-            
-            // Select the category
-            $('#categorySelect').val(categoryId).trigger('change');
-            
-            // Check the ingredient and enable quantity input
-            setTimeout(function() {
-                const checkbox = $('#ingredient_<?php echo $pre_selected_ingredient; ?>');
-                checkbox.prop('checked', true).trigger('change');
-                
-                // Focus on quantity input
-                const qtyInput = checkbox.closest('.row').find('input[type="number"]');
-                qtyInput.focus();
-            }, 100);
-        }
     });
     <?php endif; ?>
 
@@ -163,7 +191,20 @@ $(document).ready(function() {
         const form = $('#requestStockModalForm');
         const formData = form.serialize();
         
-        // Validate that at least one ingredient is selected
+        <?php if ($pre_selected_ingredient): ?>
+        // Single ingredient validation
+        const quantity = $('input[name="quantity[<?php echo $pre_selected_ingredient; ?>]"]').val();
+        if (!quantity || quantity <= 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Quantity Entered',
+                text: 'Please enter a quantity for the ingredient.',
+                confirmButtonColor: '#8B4543'
+            });
+            return;
+        }
+        <?php else: ?>
+        // Multiple ingredients validation
         const selectedIngredients = $('input[name="ingredients[]"]:checked');
         if (selectedIngredients.length === 0) {
             Swal.fire({
@@ -194,6 +235,7 @@ $(document).ready(function() {
             });
             return;
         }
+        <?php endif; ?>
 
         $.ajax({
             url: 'process_ingredient_request.php',
@@ -201,7 +243,11 @@ $(document).ready(function() {
             data: formData,
             success: function(response) {
                 if (response.success) {
+                    // Properly hide modal and remove backdrop
                     $('#requestStockModal').modal('hide');
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                    
                     Swal.fire({
                         icon: 'success',
                         title: 'Request Submitted!',
@@ -228,6 +274,12 @@ $(document).ready(function() {
                 });
             }
         });
+    });
+    
+    // Add modal hidden event handler for proper cleanup
+    $('#requestStockModal').on('hidden.bs.modal', function () {
+        $('body').removeClass('modal-open');
+        $('.modal-backdrop').remove();
     });
 });
 </script> 

@@ -151,7 +151,11 @@ $(document).ready(function() {
             data: formData,
             success: function(response) {
                 if (response.success) {
+                    // Properly hide modal and remove backdrop
                     $('#adjustStockModal').modal('hide');
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                    
                     Swal.fire({
                         icon: 'success',
                         title: 'Stock Adjusted!',
@@ -178,6 +182,12 @@ $(document).ready(function() {
                 });
             }
         });
+    });
+    
+    // Add modal hidden event handler for proper cleanup
+    $('#adjustStockModal').on('hidden.bs.modal', function () {
+        $('body').removeClass('modal-open');
+        $('.modal-backdrop').remove();
     });
 });
 </script> 

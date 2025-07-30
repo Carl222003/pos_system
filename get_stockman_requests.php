@@ -81,10 +81,35 @@ try {
                 $status_badge = '<span class="badge bg-secondary">' . strtoupper($request['status']) . '</span>';
         }
         
+        // Format delivery status with appropriate styling
+        $delivery_status_badge = '';
+        $delivery_status = isset($request['delivery_status']) ? $request['delivery_status'] : 'pending';
+        switch ($delivery_status) {
+            case 'pending':
+                $delivery_status_badge = '<span class="badge bg-secondary">PENDING</span>';
+                break;
+            case 'on_delivery':
+                $delivery_status_badge = '<span class="badge bg-info">ON DELIVERY</span>';
+                break;
+            case 'delivered':
+                $delivery_status_badge = '<span class="badge bg-success">DELIVERED</span>';
+                break;
+            case 'returned':
+                $delivery_status_badge = '<span class="badge bg-warning">RETURNED</span>';
+                break;
+            case 'cancelled':
+                $delivery_status_badge = '<span class="badge bg-danger">CANCELLED</span>';
+                break;
+            default:
+                $delivery_status_badge = '<span class="badge bg-secondary">PENDING</span>';
+        }
+        
         $data[] = array(
+            'request_id' => $request['request_id'],
             'request_date' => date('M j, Y g:i A', strtotime($request['request_date'])),
             'ingredients' => $ingredients_display,
             'status' => $status_badge,
+            'delivery_status' => $delivery_status_badge,
             'notes' => $request['notes'] ?: '-',
             'updated_by' => $request['updated_by_name'] ?: '-'
         );
