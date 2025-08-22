@@ -110,6 +110,7 @@ try {
             'ingredients' => $ingredients_display,
             'status' => $status_badge,
             'delivery_status' => $delivery_status_badge,
+            'delivery_status_raw' => $delivery_status, // Add raw delivery status for button logic
             'notes' => $request['notes'] ?: '-',
             'updated_by' => $request['updated_by_name'] ?: '-'
         );

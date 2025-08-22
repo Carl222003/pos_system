@@ -94,13 +94,39 @@ try {
     ]);
 
     // Handle branch assignments
-    if (isset($_POST['branches'])) {
-        // First, remove all existing branch assignments for this product
+    // Always process branch assignments, even if empty (to remove all assignments)
+    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+    $usePosBranchProduct = in_array('pos_branch_product', $tables);
+    
+    if ($usePosBranchProduct) {
+        // Use pos_branch_product table
+        $delete_stmt = $pdo->prepare("DELETE FROM pos_branch_product WHERE product_id = ?");
+        $delete_stmt->execute([$productId]);
+        
+        // Insert new assignments if any are selected
+        if (isset($_POST['branches']) && is_array($_POST['branches']) && !empty($_POST['branches'])) {
+            $branch_stmt = $pdo->prepare("INSERT INTO pos_branch_product (product_id, branch_id, quantity) VALUES (?, ?, 10)");
+            
+            foreach ($_POST['branches'] as $branch_id) {
+                if (is_numeric($branch_id)) {
+                    try {
+                        $branch_stmt->execute([$productId, $branch_id]);
+                    } catch (PDOException $e) {
+                        // Ignore duplicate entry errors
+                        if ($e->getCode() != 23000) {
+                            throw $e;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // Fallback to product_branch table
         $delete_stmt = $pdo->prepare("DELETE FROM product_branch WHERE product_id = ?");
         $delete_stmt->execute([$productId]);
         
-        // Then add new branch assignments
-        if (is_array($_POST['branches']) && !empty($_POST['branches'])) {
+        // Insert new assignments if any are selected
+        if (isset($_POST['branches']) && is_array($_POST['branches']) && !empty($_POST['branches'])) {
             $branch_stmt = $pdo->prepare("INSERT INTO product_branch (product_id, branch_id) VALUES (?, ?)");
             
             foreach ($_POST['branches'] as $branch_id) {
@@ -118,12 +144,18 @@ try {
         }
     }
 
+    // Log successful update
+    error_log("Product updated successfully: ID " . $productId);
+    
     echo json_encode([
         'success' => true,
         'message' => 'Product updated successfully'
     ]);
 
 } catch (Exception $e) {
+    // Log the error
+    error_log("Product update failed: " . $e->getMessage());
+    
     http_response_code(400);
     echo json_encode([
         'success' => false,

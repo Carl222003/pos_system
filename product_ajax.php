@@ -35,8 +35,8 @@ try {
     $baseQuery = "FROM pos_product p 
                   LEFT JOIN pos_category c ON p.category_id = c.category_id";
     
-    // Add status filter to exclude archived and inactive products
-    $statusFilter = "p.product_status = 'Available'";
+    // Add status filter to show both Available and Unavailable products
+    $statusFilter = "p.product_status IN ('Available', 'Unavailable')";
 
     // Search condition
     $searchCondition = "";
@@ -55,8 +55,8 @@ try {
         $searchCondition = " WHERE " . $statusFilter;
     }
 
-    // Get total records without filtering (excluding archived and inactive)
-    $stmt = $pdo->query("SELECT COUNT(*) FROM pos_product WHERE product_status = 'Available'");
+    // Get total records without filtering (including both Available and Unavailable)
+    $stmt = $pdo->query("SELECT COUNT(*) FROM pos_product WHERE product_status IN ('Available', 'Unavailable')");
     $totalRecords = $stmt->fetchColumn();
 
     // Get filtered records count
@@ -67,6 +67,10 @@ try {
     $stmt->execute();
     $filteredRecords = $stmt->fetchColumn();
 
+    // Check which table to use for branch assignments
+    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+    $usePosBranchProduct = in_array('pos_branch_product', $tables);
+    
     // Main query for data
     $query = "SELECT 
         p.product_id,
@@ -78,10 +82,17 @@ try {
         p.product_status,
         p.product_image,
         GROUP_CONCAT(b.branch_name SEPARATOR ', ') as branch_names
-    " . $baseQuery . "
-    LEFT JOIN product_branch pb ON p.product_id = pb.product_id
-    LEFT JOIN pos_branch b ON pb.branch_id = b.branch_id" . $searchCondition . "
-    GROUP BY p.product_id";
+    " . $baseQuery;
+    
+    if ($usePosBranchProduct) {
+        $query .= " LEFT JOIN pos_branch_product bp ON p.product_id = bp.product_id";
+        $query .= " LEFT JOIN pos_branch b ON bp.branch_id = b.branch_id";
+    } else {
+        $query .= " LEFT JOIN product_branch pb ON p.product_id = pb.product_id";
+        $query .= " LEFT JOIN pos_branch b ON pb.branch_id = b.branch_id";
+    }
+    
+    $query .= $searchCondition . " GROUP BY p.product_id";
     
     // Add ordering
     $query .= " ORDER BY " . $orderColumnName . " " . $orderDir;
@@ -111,6 +122,9 @@ try {
         // Format empty values
         $row['description'] = !empty($row['description']) ? $row['description'] : '-';
         $row['ingredients'] = !empty($row['ingredients']) ? $row['ingredients'] : '-';
+        
+        // Debug: Log status for each row
+        error_log("Product ID: {$row['product_id']}, Status: {$row['product_status']}");
     }
 
     // Prepare the response

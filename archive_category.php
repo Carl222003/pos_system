@@ -33,7 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 debug_log('Restored pos_category.status to active for category_id=' . $archived['original_id']);
                 $pdo->prepare('DELETE FROM archive_category WHERE archive_id = ?')->execute([$id]);
                 debug_log('Deleted from archive_category where archive_id=' . $id);
-                logActivity($pdo, $admin_id, 'Restored Category', 'Category: ' . $archived['category_name'] . ' (ID: ' . $archived['original_id'] . ')');
+                if ($admin_id) {
+                    logActivity($pdo, $admin_id, 'Restored Category', 'Category: ' . $archived['category_name'] . ' (ID: ' . $archived['original_id'] . ')');
+                }
                 echo json_encode(['success' => true, 'step' => 'restore', 'archived' => $archived]);
             } else {
                 debug_log('Archived category not found for restore.');
@@ -64,7 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 debug_log('Inserted into archive_category: ' . json_encode([$category['category_id'], $category['category_name'], $desc, 'archived', $admin_id]));
                 $pdo->prepare('UPDATE pos_category SET status = ? WHERE category_id = ?')->execute(['archived', $id]);
                 debug_log('Updated pos_category.status to archived for category_id=' . $id);
-                logActivity($pdo, $admin_id, 'Archived Category', 'Category: ' . $category['category_name'] . ' (ID: ' . $category['category_id'] . ')');
+                if ($admin_id) {
+                    logActivity($pdo, $admin_id, 'Archived Category', 'Category: ' . $category['category_name'] . ' (ID: ' . $category['category_id'] . ')');
+                }
                 echo json_encode(['success' => true, 'step' => 'archive', 'category' => $category]);
             } else {
                 debug_log('Category not found for archiving.');

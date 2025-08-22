@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Status Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .demo-section { margin: 20px 0; padding: 20px; border: 2px solid #ddd; border-radius: 8px; }
+        .product-card { 
+            width: 300px; 
+            padding: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            margin: 10px 0;
+            background: white;
+        }
+        .status-available { background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; }
+        .status-unavailable { background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; }
+        .btn-make-unavailable { background: #dc3545; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn-make-available { background: #28a745; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn-view-details { background: #8B4543; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        h2 { color: #8B4543; }
+        .arrow { font-size: 24px; margin: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Product Status Behavior Demo</h1>
+    <p><strong>This is how the product status toggle should work:</strong></p>
+
+    <div class="demo-section">
+        <h2>BEFORE: Available Product</h2>
+        <div class="product-card">
+            <h3>Cheesy Ube</h3>
+            <p>Halo-Halo</p>
+            <p><strong>₱160.00</strong></p>
+            <p>Ube ice cream paired with a drizzle of cheese sauce...</p>
+            <div>
+                <span class="status-available">Available</span>
+            </div>
+            <div>
+                <button class="btn-view-details">👁️ View Details</button>
+                <button class="btn-make-unavailable">❌ Make Unavailable</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="arrow">⬇️ CLICK "Make Unavailable" ⬇️</div>
+
+    <div class="demo-section">
+        <h2>AFTER: Unavailable Product</h2>
+        <div class="product-card">
+            <h3>Cheesy Ube</h3>
+            <p>Halo-Halo</p>
+            <p><strong>₱160.00</strong></p>
+            <p>Ube ice cream paired with a drizzle of cheese sauce...</p>
+            <div>
+                <span class="status-unavailable">Unavailable</span>
+            </div>
+            <div>
+                <button class="btn-view-details">👁️ View Details</button>
+                <button class="btn-make-available">✅ Make Available</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>❌ WRONG BEHAVIOR (What's happening to you):</h2>
+        <div style="text-align: center; padding: 40px; color: #666; font-style: italic;">
+            <p>🚫 Product disappears completely</p>
+            <p>(This should NOT happen!)</p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>✅ CORRECT BEHAVIOR (What should happen):</h2>
+        <ul>
+            <li>✅ Product stays visible</li>
+            <li>✅ Status badge changes from "Available" (green) to "Unavailable" (red)</li>
+            <li>✅ Button changes from "Make Unavailable" (red) to "Make Available" (green)</li>
+            <li>✅ All other product info stays the same</li>
+            <li>✅ Product appears when filtering by "Unavailable"</li>
+            <li>✅ Product appears when filtering by "All Status"</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>🔧 How to Test:</h2>
+        <ol>
+            <li>Open browser Developer Tools (F12) → Console tab</li>
+            <li>Make sure Status filter is set to <strong>"All Status"</strong></li>
+            <li>Click "Make Unavailable" on any product</li>
+            <li>Watch console logs for debugging info</li>
+            <li>Product should change status but stay visible</li>
+        </ol>
+    </div>
+
+    <script>
+        // Demo button behavior
+        document.querySelectorAll('.btn-make-unavailable').forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('This would change the product to Unavailable status\n(but keep it visible!)');
+            });
+        });
+
+        document.querySelectorAll('.btn-make-available').forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('This would change the product to Available status');
+            });
+        });
+    </script>
+</body>
+</html>

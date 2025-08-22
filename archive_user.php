@@ -20,7 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             // Remove from archive
             $pdo->prepare('DELETE FROM archive_user WHERE archive_id = ?')->execute([$user_id]);
             // Log activity
-            logActivity($pdo, $admin_id, 'Restored User', 'User: ' . $archived['user_name'] . ' (ID: ' . $archived['original_id'] . ')');
+            if ($admin_id) {
+                logActivity($pdo, $admin_id, 'Restored User', 'User: ' . $archived['user_name'] . ' (ID: ' . $archived['original_id'] . ')');
+            }
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Archived user not found.']);
@@ -60,7 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             // Set user_status to Inactive
             $pdo->prepare('UPDATE pos_user SET user_status = ? WHERE user_id = ?')->execute(['Inactive', $user_id]);
             // Log activity
-            logActivity($pdo, $admin_id, 'Archived User', 'User: ' . $user['user_name'] . ' (ID: ' . $user['user_id'] . ')');
+            if ($admin_id) {
+                logActivity($pdo, $admin_id, 'Archived User', 'User: ' . $user['user_name'] . ' (ID: ' . $user['user_id'] . ')');
+            }
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'User not found.']);

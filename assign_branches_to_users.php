@@ -80,7 +80,10 @@ try {
                     // Log the activity
                     $user_name = $pdo->query("SELECT user_name FROM pos_user WHERE user_id = $user_id")->fetchColumn();
                     $branch_name = $pdo->query("SELECT branch_name FROM pos_branch WHERE branch_id = $branch_id")->fetchColumn();
-                    logActivity($pdo, $_SESSION['user_id'], "Assigned branch to user", "User: $user_name assigned to branch: $branch_name");
+                    $admin_id = $_SESSION['user_id'] ?? null;
+                    if ($admin_id) {
+                        logActivity($pdo, $admin_id, "Assigned branch to user", "User: $user_name assigned to branch: $branch_name");
+                    }
                 }
             } catch (Exception $e) {
                 $errors[] = "User ID $user_id: " . $e->getMessage();

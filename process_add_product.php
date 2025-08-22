@@ -87,17 +87,40 @@ try {
     $product_id = $pdo->lastInsertId();
 
     // Handle branch assignments
-    if (isset($_POST['branches']) && is_array($_POST['branches'])) {
-        $branch_stmt = $pdo->prepare("INSERT INTO product_branch (product_id, branch_id) VALUES (?, ?)");
+    if (isset($_POST['branches']) && is_array($_POST['branches']) && !empty($_POST['branches'])) {
+        // Check which table to use
+        $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+        $usePosBranchProduct = in_array('pos_branch_product', $tables);
         
-        foreach ($_POST['branches'] as $branch_id) {
-            if (is_numeric($branch_id)) {
-                try {
-                    $branch_stmt->execute([$product_id, $branch_id]);
-                } catch (PDOException $e) {
-                    // Ignore duplicate entry errors
-                    if ($e->getCode() != 23000) {
-                        throw $e;
+        if ($usePosBranchProduct) {
+            // Use pos_branch_product table
+            $branch_stmt = $pdo->prepare("INSERT INTO pos_branch_product (product_id, branch_id, quantity) VALUES (?, ?, 10)");
+            
+            foreach ($_POST['branches'] as $branch_id) {
+                if (is_numeric($branch_id)) {
+                    try {
+                        $branch_stmt->execute([$product_id, $branch_id]);
+                    } catch (PDOException $e) {
+                        // Ignore duplicate entry errors
+                        if ($e->getCode() != 23000) {
+                            throw $e;
+                        }
+                    }
+                }
+            }
+        } else {
+            // Fallback to product_branch table
+            $branch_stmt = $pdo->prepare("INSERT INTO product_branch (product_id, branch_id) VALUES (?, ?)");
+            
+            foreach ($_POST['branches'] as $branch_id) {
+                if (is_numeric($branch_id)) {
+                    try {
+                        $branch_stmt->execute([$product_id, $branch_id]);
+                    } catch (PDOException $e) {
+                        // Ignore duplicate entry errors
+                        if ($e->getCode() != 23000) {
+                            throw $e;
+                        }
                     }
                 }
             }

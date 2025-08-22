@@ -20,7 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             // Remove from archive
             $pdo->prepare('DELETE FROM archive_branch WHERE archive_id = ?')->execute([$branch_id]);
             // Log activity
-            logActivity($pdo, $admin_id, 'Restored Branch', 'Branch: ' . $archived['branch_name'] . ' (ID: ' . $archived['original_id'] . ')');
+            if ($admin_id) {
+                logActivity($pdo, $admin_id, 'Restored Branch', 'Branch: ' . $archived['branch_name'] . ' (ID: ' . $archived['original_id'] . ')');
+            }
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Archived branch not found.']);
@@ -61,7 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
             // Set status to archived
             $pdo->prepare('UPDATE pos_branch SET status = ? WHERE branch_id = ?')->execute(['archived', $branch_id]);
             // Log activity
-            logActivity($pdo, $admin_id, 'Archived Branch', 'Branch: ' . $branch['branch_name'] . ' (ID: ' . $branch['branch_id'] . ')');
+            if ($admin_id) {
+                logActivity($pdo, $admin_id, 'Archived Branch', 'Branch: ' . $branch['branch_name'] . ' (ID: ' . $branch['branch_id'] . ')');
+            }
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Branch not found.']);

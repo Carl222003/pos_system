@@ -309,3 +309,11 @@
 2025-07-28 16:36:31 Restore requested for archive_id=44
 2025-07-28 16:36:31 Restored pos_category.status to active for category_id=21
 2025-07-28 16:36:31 Deleted from archive_category where archive_id=44
+2025-08-03 10:16:38 POST received. id=24, restore=0
+2025-08-03 10:16:38 Archive requested for category_id=24
+2025-08-03 10:16:38 Inserted into archive_category: [24,"Beverages","Beverages are drinks made to quench thirst, provide refreshment, or complement meals. They come in many types, including water, juices, sodas, teas, coffees, and alcoholic drinks like wine or beer.","archived",46]
+2025-08-03 10:16:38 Updated pos_category.status to archived for category_id=24
+2025-08-03 10:16:50 POST received. id=45, restore=1
+2025-08-03 10:16:50 Restore requested for archive_id=45
+2025-08-03 10:16:50 Restored pos_category.status to active for category_id=24
+2025-08-03 10:16:50 Deleted from archive_category where archive_id=45

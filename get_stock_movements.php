@@ -2,65 +2,71 @@
 require_once 'db_connect.php';
 require_once 'auth_function.php';
 
-checkCashierLogin();
+// Check if user is logged in and is a stockman
+if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true || $_SESSION['user_type'] !== 'Stockman') {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Unauthorized access']);
+    exit();
+}
 
 header('Content-Type: application/json');
 
-$user_id = $_SESSION['user_id'];
-$limit = isset($_GET['limit']) ? intval($_GET['limit']) : 50;
-
 try {
-    // Get cashier's branch ID
-    $stmt = $pdo->prepare("
-        SELECT branch_id 
-        FROM pos_cashier_details 
-        WHERE user_id = ?
-    ");
-    $stmt->execute([$user_id]);
-    $branch_id = $stmt->fetchColumn();
+    $user_id = $_SESSION['user_id'];
+    $branch_id = $_SESSION['branch_id'] ?? null;
 
+    // If branch_id is not in session, try to fetch from user record
     if (!$branch_id) {
-        throw new Exception('Cashier not assigned to any branch');
+        $stmt = $pdo->prepare('SELECT branch_id FROM pos_user WHERE user_id = ?');
+        $stmt->execute([$user_id]);
+        $branch_id = $stmt->fetchColumn();
     }
 
-    // Get stock movements for the cashier in their branch
+    if (!$branch_id) {
+        echo json_encode(['error' => 'Branch not found for this user']);
+        exit();
+    }
+
+    // Get stock movements for this branch
     $stmt = $pdo->prepare("
         SELECT 
-            sm.*,
-            i.item_name,
-            DATE_FORMAT(sm.created_at, '%Y-%m-%d %H:%i:%s') as formatted_date
+            sm.movement_id,
+            sm.ingredient_id,
+            i.ingredient_name,
+            sm.movement_type,
+            sm.quantity,
+            sm.previous_stock,
+            sm.new_stock,
+            sm.reason,
+            sm.created_at,
+            u.user_name as adjusted_by
         FROM pos_stock_movement sm
-        JOIN pos_inventory i ON sm.inventory_id = i.inventory_id
-        WHERE sm.user_id = ?
-        AND sm.branch_id = ?
+        JOIN ingredients i ON sm.ingredient_id = i.ingredient_id
+        LEFT JOIN pos_user u ON sm.user_id = u.user_id
+        WHERE i.branch_id = ?
         ORDER BY sm.created_at DESC
-        LIMIT ?
+        LIMIT 50
     ");
-    $stmt->execute([$user_id, $branch_id, $limit]);
+    $stmt->execute([$branch_id]);
     $movements = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Format the movements for display
-    $formatted_movements = array_map(function($movement) {
-        return [
-            'created_at' => $movement['formatted_date'],
-            'item_name' => $movement['item_name'],
-            'movement_type' => $movement['movement_type'],
-            'quantity' => $movement['quantity'],
-            'previous_stock' => $movement['previous_stock'],
-            'new_stock' => $movement['new_stock'],
-            'reference_type' => $movement['reference_type'],
-            'reference_id' => $movement['reference_id']
-        ];
-    }, $movements);
+    // Format data for display
+    foreach ($movements as &$movement) {
+        $movement['formatted_date'] = date('M d, Y H:i', strtotime($movement['created_at']));
+        $movement['movement_type_text'] = ucfirst($movement['movement_type']);
+        $movement['quantity_formatted'] = $movement['quantity'] . ' ' . ($movement['quantity'] == 1 ? 'unit' : 'units');
+    }
 
     echo json_encode([
         'success' => true,
-        'movements' => $formatted_movements
+        'movements' => $movements
     ]);
 
-} catch (Exception $e) {
+} catch (PDOException $e) {
+    error_log('Error in get_stock_movements.php: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Database error occurred'
     ]);
-} 
+}
+?> 

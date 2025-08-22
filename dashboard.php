@@ -12,7 +12,12 @@ if ($_SESSION['user_type'] !== 'Admin') {
 checkAdminLogin();
 
 $categorySql = "SELECT COUNT(*) FROM pos_category WHERE status = 'active'";
-$productSql = "SELECT COUNT(*) FROM pos_product WHERE product_status = 'Active'";
+// Enhanced product counting - get both total and available products
+$productSql = "SELECT 
+    COUNT(*) as total_products,
+    SUM(CASE WHEN product_status = 'Available' THEN 1 ELSE 0 END) as available_products,
+    SUM(CASE WHEN product_status = 'Out of Stock' THEN 1 ELSE 0 END) as out_of_stock_products
+FROM pos_product";
 $userSql = "SELECT COUNT(*) FROM pos_user";
 $branchSql = "SELECT COUNT(*) FROM pos_branch WHERE status = 'Active'";
 $orderSql = isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'User' ?
@@ -38,7 +43,10 @@ $total_category = $stmt->fetchColumn();
 
 $stmt = $pdo->prepare($productSql);
 $stmt->execute();
-$total_product = $stmt->fetchColumn();
+$product_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+$total_product = $product_stats['total_products'];
+$available_products = $product_stats['available_products'];
+$out_of_stock_products = $product_stats['out_of_stock_products'];
 
 $stmt = $pdo->prepare($userSql);
 $stmt->execute();
@@ -84,6 +92,28 @@ $stmt->execute();
 $delivery_sales = $stmt->fetchColumn() ?: 0;
 
 $confData = getConfigData($pdo);
+
+// Function to get product statistics
+function getProductStats($pdo) {
+    try {
+        $stmt = $pdo->query("
+            SELECT 
+                COUNT(*) as total_products,
+                SUM(CASE WHEN product_status = 'Available' THEN 1 ELSE 0 END) as available_products,
+                SUM(CASE WHEN product_status = 'Out of Stock' THEN 1 ELSE 0 END) as out_of_stock_products,
+                SUM(CASE WHEN product_status = 'Unavailable' THEN 1 ELSE 0 END) as unavailable_products
+            FROM pos_product
+        ");
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [
+            'total_products' => 0,
+            'available_products' => 0,
+            'out_of_stock_products' => 0,
+            'unavailable_products' => 0
+        ];
+    }
+}
 
 // Get initial data
 $stmt = $pdo->query("SELECT COUNT(*) FROM pos_user WHERE user_type = 'Cashier' AND user_status = 'Active'");
@@ -150,6 +180,10 @@ include('header.php');
                     <div>
                         <h6>Products</h6>
                         <h2 style="color: #4CAF50;"><?php echo $total_product; ?></h2>
+                        <small class="text-muted">
+                            <?php echo $available_products; ?> Available • 
+                            <?php echo $out_of_stock_products; ?> Out of Stock
+                        </small>
                     </div>
                     <div class="p-3 rounded-circle" style="background: rgba(76,175,80,0.1);">
                         <i class="fas fa-box" style="color: #4CAF50;"></i>

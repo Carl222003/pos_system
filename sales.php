@@ -80,6 +80,27 @@ include('header.php');
 
 <div class="container-fluid px-4">
     <h1 class="mt-4">Sales Dashboard</h1>
+    
+    <!-- Navigation for Cashiers -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="fas fa-compass me-2"></i>Quick Navigation
+                    </h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="cashier_products.php" class="btn btn-outline-primary">
+                            <i class="fas fa-shopping-bag me-1"></i>View My Branch Products
+                        </a>
+                        <a href="sales.php" class="btn btn-primary">
+                            <i class="fas fa-chart-bar me-1"></i>Sales Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6">
             <div class="stat-card bg-gradient-primary">

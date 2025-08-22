@@ -28,7 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Remove from archive
                 $pdo->prepare('DELETE FROM archive_product WHERE archive_id = ?')->execute([$id]);
                 // Log activity
-                logActivity($pdo, $admin_id, 'Restored Product', 'Product: ' . $archived['product_name'] . ' (ID: ' . $archived['original_id'] . ')');
+                if ($admin_id) {
+                    logActivity($pdo, $admin_id, 'Restored Product', 'Product: ' . $archived['product_name'] . ' (ID: ' . $archived['original_id'] . ')');
+                }
                 echo json_encode(['success' => true]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Archived product not found.']);
@@ -61,7 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Set product_status to archived
                 $pdo->prepare('UPDATE pos_product SET product_status = ? WHERE product_id = ?')->execute(['archived', $id]);
                 // Log activity
-                logActivity($pdo, $admin_id, 'Archived Product', 'Product: ' . $product['product_name'] . ' (ID: ' . $product['product_id'] . ')');
+                if ($admin_id) {
+                    logActivity($pdo, $admin_id, 'Archived Product', 'Product: ' . $product['product_name'] . ' (ID: ' . $product['product_id'] . ')');
+                }
                 echo json_encode(['success' => true]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Product not found.']);

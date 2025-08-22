@@ -17,6 +17,671 @@ include('header.php');
 <link rel="stylesheet" href="asset/css/order-custom.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link href="https://fonts.cdnfonts.com/css/cooper-black" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* Enhanced POS System Design */
+:root {
+    --primary-color: #8B4543;
+    --primary-dark: #723937;
+    --primary-light: #A65D5D;
+    --accent-color: #D4A59A;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --border-color: #dee2e6;
+    --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 8px 30px rgba(0, 0, 0, 0.2);
+    --gradient-primary: linear-gradient(135deg, #8B4543 0%, #723937 100%);
+    --gradient-success: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    --gradient-warning: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    --gradient-danger: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+}
+
+/* Enhanced Sidebar */
+.sidebar {
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-heavy);
+    border-radius: 0 1rem 1rem 0;
+    backdrop-filter: blur(10px);
+}
+
+.sidebar .navbar-brand {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin: 1rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    border-radius: 0.75rem;
+    margin: 0.25rem 1rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.sidebar .nav-link:hover::before {
+    left: 100%;
+}
+
+.sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(5px);
+    box-shadow: var(--shadow-light);
+}
+
+.sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-medium);
+    transform: translateX(5px);
+}
+
+.sidebar .nav-link i {
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Enhanced Main Content */
+.main-content {
+    background: transparent;
+    padding: 2rem;
+}
+
+/* Enhanced Menu Categories */
+.menu-categories {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-light);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+
+.category-btn {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    margin: 0.25rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
+    color: var(--dark-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.category-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+    z-index: -1;
+}
+
+.category-btn:hover::before,
+.category-btn.active::before {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.category-btn:hover,
+.category-btn.active {
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.category-btn i {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+.category-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: inherit;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+/* Enhanced Menu Items Grid */
+.menu-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+.menu-item-card {
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.menu-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-heavy);
+}
+
+.menu-item-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-primary);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.menu-item-card:hover::before {
+    transform: scaleX(1);
+}
+
+.menu-item-image {
+    height: 200px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-item-image::before {
+    content: attr(data-name);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgba(139, 69, 67, 0.3);
+    text-align: center;
+    width: 100%;
+    padding: 1rem;
+}
+
+.menu-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.menu-item-card:hover .menu-item-image img {
+    transform: scale(1.05);
+}
+
+.menu-item-content {
+    padding: 1.5rem;
+}
+
+.menu-item-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.menu-item-description {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.menu-item-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Enhanced Quantity Controls */
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--light-color);
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.quantity-controls:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25);
+}
+
+.quantity-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--gradient-primary);
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-btn:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-medium);
+}
+
+.quantity-btn:active {
+    transform: scale(0.95);
+}
+
+.quantity-display {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    min-width: 40px;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+/* Enhanced Order Section */
+.order-section {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.order-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.order-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.order-info {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.order-info p {
+    margin-bottom: 0.25rem;
+}
+
+/* Enhanced Service Types */
+.service-types {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: var(--light-color);
+}
+
+.service-type {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.service-type::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+    z-index: -1;
+}
+
+.service-type:hover::before,
+.service-type.active::before {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.service-type:hover,
+.service-type.active {
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.service-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.service-type:hover .service-icon,
+.service-type.active .service-icon {
+    transform: scale(1.1);
+}
+
+.service-type span {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Enhanced Order Items */
+.order-items-header {
+    background: var(--light-color);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.order-items-header .row {
+    font-weight: 600;
+    color: var(--dark-color);
+    padding: 1rem;
+}
+
+.order-items {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.order-item {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.order-item:hover {
+    box-shadow: var(--shadow-light);
+    transform: translateX(5px);
+}
+
+/* Enhanced Payment Summary */
+.payment-summary {
+    background: var(--light-color);
+    padding: 1.5rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 500;
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+}
+
+.summary-row.total {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    border-top: 2px solid var(--primary-color);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+}
+
+/* Enhanced Discount Section */
+.discount-section {
+    background: var(--light-color);
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.discount-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.discount-option {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.discount-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-success);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+    z-index: -1;
+}
+
+.discount-option:hover::before,
+.discount-option.active::before {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.discount-option:hover,
+.discount-option.active {
+    color: white;
+    border-color: var(--success-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.discount-option i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.discount-option div {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Enhanced Payment Methods */
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: var(--light-color);
+    border-top: 1px solid var(--border-color);
+}
+
+.payment-method {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-method::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+    z-index: -1;
+}
+
+.payment-method:hover::before,
+.payment-method.active::before {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.payment-method:hover,
+.payment-method.active {
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.payment-method i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.payment-method div {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .menu-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .service-types,
+    .discount-options,
+    .payment-methods {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.menu-item-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.order-section {
+    animation: slideInRight 0.6s ease-out;
+}
+
+/* Scrollbar Styling */
+.order-items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.order-items::-webkit-scrollbar-track {
+    background: var(--light-color);
+    border-radius: 3px;
+}
+
+.order-items::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+.order-items::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+</style>
 
 <!-- Add print-specific stylesheet -->
 <style media="print">
@@ -271,7 +936,7 @@ include('header.php');
                 <button type="button" class="category-btn active" onclick="load_category_product('all')">
                     <i class="fas fa-utensils"></i>
                     All Menu
-                            <small><?php echo $pdo->query("SELECT COUNT(*) FROM pos_product WHERE product_status = 'Available'")->fetchColumn(); ?> items</small>
+                    <small id="all-menu-count">Loading...</small>
                 </button>
                         <?php foreach($categorys as $category): ?>
                             <button type="button" class="category-btn" onclick="load_category_product('<?php echo $category['category_id']; ?>')">
@@ -287,13 +952,22 @@ include('header.php');
                                     }
                                 ?>"></i>
                                 <?php echo $category['category_name']; ?>
-                                <small><?php echo $pdo->query("SELECT COUNT(*) FROM pos_product WHERE category_id = {$category['category_id']} AND product_status = 'Available'")->fetchColumn(); ?> items</small>
+                                <small id="category-count-<?php echo $category['category_id']; ?>">Loading...</small>
                 </button>
                         <?php endforeach; ?>
             </div>
 
             <!-- Menu Section Title -->
             <h5 class="mb-3" id="menu-title">All Menu</h5>
+            
+            <!-- Branch Information for Cashiers -->
+            <div id="branch-info" class="alert alert-info mb-3" style="display: none;">
+                <i class="fas fa-store me-2"></i>
+                <span id="branch-info-text">Loading branch information...</span>
+                <br>
+                <small class="text-muted" id="branch-product-count">Loading product count...</small>
+            </div>
+            
             <div class="row" id="dynamic_item">
                 <!-- Items will be loaded here -->
                     </div>
@@ -1520,7 +2194,113 @@ include('header.php');
 
 <script>
 
+// Load category counts when page loads
+loadCategoryCounts();
+loadBranchInfo();
 load_category_product();
+
+function loadCategoryCounts() {
+    // Load counts for all categories including "All Menu"
+    const categories = ['all', ...<?php echo json_encode(array_column($categorys, 'category_id')); ?>];
+    
+    categories.forEach(categoryId => {
+        loadCategoryCount(categoryId);
+    });
+}
+
+function loadCategoryCount(categoryId) {
+    fetch('order_ajax.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            category_id: categoryId,
+            action: 'get_products'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const count = Array.isArray(data) ? data.length : 0;
+        const countElement = categoryId === 'all' 
+            ? document.getElementById('all-menu-count') 
+            : document.getElementById(`category-count-${categoryId}`);
+        
+        if (countElement) {
+            countElement.textContent = `${count} items`;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading category count:', error);
+        const countElement = categoryId === 'all' 
+            ? document.getElementById('all-menu-count') 
+            : document.getElementById(`category-count-${categoryId}`);
+        
+        if (countElement) {
+            countElement.textContent = '0 items';
+        }
+    });
+}
+
+function loadBranchInfo() {
+    fetch('order_ajax.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'get_branch_info'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const branchInfo = document.getElementById('branch-info');
+        const branchInfoText = document.getElementById('branch-info-text');
+        
+        if (data.branch_name) {
+            branchInfoText.textContent = `You're viewing products from: ${data.branch_name} (${data.branch_code})`;
+            
+            // Load total product count for this branch
+            loadTotalBranchProductCount(data.branch_name);
+            
+            branchInfo.style.display = 'block';
+        } else {
+            branchInfo.style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading branch info:', error);
+        document.getElementById('branch-info').style.display = 'none';
+    });
+}
+
+function loadTotalBranchProductCount(branchName) {
+    fetch('order_ajax.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'get_products',
+            category_id: 'all'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const count = Array.isArray(data) ? data.length : 0;
+        const countElement = document.getElementById('branch-product-count');
+        if (countElement) {
+            countElement.textContent = `${count} products available in ${branchName}`;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading total product count:', error);
+        const countElement = document.getElementById('branch-product-count');
+        if (countElement) {
+            countElement.textContent = 'Unable to load product count';
+        }
+    });
+}
 
 function load_category_product(category_id = 'all')
 {
@@ -1592,7 +2372,11 @@ function load_category_product(category_id = 'all')
                 </div>`;
             });
         } else {
-            html = '<div class="col-12"><div class="alert alert-info text-center"><i class="fas fa-info-circle me-2"></i>No items found in this category</div></div>';
+            if (category_id === 'all') {
+                html = '<div class="col-12"><div class="alert alert-warning text-center"><i class="fas fa-exclamation-triangle me-2"></i>No products are currently available in your assigned branch. Please contact your administrator.</div></div>';
+            } else {
+                html = '<div class="col-12"><div class="alert alert-info text-center"><i class="fas fa-info-circle me-2"></i>No items found in this category for your branch</div></div>';
+            }
         }
         document.getElementById('dynamic_item').innerHTML = html;
         
@@ -1612,6 +2396,9 @@ function load_category_product(category_id = 'all')
                 btn.classList.add('active');
             }
         });
+        
+        // Update category counts after loading products
+        loadCategoryCounts();
     })
     .catch(error => {
         console.error('Error:', error);

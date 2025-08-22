@@ -50,13 +50,13 @@ include('header.php');
                             <div class="col-6">
                                 <div class="stat-card bg-primary text-white p-3 rounded">
                                     <div class="stat-label">Sales</div>
-                                    <div class="stat-value" id="sales-<?php echo $branch['branch_id']; ?>">₱0.00</div>
+                                    <div class="stat-value total-sales" id="sales-<?php echo $branch['branch_id']; ?>">₱0.00</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stat-card bg-success text-white p-3 rounded">
                                     <div class="stat-label">Orders</div>
-                                    <div class="stat-value" id="orders-<?php echo $branch['branch_id']; ?>">0</div>
+                                    <div class="stat-value total-orders" id="orders-<?php echo $branch['branch_id']; ?>">0</div>
                                 </div>
                             </div>
                         </div>
@@ -72,7 +72,7 @@ include('header.php');
                                         <i class="fas fa-exclamation-triangle me-2"></i>
                                         <div>
                                             <div class="alert-label">Low Stock</div>
-                                            <div class="alert-value" id="lowstock-<?php echo $branch['branch_id']; ?>">0</div>
+                                            <div class="alert-value low-stock-count" id="lowstock-<?php echo $branch['branch_id']; ?>">0</div>
                                         </div>
                                     </div>
                                 </div>
@@ -83,7 +83,7 @@ include('header.php');
                                         <i class="fas fa-clock me-2"></i>
                                         <div>
                                             <div class="alert-label">Expiring</div>
-                                            <div class="alert-value" id="expiring-<?php echo $branch['branch_id']; ?>">0</div>
+                                            <div class="alert-value expiring-count" id="expiring-<?php echo $branch['branch_id']; ?>">0</div>
                                         </div>
                                     </div>
                                 </div>
@@ -578,6 +578,230 @@ include('header.php');
 let modalSalesChart = null;
 let modalPaymentChart = null;
 let currentBranchId = null;
+let updateInterval = null;
+
+// Real-time data functions
+function loadActiveCashiers() {
+    console.log('Loading active cashiers...');
+    fetch('get_active_cashiers.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Cashiers API response:', data);
+            if (data.success) {
+                updateCashierDisplay(data.branches);
+                if (data.fallback) {
+                    console.warn('Using fallback cashier data:', data.message);
+                }
+            } else {
+                console.error('Error in cashiers API:', data.error);
+                // Restore last good state instead of showing error
+                restoreLastGoodCashierState();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading active cashiers:', error);
+            // Restore last good state instead of showing error
+            restoreLastGoodCashierState();
+            console.log('Restored last good cashier state due to connection error');
+        });
+}
+
+function updateCashierDisplay(branches) {
+    console.log('Updating cashier display with data:', branches);
+    
+    for (const branchId in branches) {
+        const branch = branches[branchId];
+        const cashierElement = document.getElementById(`cashiers-${branchId}`);
+        
+        if (cashierElement) {
+            const cashierList = cashierElement.querySelector('.cashier-list');
+            
+            // Store the update in the element's data attribute for persistence
+            if (branch.total_active > 0) {
+                const activeNames = branch.active_cashiers.map(c => c.name).join(', ');
+                const displayHTML = `<span class="text-success">${activeNames}</span> <span class="badge bg-success ms-1">${branch.total_active}</span>`;
+                cashierList.innerHTML = displayHTML;
+                cashierList.setAttribute('data-last-good-state', displayHTML);
+            } else if (branch.total_cashiers > 0) {
+                const displayHTML = '<span class="text-muted">No active cashiers</span>';
+                cashierList.innerHTML = displayHTML;
+                cashierList.setAttribute('data-last-good-state', displayHTML);
+            } else {
+                const displayHTML = '<span class="text-muted">No cashiers assigned</span>';
+                cashierList.innerHTML = displayHTML;
+                cashierList.setAttribute('data-last-good-state', displayHTML);
+            }
+        }
+    }
+}
+
+function restoreLastGoodCashierState() {
+    // Restore last known good state for all cashier displays
+    document.querySelectorAll('.cashier-list').forEach(element => {
+        const lastGoodState = element.getAttribute('data-last-good-state');
+        if (lastGoodState) {
+            element.innerHTML = lastGoodState;
+        } else {
+            element.innerHTML = '<span class="text-muted">No active cashiers</span>';
+        }
+    });
+}
+
+function loadRealtimeSales() {
+    const branchCards = document.querySelectorAll('.branch-card');
+    
+    branchCards.forEach(card => {
+        const branchId = card.dataset.branchId;
+        
+        fetch(`get_realtime_sales.php?branch_id=${branchId}&period=today`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateSalesDisplay(branchId, data.data);
+                }
+            })
+            .catch(error => console.error('Error loading sales data:', error));
+    });
+}
+
+function updateSalesDisplay(branchId, salesData) {
+    const card = document.querySelector(`[data-branch-id="${branchId}"]`);
+    if (!card) return;
+    
+    // Update sales metrics
+    const totalSalesElement = card.querySelector('.total-sales');
+    const totalOrdersElement = card.querySelector('.total-orders');
+    const avgOrderElement = card.querySelector('.avg-order');
+    
+    if (totalSalesElement) {
+        totalSalesElement.textContent = `₱${parseFloat(salesData.total_sales).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    }
+    
+    if (totalOrdersElement) {
+        totalOrdersElement.textContent = salesData.total_orders;
+    }
+    
+    if (avgOrderElement) {
+        const avgValue = salesData.total_orders > 0 ? salesData.total_sales / salesData.total_orders : 0;
+        avgOrderElement.textContent = `₱${avgValue.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    }
+}
+
+function loadRealtimeInventory() {
+    // For now, use the simple inventory API that works system-wide
+    fetch('test_inventory_simple.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update all branch cards with the same inventory data
+                const branchCards = document.querySelectorAll('.branch-card');
+                branchCards.forEach(card => {
+                    const branchId = card.dataset.branchId;
+                    updateInventoryDisplaySimple(branchId, data.stats);
+                });
+            } else {
+                console.error('Inventory API error:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading inventory data:', error);
+            // Show error in UI
+            document.querySelectorAll('.low-stock-count, .expiring-count').forEach(element => {
+                element.textContent = '?';
+                element.style.color = '#dc3545';
+            });
+        });
+}
+
+function updateInventoryDisplay(branchId, inventoryData) {
+    const card = document.querySelector(`[data-branch-id="${branchId}"]`);
+    if (!card) return;
+    
+    // Update inventory status
+    const lowStockElement = card.querySelector('.low-stock-count');
+    const expiringElement = card.querySelector('.expiring-count');
+    
+    if (lowStockElement) {
+        lowStockElement.textContent = inventoryData.summary.low_stock_items;
+        const parent = lowStockElement.closest('.inventory-alert');
+        if (parent) {
+            parent.className = `inventory-alert ${inventoryData.summary.low_stock_items > 0 ? 'alert-warning' : 'alert-success'}`;
+        }
+    }
+    
+    if (expiringElement) {
+        expiringElement.textContent = inventoryData.summary.expiring_items;
+        const parent = expiringElement.closest('.inventory-alert');
+        if (parent) {
+            parent.className = `inventory-alert ${inventoryData.summary.expiring_items > 0 ? 'alert-danger' : 'alert-success'}`;
+        }
+    }
+}
+
+function updateInventoryDisplaySimple(branchId, stats) {
+    const card = document.querySelector(`[data-branch-id="${branchId}"]`);
+    if (!card) return;
+    
+    // Update low stock count
+    const lowStockElement = card.querySelector('.low-stock-count');
+    if (lowStockElement) {
+        lowStockElement.textContent = stats.low_stock_items;
+        lowStockElement.style.color = stats.low_stock_items > 0 ? '#856404' : '#155724';
+        
+        // Update parent alert styling
+        const alertParent = lowStockElement.closest('.alert');
+        if (alertParent) {
+            alertParent.className = `alert ${stats.low_stock_items > 0 ? 'alert-warning' : 'alert-success'} mb-0`;
+        }
+    }
+    
+    // Update expiring count
+    const expiringElement = card.querySelector('.expiring-count');
+    if (expiringElement) {
+        expiringElement.textContent = stats.expiring_items;
+        expiringElement.style.color = stats.expiring_items > 0 ? '#721c24' : '#155724';
+        
+        // Update parent alert styling
+        const alertParent = expiringElement.closest('.alert');
+        if (alertParent) {
+            alertParent.className = `alert ${stats.expiring_items > 0 ? 'alert-danger' : 'alert-success'} mb-0`;
+        }
+    }
+}
+
+function startRealtimeUpdates() {
+    // Load initial data
+    loadActiveCashiers();
+    loadRealtimeSales();
+    loadRealtimeInventory();
+    
+    // Set up auto-refresh every 60 seconds (less aggressive)
+    if (updateInterval) {
+        clearInterval(updateInterval);
+    }
+    
+    updateInterval = setInterval(() => {
+        console.log('Auto-refreshing data...');
+        // Only refresh cashiers every other cycle to reduce errors
+        if (Math.floor(Date.now() / 60000) % 2 === 0) {
+            loadActiveCashiers();
+        }
+        loadRealtimeSales();
+        loadRealtimeInventory();
+    }, 60000);
+}
+
+function stopRealtimeUpdates() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
+}
 
 function destroyCharts() {
     if (modalSalesChart) {
@@ -723,16 +947,41 @@ $(document).ready(function() {
     tooltipTriggerList.map(function(tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // Start real-time updates
+    startRealtimeUpdates();
+    
+    // Refresh button click
+    document.getElementById('refreshStats').addEventListener('click', function() {
+        // Manual refresh of all data
+        loadActiveCashiers();
+        loadRealtimeSales();
+        loadRealtimeInventory();
+        
+        // Show refresh feedback
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Refreshing...';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 2000);
+    });
 
     // Real-time branch stats update
     function updateBranchStats() {
+        console.log('Updating branch stats...');
         $('.branch-card').each(function() {
             var branchId = $(this).data('branch-id');
             $.get('get_branch_stats.php', { branch_id: branchId }, function(data) {
+                console.log('Branch ' + branchId + ' data:', data);
+                
                 if (data && !data.error) {
                     // Update sales and orders
-                    $('#sales-' + branchId).text('₱' + parseFloat(data.today_sales).toFixed(2));
-                    $('#orders-' + branchId).text(data.today_orders);
+                    $('#sales-' + branchId).text('₱' + parseFloat(data.today_sales || 0).toFixed(2));
+                    $('#orders-' + branchId).text(data.today_orders || 0);
 
                     // Update cashier status: show all assigned cashiers, highlight active ones
                     let cashierHtml = '';
@@ -756,8 +1005,8 @@ $(document).ready(function() {
                     $('#status-' + branchId).html(statusHtml);
 
                     // Update inventory alerts
-                    $('#lowstock-' + branchId).text(data.low_stock_count);
-                    $('#expiring-' + branchId).text(data.expiring_count);
+                    $('#lowstock-' + branchId).text(data.low_stock_count || 0);
+                    $('#expiring-' + branchId).text(data.expiring_count || 0);
                 } else {
                     // Show error in all fields for this branch
                     $('#sales-' + branchId).text('Error');
@@ -766,6 +1015,7 @@ $(document).ready(function() {
                     $('#status-' + branchId).html('<span class="badge bg-danger">Error</span>');
                     $('#lowstock-' + branchId).text('!');
                     $('#expiring-' + branchId).text('!');
+                    console.error('Data error for branch_id=' + branchId, data);
                 }
             }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
                 // Show error in all fields for this branch
@@ -782,6 +1032,15 @@ $(document).ready(function() {
     }
     setInterval(updateBranchStats, 5000);
     updateBranchStats();
+
+    // Handle refresh button click
+    $('#refreshStats').on('click', function() {
+        $(this).find('i').addClass('fa-spin');
+        updateBranchStats();
+        setTimeout(() => {
+            $(this).find('i').removeClass('fa-spin');
+        }, 1000);
+    });
 
     // Handle View Sales button click
     $('.view-sales-btn').on('click', function() {
@@ -826,4 +1085,5 @@ $(document).ready(function() {
 });
 </script>
 
+<?php include('footer.php'); ?> 
 <?php include('footer.php'); ?> 

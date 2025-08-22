@@ -139,7 +139,9 @@ try {
             
             // Log activity
             $admin_id = $_SESSION['user_id'] ?? null;
-            logActivity($pdo, $admin_id, 'Imported Product', 'Product: ' . $productName . ' (Category: ' . $categoryName . ')');
+            if ($admin_id) {
+                logActivity($pdo, $admin_id, 'Imported Product', 'Product: ' . $productName . ' (Category: ' . $categoryName . ')');
+            }
             
         } catch (PDOException $e) {
             $errors[] = "Row " . ($i + 1) . ": " . $e->getMessage();

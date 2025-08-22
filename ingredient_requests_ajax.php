@@ -8,8 +8,13 @@ header('Content-Type: application/json');
 
 try {
     // Get filter parameters
-    $branch = isset($_POST['branch']) ? $_POST['branch'] : 'all';
-    $status = isset($_POST['status']) ? $_POST['status'] : 'all';
+    $branch = isset($_POST['branch']) ? $_POST['branch'] : '';
+    $status = isset($_POST['status']) ? $_POST['status'] : '';
+    $ingredient = isset($_POST['ingredient']) ? $_POST['ingredient'] : '';
+    $delivery_status = isset($_POST['delivery_status']) ? $_POST['delivery_status'] : '';
+    $date_filter = isset($_POST['date_filter']) ? $_POST['date_filter'] : '';
+    $date_from = isset($_POST['date_from']) ? $_POST['date_from'] : '';
+    $date_to = isset($_POST['date_to']) ? $_POST['date_to'] : '';
     
     // Base query
     $query = "SELECT r.*, b.branch_name, u.user_name as updated_by_name
@@ -18,26 +23,79 @@ try {
               LEFT JOIN pos_user u ON r.updated_by = u.user_id
               WHERE 1=1";
     
+    $params = array();
+    
     // Apply filters
-    if ($branch !== 'all') {
+    if (!empty($branch)) {
         $query .= " AND r.branch_id = :branch";
+        $params[':branch'] = $branch;
     }
-    if ($status !== 'all') {
+    
+    if (!empty($status)) {
         $query .= " AND r.status = :status";
+        $params[':status'] = $status;
+    }
+    
+    if (!empty($delivery_status)) {
+        $query .= " AND r.delivery_status = :delivery_status";
+        $params[':delivery_status'] = $delivery_status;
+    }
+    
+    // Apply date filters
+    if (!empty($date_filter)) {
+        switch ($date_filter) {
+            case 'today':
+                $query .= " AND DATE(r.request_date) = CURDATE()";
+                break;
+            case 'yesterday':
+                $query .= " AND DATE(r.request_date) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+                break;
+            case 'this_week':
+                $query .= " AND YEARWEEK(r.request_date, 1) = YEARWEEK(CURDATE(), 1)";
+                break;
+            case 'this_month':
+                $query .= " AND YEAR(r.request_date) = YEAR(CURDATE()) AND MONTH(r.request_date) = MONTH(CURDATE())";
+                break;
+            case 'custom':
+                if (!empty($date_from)) {
+                    $query .= " AND DATE(r.request_date) >= :date_from";
+                    $params[':date_from'] = $date_from;
+                }
+                if (!empty($date_to)) {
+                    $query .= " AND DATE(r.request_date) <= :date_to";
+                    $params[':date_to'] = $date_to;
+                }
+                break;
+        }
     }
     
     // Prepare and execute query
     $stmt = $pdo->prepare($query);
     
-    if ($branch !== 'all') {
-        $stmt->bindParam(':branch', $branch);
-    }
-    if ($status !== 'all') {
-        $stmt->bindParam(':status', $status);
+    // Bind all parameters
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
     }
     
     $stmt->execute();
     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Apply ingredient filter after fetching data (since ingredients are stored as JSON)
+    if (!empty($ingredient)) {
+        $filtered_requests = array();
+        foreach ($requests as $request) {
+            $ingredients_json = json_decode($request['ingredients'], true);
+            if ($ingredients_json && is_array($ingredients_json)) {
+                foreach ($ingredients_json as $ingredient_item) {
+                    if (isset($ingredient_item['ingredient_id']) && $ingredient_item['ingredient_id'] == $ingredient) {
+                        $filtered_requests[] = $request;
+                        break;
+                    }
+                }
+            }
+        }
+        $requests = $filtered_requests;
+    }
     
     // Format data for DataTables
     $data = array();

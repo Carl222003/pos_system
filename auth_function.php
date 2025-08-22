@@ -189,6 +189,11 @@ function createCashierSession($pdo, $user_id) {
 
 // Universal activity logger
 function logActivity($pdo, $user_id, $action, $details = '', $branch_id = null) {
+    // Skip logging if user_id is null or invalid
+    if ($user_id === null || $user_id <= 0) {
+        return;
+    }
+    
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     
     // If branch_id is not provided, try to get it from user's branch
@@ -202,8 +207,13 @@ function logActivity($pdo, $user_id, $action, $details = '', $branch_id = null) 
         }
     }
     
-    $stmt = $pdo->prepare("INSERT INTO pos_activity_log (user_id, action, details, ip_address, branch_id) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$user_id, $action, $details, $ip, $branch_id]);
+    try {
+        $stmt = $pdo->prepare("INSERT INTO pos_activity_log (user_id, action, details, ip_address, branch_id) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$user_id, $action, $details, $ip, $branch_id]);
+    } catch (Exception $e) {
+        // Log the error but don't throw it to prevent breaking the main operation
+        error_log('Error logging activity: ' . $e->getMessage());
+    }
 }
 
 ?>

@@ -36,13 +36,30 @@ try {
     }
 
     // Get branch assignments for this product
-    $branch_stmt = $pdo->prepare("
-        SELECT branch_id 
-        FROM product_branch 
-        WHERE product_id = ?
-    ");
-    $branch_stmt->execute([$productId]);
-    $branches = $branch_stmt->fetchAll(PDO::FETCH_COLUMN);
+    // Check which table to use
+    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+    $usePosBranchProduct = in_array('pos_branch_product', $tables);
+    
+    $branches = [];
+    if ($usePosBranchProduct) {
+        // Use pos_branch_product table
+        $branch_stmt = $pdo->prepare("
+            SELECT branch_id 
+            FROM pos_branch_product 
+            WHERE product_id = ?
+        ");
+        $branch_stmt->execute([$productId]);
+        $branches = $branch_stmt->fetchAll(PDO::FETCH_COLUMN);
+    } else {
+        // Fallback to product_branch table
+        $branch_stmt = $pdo->prepare("
+            SELECT branch_id 
+            FROM product_branch 
+            WHERE product_id = ?
+        ");
+        $branch_stmt->execute([$productId]);
+        $branches = $branch_stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
     
     $product['branches'] = $branches;
 

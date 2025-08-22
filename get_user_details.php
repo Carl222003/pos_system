@@ -11,15 +11,18 @@ try {
 
     $user_id = $_GET['id'];
     
-    // Get user details
+    // Get user details with branch information
     $stmt = $pdo->prepare("
         SELECT 
             u.*,
             CASE 
                 WHEN u.profile_image IS NULL OR u.profile_image = '' THEN 'uploads/profiles/default.png'
                 ELSE u.profile_image 
-            END as profile_image
+            END as profile_image,
+            b.branch_name,
+            b.branch_code
         FROM pos_user u 
+        LEFT JOIN pos_branch b ON b.branch_id = u.branch_id
         WHERE u.user_id = ?
     ");
     $stmt->execute([$user_id]);
@@ -45,6 +48,21 @@ try {
         if ($cashier_details) {
             $user['cashier_details'] = $cashier_details;
         }
+    }
+
+    // If user is a stockman, get additional details from main user table
+    if ($user['user_type'] === 'Stockman') {
+        // Create stockman details from the main user table data
+        $stockman_details = [
+            'employee_id' => $user['employee_id'] ?: 'Not Assigned',
+            'branch_name' => $user['branch_name'] ?: 'Not Assigned',
+            'date_hired' => $user['date_hired'] ?: 'Not Set',
+            'emergency_contact' => $user['emergency_contact'] ?: 'Not Provided',
+            'emergency_number' => $user['emergency_number'] ?: 'Not Provided',
+            'address' => $user['address'] ?: 'Not Provided'
+        ];
+        
+        $user['stockman_details'] = $stockman_details;
     }
 
     echo json_encode([

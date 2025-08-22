@@ -1,149 +1,57 @@
 <?php
-
 require_once 'db_connect.php';
 require_once 'auth_function.php';
 
-requireLogin();
+// Check if user is logged in
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
 
-// Get filter parameters
-$period = isset($_GET['period']) ? $_GET['period'] : 'day';
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d');
+// Check if product_id is provided
+if (!isset($_GET['product_id']) || empty($_GET['product_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Product ID is required']);
+    exit;
+}
+
+$product_id = intval($_GET['product_id']);
 
 try {
-    // Set the date format and range based on period
-    switch($period) {
-        case 'month':
-            $date_format = '%Y-%m';
-            $date_sql = "DATE_FORMAT(o.order_datetime, '%Y-%m')";
-            $start_date = date('Y-m-01', strtotime($start_date));
-            $end_date = date('Y-m-t', strtotime($start_date));
-            break;
-        case 'year':
-            $date_format = '%Y';
-            $date_sql = "DATE_FORMAT(o.order_datetime, '%Y')";
-            $start_date = date('Y-01-01', strtotime($start_date));
-            $end_date = date('Y-12-31', strtotime($start_date));
-            break;
-        default: // day
-            $date_format = '%Y-%m-%d';
-            $date_sql = "DATE(o.order_datetime)";
-            $end_date = $start_date;
-            break;
+    // Get view count
+    $view_count = 0;
+    $stmt = $pdo->query("SHOW TABLES LIKE 'product_views'");
+    if ($stmt->rowCount() > 0) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) as view_count FROM product_views WHERE product_id = ?");
+        $stmt->execute([$product_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $view_count = intval($result['view_count']);
     }
-
-    // First, get the top 5 most sold products for the selected period
-    $top_products_sql = "
-        SELECT 
-            oi.product_name,
-            SUM(oi.product_qty) as total_quantity
-        FROM pos_order o
-        JOIN pos_order_item oi ON o.order_id = oi.order_id
-        WHERE o.order_datetime BETWEEN :start_date AND :end_date
-        GROUP BY oi.product_name
-        ORDER BY total_quantity DESC
-        LIMIT 5
-    ";
     
-    $stmt = $pdo->prepare($top_products_sql);
-    $stmt->execute(['start_date' => $start_date, 'end_date' => $end_date]);
-    $top_products = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-
-    if (empty($top_products)) {
-        // Return empty dataset if no products found
-        echo json_encode([
-            'labels' => [],
-            'datasets' => []
-        ]);
-        exit;
-    }
-
-    // Get daily sales data for these products
-    $sql = "
-        SELECT 
-            oi.product_name,
-            $date_sql as date_group,
-            SUM(oi.product_qty) as total_quantity
-        FROM pos_order o
-        JOIN pos_order_item oi ON o.order_id = oi.order_id
-        WHERE o.order_datetime BETWEEN :start_date AND :end_date 
-        AND oi.product_name IN (" . str_repeat('?,', count($top_products) - 1) . "?)
-        GROUP BY oi.product_name, date_group
-        ORDER BY date_group ASC, total_quantity DESC
-    ";
-
-    $stmt = $pdo->prepare($sql);
-    $params = array_merge([$start_date, $end_date], $top_products);
-    $stmt->execute($params);
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Generate date range
-    $dates = [];
-    $current = new DateTime($start_date);
-    $last = new DateTime($end_date);
-    $interval = new DateInterval(($period === 'year' ? 'P1M' : ($period === 'month' ? 'P1D' : 'P1D')));
+    // Get order count from pos_order_item table
+    $order_count = 0;
+    $stmt = $pdo->prepare("
+        SELECT COUNT(DISTINCT oi.order_id) as order_count 
+        FROM pos_order_item oi 
+        WHERE oi.product_id = ?
+    ");
+    $stmt->execute([$product_id]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $order_count = intval($result['order_count']);
     
-    while ($current <= $last) {
-        $dates[] = $current->format($period === 'year' ? 'Y' : ($period === 'month' ? 'Y-m' : 'Y-m-d'));
-        $current->add($interval);
-    }
-
-    // Colors for different products
-    $colors = [
-        'rgba(231, 76, 60, 0.8)',   // Red
-        'rgba(52, 152, 219, 0.8)',  // Blue
-        'rgba(46, 204, 113, 0.8)',  // Green
-        'rgba(241, 196, 15, 0.8)',  // Yellow
-        'rgba(155, 89, 182, 0.8)'   // Purple
-    ];
-
-    // Prepare datasets
-    $datasets = [];
-    foreach ($top_products as $index => $product) {
-        $productData = array_fill(0, count($dates), 0); // Initialize with zeros
-        
-        // Fill in actual data where it exists
-        foreach ($data as $row) {
-            if ($row['product_name'] === $product) {
-                $dateIndex = array_search($row['date_group'], $dates);
-                if ($dateIndex !== false) {
-                    $productData[$dateIndex] = (int)$row['total_quantity'];
-                }
-            }
-        }
-
-        $datasets[] = [
-            'label' => $product,
-            'data' => $productData,
-            'backgroundColor' => $colors[$index],
-            'borderColor' => $colors[$index],
-            'borderWidth' => 2,
-            'fill' => false,
-            'tension' => 0.4
-        ];
-    }
-
-    // Format dates for display
-    $display_dates = array_map(function($date) use ($period) {
-        switch($period) {
-            case 'year':
-                return date('Y', strtotime($date));
-            case 'month':
-                return date('M Y', strtotime($date));
-            default:
-                return date('M d', strtotime($date));
-        }
-    }, $dates);
-
-    // Prepare response
-    $response = [
-        'labels' => $display_dates,
-        'datasets' => $datasets
-    ];
-
-    header('Content-Type: application/json');
-    echo json_encode($response);
-
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'view_count' => $view_count,
+            'order_count' => $order_count
+        ]
+    ]);
+    
 } catch (PDOException $e) {
-    header('Content-Type: application/json');
-    echo json_encode(['error' => $e->getMessage()]);
-} 
+    error_log("Database error in get_product_stats.php: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Database error occurred'
+    ]);
+}
+?> 

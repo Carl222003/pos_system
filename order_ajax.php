@@ -57,27 +57,65 @@ if (isset($input['action']) && $input['action'] === 'get_products') {
     $categoryId = $input['category_id'] ?? '';
     
     try {
+        // Get cashier's assigned branch ID
+        $cashierBranchId = null;
+        if (isset($_SESSION['user_id']) && isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'Cashier') {
+            $branchStmt = $pdo->prepare("SELECT branch_id FROM pos_user WHERE user_id = ? AND user_type = 'Cashier'");
+            $branchStmt->execute([$_SESSION['user_id']]);
+            $cashierBranchId = $branchStmt->fetchColumn();
+        }
+        
         if($categoryId === 'all') {
-            // Get all active products
-            $stmt = $pdo->prepare("
-                SELECT p.*, c.category_name 
-                FROM pos_product p
-                LEFT JOIN pos_category c ON p.category_id = c.category_id
-                WHERE p.product_status = 'Available'
-                ORDER BY p.product_name ASC
-            ");
+            if ($cashierBranchId) {
+                // Get products assigned to cashier's branch
+                $stmt = $pdo->prepare("
+                    SELECT p.*, c.category_name, bp.quantity as branch_quantity
+                    FROM pos_product p
+                    LEFT JOIN pos_category c ON p.category_id = c.category_id
+                    INNER JOIN pos_branch_product bp ON p.product_id = bp.product_id
+                    WHERE p.product_status = 'Available' 
+                    AND bp.branch_id = :branch_id
+                    ORDER BY p.product_name ASC
+                ");
+                $stmt->bindParam(':branch_id', $cashierBranchId, PDO::PARAM_INT);
+            } else {
+                // Fallback: get all active products if no branch assigned
+                $stmt = $pdo->prepare("
+                    SELECT p.*, c.category_name 
+                    FROM pos_product p
+                    LEFT JOIN pos_category c ON p.category_id = c.category_id
+                    WHERE p.product_status = 'Available'
+                    ORDER BY p.product_name ASC
+                ");
+            }
             $stmt->execute();
         } else {
-            // Get products for specific category
-            $stmt = $pdo->prepare("
-                SELECT p.*, c.category_name 
-                FROM pos_product p
-                LEFT JOIN pos_category c ON p.category_id = c.category_id
-                WHERE p.category_id = :category_id 
-                AND p.product_status = 'Available'
-                ORDER BY p.product_name ASC
-            ");
-            $stmt->bindParam(':category_id', $categoryId, PDO::PARAM_INT);
+            if ($cashierBranchId) {
+                // Get products for specific category assigned to cashier's branch
+                $stmt = $pdo->prepare("
+                    SELECT p.*, c.category_name, bp.quantity as branch_quantity
+                    FROM pos_product p
+                    LEFT JOIN pos_category c ON p.category_id = c.category_id
+                    INNER JOIN pos_branch_product bp ON p.product_id = bp.product_id
+                    WHERE p.category_id = :category_id 
+                    AND p.product_status = 'Available'
+                    AND bp.branch_id = :branch_id
+                    ORDER BY p.product_name ASC
+                ");
+                $stmt->bindParam(':category_id', $categoryId, PDO::PARAM_INT);
+                $stmt->bindParam(':branch_id', $cashierBranchId, PDO::PARAM_INT);
+            } else {
+                // Fallback: get products for specific category if no branch assigned
+                $stmt = $pdo->prepare("
+                    SELECT p.*, c.category_name 
+                    FROM pos_product p
+                    LEFT JOIN pos_category c ON p.category_id = c.category_id
+                    WHERE p.category_id = :category_id 
+                    AND p.product_status = 'Available'
+                    ORDER BY p.product_name ASC
+                ");
+                $stmt->bindParam(':category_id', $categoryId, PDO::PARAM_INT);
+            }
             $stmt->execute();
         }
 
@@ -91,6 +129,37 @@ if (isset($input['action']) && $input['action'] === 'get_products') {
         echo json_encode([
             'error' => true,
             'message' => 'Error loading products: ' . $e->getMessage()
+        ]);
+        exit;
+    }
+}
+
+// Get branch information for cashiers
+if (isset($input['action']) && $input['action'] === 'get_branch_info') {
+    try {
+        $branchInfo = ['branch_name' => null, 'branch_code' => null];
+        
+        if (isset($_SESSION['user_id']) && isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'Cashier') {
+            $branchStmt = $pdo->prepare("
+                SELECT b.branch_name, b.branch_code 
+                FROM pos_user u 
+                INNER JOIN pos_branch b ON u.branch_id = b.branch_id 
+                WHERE u.user_id = ? AND u.user_type = 'Cashier'
+            ");
+            $branchStmt->execute([$_SESSION['user_id']]);
+            $branchData = $branchStmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($branchData) {
+                $branchInfo = $branchData;
+            }
+        }
+        
+        echo json_encode($branchInfo);
+        exit;
+    } catch (PDOException $e) {
+        echo json_encode([
+            'error' => true,
+            'message' => 'Error loading branch info: ' . $e->getMessage()
         ]);
         exit;
     }

@@ -137,8 +137,119 @@ if (!$branch_id) {
 .stockman-card .ingredient-status.unavailable {
     color: #dc3545;
 }
+
+/* SweetAlert Custom Styling */
+.swal2-confirm-success {
+    background-color: #8B4543 !important;
+    border-color: #8B4543 !important;
+    color: white !important;
+    border-radius: 0.7rem !important;
+    font-weight: 600 !important;
+    padding: 0.7rem 2.2rem !important;
+    font-size: 1.1rem !important;
+    transition: background 0.18s, box-shadow 0.18s !important;
+}
+
+.swal2-confirm-success:hover {
+    background-color: #723836 !important;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.10) !important;
+}
+
+.swal2-confirm-error {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: white !important;
+    border-radius: 0.7rem !important;
+    font-weight: 600 !important;
+    padding: 0.7rem 2.2rem !important;
+    font-size: 1.1rem !important;
+    transition: background 0.18s, box-shadow 0.18s !important;
+}
+
+.swal2-confirm-error:hover {
+    background-color: #c82333 !important;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.10) !important;
+}
+
+.swal2-confirm-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #212529 !important;
+    border-radius: 0.7rem !important;
+    font-weight: 600 !important;
+    padding: 0.7rem 2.2rem !important;
+    font-size: 1.1rem !important;
+    transition: background 0.18s, box-shadow 0.18s !important;
+}
+
+.swal2-confirm-warning:hover {
+    background-color: #e0a800 !important;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.10) !important;
+}
+
+.swal2-popup {
+    border-radius: 1.1rem !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.swal2-title {
+    color: #8B4543 !important;
+    font-weight: 700 !important;
+}
+
+.swal2-content {
+    color: #566a7f !important;
+    font-size: 1rem !important;
+}
+
+/* Ensure proper page layout */
+.container-fluid {
+    width: 100%;
+    padding-right: 20px;
+    padding-left: 20px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* Fix any potential overflow issues */
+.stockman-card {
+    overflow: visible;
+}
+
+/* Ensure ingredients list is properly displayed */
+#ingredient-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e5d6d6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background: #fafafa;
+}
+
+/* Better spacing for ingredient rows */
+.ingredient-row {
+    margin-bottom: 1rem !important;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 0.3rem;
+    border: 1px solid #f0f0f0;
+}
+
+.ingredient-row:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Ensure form elements are properly sized */
+.form-control, .form-select {
+    width: 100%;
+}
+
+/* Add some breathing room */
+.mb-3 {
+    margin-bottom: 1.5rem !important;
+}
 </style>
-<div class="container mt-4">
+<div class="container-fluid px-4">
     <div class="stockman-header">
         <span class="log-icon"><i class="fas fa-clipboard-list"></i></span>
         Request Stock
@@ -157,28 +268,35 @@ if (!$branch_id) {
             <div class="mb-3">
                 <label for="ingredients" class="form-label">Select Ingredients</label>
                 <div id="ingredient-list">
-                    <?php foreach ($ingredients as $ingredient): ?>
-                        <div class="row mb-2 align-items-center ingredient-row ingredient-cat-<?php echo $ingredient['category_id']; ?><?php if ($ingredient['ingredient_status'] !== 'Available') echo ' unavailable'; ?>" style="display:none;">
-                            <div class="col-md-6">
-                                <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
-                                <label for="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
-                                    <strong><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
-                                    <span class="text-muted">(<?php echo htmlspecialchars($ingredient['ingredient_unit']); ?>)</span>
-                                    <span class="ingredient-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
-                                        <?php if ($ingredient['ingredient_status'] === 'Available') {
-                                            echo 'Available: ' . htmlspecialchars($ingredient['ingredient_quantity']);
-                                        } else {
-                                            echo 'Unavailable';
-                                        } ?>
-                                    </span><br>
-                                    <small>Category: <?php echo htmlspecialchars($ingredient['category_name']); ?></small>
-                                </label>
-                            </div>
-                            <div class="col-md-4">
-                                <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Quantity" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
-                            </div>
+                    <?php if (empty($ingredients)): ?>
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No ingredients are currently available for your branch. Please contact the administrator.
                         </div>
-                    <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php foreach ($ingredients as $ingredient): ?>
+                            <div class="row mb-2 align-items-center ingredient-row ingredient-cat-<?php echo $ingredient['category_id']; ?><?php if ($ingredient['ingredient_status'] !== 'Available') echo ' unavailable'; ?>" style="display:none;">
+                                <div class="col-md-6">
+                                    <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
+                                    <label for="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
+                                        <strong><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
+                                        <span class="text-muted">(<?php echo htmlspecialchars($ingredient['ingredient_unit']); ?>)</span>
+                                        <span class="ingredient-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
+                                            <?php if ($ingredient['ingredient_status'] === 'Available') {
+                                                echo 'Available: ' . htmlspecialchars($ingredient['ingredient_quantity']);
+                                            } else {
+                                                echo 'Unavailable';
+                                            } ?>
+                                        </span><br>
+                                        <small>Category: <?php echo htmlspecialchars($ingredient['category_name']); ?></small>
+                                    </label>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Quantity" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="mb-3">
@@ -230,6 +348,118 @@ $(document).ready(function() {
         }
     });
     <?php endif; ?>
+
+    // Handle form submission with AJAX
+    $('#requestStockForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate form before submission
+        const selectedIngredients = $('input[name="ingredients[]"]:checked');
+        if (selectedIngredients.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Ingredients Selected',
+                text: 'Please select at least one ingredient to request.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ffc107',
+                customClass: {
+                    confirmButton: 'swal2-confirm-warning'
+                }
+            });
+            return;
+        }
+        
+        // Check if quantities are entered for selected ingredients
+        let hasQuantities = false;
+        selectedIngredients.each(function() {
+            const ingredientId = $(this).val();
+            const quantity = $(`input[name="quantity[${ingredientId}]"]`).val();
+            if (quantity && quantity > 0) {
+                hasQuantities = true;
+                return false; // break the loop
+            }
+        });
+        
+        if (!hasQuantities) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Quantities Entered',
+                text: 'Please enter quantities for the selected ingredients.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ffc107',
+                customClass: {
+                    confirmButton: 'swal2-confirm-warning'
+                }
+            });
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Submitting...').prop('disabled', true);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    // Show success modal
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Request Submitted!',
+                        text: response.message,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#8B4543',
+                        customClass: {
+                            confirmButton: 'swal2-confirm-success'
+                        }
+                    }).then((result) => {
+                        // Reset form after successful submission
+                        $('#requestStockForm')[0].reset();
+                        $('#ingredient-list .ingredient-row').hide();
+                        $('#categorySelect').val('').trigger('change');
+                        
+                        // Re-enable submit button
+                        submitBtn.html(originalText).prop('disabled', false);
+                    });
+                } else {
+                    // Show error modal
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: response.message,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#dc3545',
+                        customClass: {
+                            confirmButton: 'swal2-confirm-error'
+                        }
+                    });
+                    
+                    // Re-enable submit button
+                    submitBtn.html(originalText).prop('disabled', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                // Show error modal for network/server errors
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error!',
+                    text: 'An error occurred while submitting your request. Please try again.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545',
+                    customClass: {
+                        confirmButton: 'swal2-confirm-error'
+                    }
+                });
+                
+                // Re-enable submit button
+                submitBtn.html(originalText).prop('disabled', false);
+            }
+        });
+    });
 });
 </script>
 <?php

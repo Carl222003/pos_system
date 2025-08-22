@@ -96,6 +96,596 @@ include('header.php');
     z-index: 1050;
 }
 
+/* Enhanced Add Ingredient Modal Styling */
+.enhanced-add-ingredient-modal {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 20px 60px rgba(139, 69, 67, 0.3);
+    backdrop-filter: blur(10px);
+    animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.enhanced-add-ingredient-modal .modal-header {
+    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+    border-radius: 1rem 1rem 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-add-ingredient-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s infinite;
+}
+
+.enhanced-add-ingredient-modal .add-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+}
+
+.enhanced-add-ingredient-modal .modal-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.enhanced-add-ingredient-modal .btn-close {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    animation: glow 2s ease-in-out infinite;
+}
+
+.enhanced-add-ingredient-modal .btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1) rotate(45deg);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.enhanced-add-ingredient-modal .close-x {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.enhanced-add-ingredient-modal .modal-body {
+    padding: 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.enhanced-add-ingredient-modal .form-section {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(139, 69, 67, 0.1);
+    border: 1px solid rgba(139, 69, 67, 0.1);
+    transition: all 0.3s ease;
+}
+
+.enhanced-add-ingredient-modal .form-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(139, 69, 67, 0.15);
+}
+
+.enhanced-add-ingredient-modal .section-title {
+    color: #8B4543;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba(139, 69, 67, 0.2);
+    position: relative;
+}
+
+.enhanced-add-ingredient-modal .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, #8B4543, #A65D5D);
+    animation: shimmer 2s infinite;
+}
+
+.enhanced-add-ingredient-modal .form-label {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.enhanced-add-ingredient-modal .form-label i {
+    color: #8B4543;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+.enhanced-add-ingredient-modal .form-control,
+.enhanced-add-ingredient-modal .form-select {
+    border: 2px solid rgba(139, 69, 67, 0.2);
+    border-radius: 0.75rem;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.enhanced-add-ingredient-modal .form-control:focus,
+.enhanced-add-ingredient-modal .form-select:focus {
+    border-color: #8B4543;
+    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25), 0 8px 25px rgba(139, 69, 67, 0.15);
+    transform: translateY(-2px);
+    background: white;
+}
+
+.enhanced-add-ingredient-modal .form-control[readonly] {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.enhanced-add-ingredient-modal .form-text {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.enhanced-add-ingredient-modal .form-text i {
+    color: #8B4543;
+    margin-right: 0.25rem;
+}
+
+/* Modal Footer Styling */
+.enhanced-add-ingredient-modal .modal-footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid rgba(139, 69, 67, 0.1);
+    padding: 1.5rem 2rem;
+    border-radius: 0 0 1rem 1rem;
+}
+
+.enhanced-add-ingredient-modal .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: none;
+    font-size: 1rem;
+}
+
+.enhanced-add-ingredient-modal .btn-primary {
+    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 69, 67, 0.3);
+}
+
+.enhanced-add-ingredient-modal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 69, 67, 0.4);
+    background: linear-gradient(135deg, #723937 0%, #5a2e2c 100%);
+}
+
+.enhanced-add-ingredient-modal .btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    color: white;
+}
+
+.enhanced-add-ingredient-modal .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+}
+
+/* Keyboard Hints Styling */
+.enhanced-add-ingredient-modal .keyboard-hints {
+    display: flex;
+    align-items: center;
+}
+
+.enhanced-add-ingredient-modal .keyboard-hints small {
+    font-size: 0.8rem;
+    color: #6c757d;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.enhanced-add-ingredient-modal .keyboard-hints:hover small {
+    opacity: 1;
+    color: #8B4543;
+}
+
+.enhanced-add-ingredient-modal .keyboard-hints i {
+    font-size: 0.9rem;
+    margin-right: 0.25rem;
+}
+
+/* Animations */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.6); }
+}
+
+/* Enhanced Import Modal Styling */
+.enhanced-import-modal {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 20px 60px rgba(139, 69, 67, 0.3);
+    backdrop-filter: blur(10px);
+    animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.enhanced-import-modal .modal-header {
+    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+    border-radius: 1rem 1rem 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-import-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s infinite;
+}
+
+.enhanced-import-modal .import-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+}
+
+.enhanced-import-modal .modal-title {
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.enhanced-import-modal .btn-close {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    animation: glow 2s ease-in-out infinite;
+}
+
+.enhanced-import-modal .btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1) rotate(45deg);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.enhanced-import-modal .close-x {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.enhanced-import-modal .modal-body {
+    padding: 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.enhanced-import-modal .import-section,
+.enhanced-import-modal .template-section {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(139, 69, 67, 0.1);
+    border: 1px solid rgba(139, 69, 67, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.enhanced-import-modal .import-section:hover,
+.enhanced-import-modal .template-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(139, 69, 67, 0.15);
+}
+
+.enhanced-import-modal .section-title {
+    color: #8B4543;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba(139, 69, 67, 0.2);
+    position: relative;
+}
+
+.enhanced-import-modal .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, #8B4543, #A65D5D);
+    animation: shimmer 2s infinite;
+}
+
+/* Upload Area Styling */
+.enhanced-import-modal .upload-area-large {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 3px dashed rgba(139, 69, 67, 0.3);
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-import-modal .upload-area-large:hover {
+    border-color: rgba(139, 69, 67, 0.6);
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    transform: translateY(-2px);
+}
+
+.enhanced-import-modal .upload-icon-large {
+    font-size: 3rem;
+    color: #8B4543;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.enhanced-import-modal .upload-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.enhanced-import-modal .upload-description {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.enhanced-import-modal .upload-formats {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.enhanced-import-modal .format-badge {
+    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.enhanced-import-modal .file-input-large {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Template Section Styling */
+.enhanced-import-modal .template-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(139, 69, 67, 0.2);
+}
+
+.enhanced-import-modal .template-header {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.enhanced-import-modal .columns-grid-landscape {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.enhanced-import-modal .column-badge {
+    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.2);
+}
+
+.enhanced-import-modal .template-download {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(139, 69, 67, 0.2);
+}
+
+.enhanced-import-modal .download-link a {
+    color: #8B4543;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.enhanced-import-modal .download-link a:hover {
+    color: #723937;
+    text-decoration: underline;
+}
+
+/* Landscape Modal Styling */
+.landscape-modal {
+    max-width: 1200px !important;
+    min-height: 600px;
+}
+
+.landscape-modal .modal-body {
+    padding: 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    min-height: 500px;
+}
+
+.landscape-modal .import-section,
+.landscape-modal .template-section {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Modal Footer Styling */
+.enhanced-import-modal .modal-footer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid rgba(139, 69, 67, 0.1);
+    padding: 1.5rem 2rem;
+    border-radius: 0 0 1rem 1rem;
+}
+
+.enhanced-import-modal .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: none;
+    font-size: 1rem;
+}
+
+.enhanced-import-modal .btn-primary {
+    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 69, 67, 0.3);
+}
+
+.enhanced-import-modal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 69, 67, 0.4);
+    background: linear-gradient(135deg, #723937 0%, #5a2e2c 100%);
+}
+
+.enhanced-import-modal .btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    color: white;
+}
+
+.enhanced-import-modal .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+}
+
+/* Keyboard Hints Styling */
+.enhanced-import-modal .keyboard-hints {
+    display: flex;
+    align-items: center;
+}
+
+.enhanced-import-modal .keyboard-hints small {
+    font-size: 0.8rem;
+    color: #6c757d;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.enhanced-import-modal .keyboard-hints:hover small {
+    opacity: 1;
+    color: #8B4543;
+}
+
+.enhanced-import-modal .keyboard-hints i {
+    font-size: 0.9rem;
+    margin-right: 0.25rem;
+}
+
 /* Ensure proper modal cleanup */
 body.modal-open {
     overflow: hidden;
@@ -521,6 +1111,17 @@ h1 {
         from { opacity: 0; transform: translateY(-18px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Date validation styling */
+    .form-control.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+
+    .form-control.is-invalid:focus {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
 </style>
 
 <div class="container-fluid px-4">
@@ -552,6 +1153,8 @@ h1 {
                                 <th>Quantity</th>
                                 <th>Unit</th>
                                 <th>Branch</th>
+                                <th>Consume Before</th>
+                                <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -564,7 +1167,7 @@ h1 {
 
 <!-- Edit Ingredient Modal -->
 <div class="modal fade" id="editIngredientModal" tabindex="-1" aria-labelledby="editIngredientModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-body" id="editIngredientModalBody">
         <!-- AJAX-loaded content here -->
@@ -590,120 +1193,339 @@ h1 {
   </div>
 </div>
 
-<!-- Add Ingredient Modal -->
+<!-- Enhanced Add Ingredient Modal -->
 <div class="modal fade" id="addIngredientModal" tabindex="-1" aria-labelledby="addIngredientModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow" style="border-radius: 0.5rem;">
-            <!-- Modal Header -->
-            <div class="modal-header bg-maroon text-white py-3">
-                <h5 class="modal-title" id="addIngredientModalLabel">
-                    <i class="fas fa-carrot me-2"></i>Add Ingredient
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content enhanced-add-ingredient-modal">
+            <!-- Enhanced Modal Header -->
+            <div class="modal-header">
+                <div class="d-flex align-items-center">
+                    <div class="add-icon me-3">
+                        <i class="fas fa-carrot"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="addIngredientModalLabel">Add Ingredient</h5>
+                        <small class="text-light opacity-75">Add new ingredient to inventory</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">
+                    <span class="close-x">×</span>
+                </button>
             </div>
 
-            <!-- Modal Body -->
-            <div class="modal-body bg-light p-3">
+            <!-- Enhanced Modal Body -->
+            <div class="modal-body">
                 <form id="addIngredientForm">
-                    <div class="row">
+                    <div class="row g-4">
                         <!-- Left Column -->
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="category_id" class="form-label fw-medium">Category Name</label>
-                                <select name="category_id" id="category_id" class="form-select border-0 shadow-sm" required>
-                                    <option value="">Select Category</option>
-                                    <?php 
-                                    $categories = $pdo->query("SELECT category_id, category_name FROM pos_category WHERE status = 'active' ORDER BY category_name")->fetchAll(PDO::FETCH_ASSOC);
-                                    foreach ($categories as $category): ?>
-                                        <option value="<?php echo htmlspecialchars($category['category_id']); ?>"><?php echo htmlspecialchars($category['category_name']); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="ingredient_name" class="form-label fw-medium">Ingredient Name</label>
-                                <input type="text" name="ingredient_name" id="ingredient_name" class="form-control border-0 shadow-sm" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="ingredient_quantity" class="form-label fw-medium">Quantity</label>
-                                <input type="number" name="ingredient_quantity" id="ingredient_quantity" class="form-control border-0 shadow-sm" min="0" step="0.01" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="date_added" class="form-label fw-medium">Date Added</label>
-                                <input type="date" name="date_added" id="date_added" class="form-control border-0 shadow-sm" value="<?php echo date('Y-m-d'); ?>" readonly>
+                            <div class="form-section">
+                                <h6 class="section-title">
+                                    <i class="fas fa-info-circle me-2"></i>Basic Information
+                                </h6>
+                                
+                                <div class="mb-4">
+                                    <label for="category_id" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>Category Name
+                                    </label>
+                                    <select name="category_id" id="category_id" class="form-select form-select-lg" required>
+                                        <option value="">Select Category</option>
+                                        <?php 
+                                        $categories = $pdo->query("SELECT category_id, category_name FROM pos_category WHERE status = 'active' ORDER BY category_name")->fetchAll(PDO::FETCH_ASSOC);
+                                        foreach ($categories as $category): ?>
+                                            <option value="<?php echo htmlspecialchars($category['category_id']); ?>"><?php echo htmlspecialchars($category['category_name']); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Select the ingredient category
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="ingredient_name" class="form-label">
+                                        <i class="fas fa-carrot me-1"></i>Ingredient Name
+                                    </label>
+                                    <input type="text" name="ingredient_name" id="ingredient_name" class="form-control form-control-lg" placeholder="Enter ingredient name" required>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Enter the name of the ingredient
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="ingredient_quantity" class="form-label">
+                                        <i class="fas fa-weight-hanging me-1"></i>Quantity
+                                    </label>
+                                    <input type="number" name="ingredient_quantity" id="ingredient_quantity" class="form-control form-control-lg" min="0" step="0.01" placeholder="0.00" required>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Enter the quantity of the ingredient
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="minimum_stock" class="form-label">
+                                        <i class="fas fa-exclamation-triangle me-1" style="color: #dc3545;"></i>Minimum Stock Threshold
+                                    </label>
+                                    <input type="number" name="minimum_stock" id="minimum_stock" class="form-control form-control-lg" min="0" step="0.01" placeholder="0.00" required>
+                                    <div class="form-text">
+                                        <i class="fas fa-bell me-1" style="color: #ffc107;"></i>
+                                        <strong>Alert System:</strong> When current stock falls below this threshold, stockman and admin will be automatically notified
+                                    </div>
+                                    <div class="alert alert-warning mt-2" style="font-size: 0.85rem;">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        <strong>Tip:</strong> Set this to 10-20% of your maximum capacity to ensure timely restocking
+                                    </div>
+                                </div>
+                                
+
+                                
+                                <div class="mb-4">
+                                    <label for="date_added" class="form-label">
+                                        <i class="fas fa-calendar-plus me-1"></i>Date Added
+                                    </label>
+                                    <input type="date" name="date_added" id="date_added" class="form-control form-control-lg" value="<?php echo date('Y-m-d'); ?>" readonly>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Date when ingredient was added (auto-filled)
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Right Column -->
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="ingredient_unit" class="form-label fw-medium">Unit</label>
-                                <input type="text" name="ingredient_unit" id="ingredient_unit" class="form-control border-0 shadow-sm" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="consume_before" class="form-label fw-medium">Consume Before Date</label>
-                                <input type="date" name="consume_before" id="consume_before" class="form-control border-0 shadow-sm" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="branch_id" class="form-label fw-medium">Branch</label>
-                                <select name="branch_id" id="branch_id" class="form-select border-0 shadow-sm" required>
-                                    <option value="">Select Branch</option>
-                                    <?php 
-                                    $branches = $pdo->query("SELECT branch_id, branch_name FROM pos_branch WHERE status = 'Active' ORDER BY branch_name")->fetchAll(PDO::FETCH_ASSOC);
-                                    foreach ($branches as $branch): ?>
-                                        <option value="<?php echo htmlspecialchars($branch['branch_id']); ?>"><?php echo htmlspecialchars($branch['branch_name']); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="ingredient_status" class="form-label fw-medium">Status</label>
-                                <select name="ingredient_status" id="ingredient_status" class="form-select border-0 shadow-sm">
-                                    <option value="Available">Available</option>
-                                    <option value="Out of Stock">Out of Stock</option>
-                                </select>
+                            <div class="form-section">
+                                <h6 class="section-title">
+                                    <i class="fas fa-cog me-2"></i>Details & Status
+                                </h6>
+                                
+                                <div class="mb-4">
+                                    <label for="ingredient_unit" class="form-label">
+                                        <i class="fas fa-ruler me-1"></i>Unit
+                                    </label>
+                                    <input type="text" name="ingredient_unit" id="ingredient_unit" class="form-control form-control-lg" placeholder="e.g., kg, liters, pieces" required>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Unit of measurement (kg, liters, pieces, etc.)
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="consume_before" class="form-label">
+                                        <i class="fas fa-calendar-times me-1"></i>Consume Before Date
+                                    </label>
+                                    <input type="date" name="consume_before" id="consume_before" class="form-control form-control-lg" required>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Expiry date or best before date (must be after date added)
+                                    </div>
+                                    <div id="consume_before_error" class="text-danger" style="display: none;">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        Consume before date must be after the date added
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="branch_id" class="form-label">
+                                        <i class="fas fa-store me-1"></i>Branch
+                                    </label>
+                                    <select name="branch_id" id="branch_id" class="form-select form-select-lg" required>
+                                        <option value="">Select Branch</option>
+                                        <?php 
+                                        $branches = $pdo->query("SELECT branch_id, branch_name FROM pos_branch WHERE status = 'Active' ORDER BY branch_name")->fetchAll(PDO::FETCH_ASSOC);
+                                        foreach ($branches as $branch): ?>
+                                            <option value="<?php echo htmlspecialchars($branch['branch_id']); ?>"><?php echo htmlspecialchars($branch['branch_name']); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Select which branch will store this ingredient
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="ingredient_status" class="form-label">
+                                        <i class="fas fa-toggle-on me-1"></i>Status
+                                    </label>
+                                    <select name="ingredient_status" id="ingredient_status" class="form-select form-select-lg" required>
+                                        <option value="Available">🟢 Available</option>
+                                        <option value="Out of Stock">🔴 Out of Stock</option>
+                                        <option value="Low Stock">🟡 Low Stock</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Current availability status of the ingredient
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="storage_location" class="form-label">
+                                        <i class="fas fa-map-marker-alt me-1"></i>Storage Location
+                                    </label>
+                                    <input type="text" name="storage_location" id="storage_location" class="form-control form-control-lg" placeholder="e.g., Refrigerator, Pantry, Freezer">
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Where the ingredient is stored in the branch
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="cost_per_unit" class="form-label">
+                                        <i class="fas fa-dollar-sign me-1"></i>Cost per Unit
+                                    </label>
+                                    <input type="number" name="cost_per_unit" id="cost_per_unit" class="form-control form-control-lg" min="0" step="0.01" placeholder="0.00">
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Cost per unit of the ingredient
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="notes" class="form-label">
+                                        <i class="fas fa-sticky-note me-1"></i>Notes
+                                    </label>
+                                    <textarea name="notes" id="notes" class="form-control form-control-lg" rows="3" placeholder="Additional notes about the ingredient"></textarea>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Any additional information about the ingredient
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer border-0 px-3 pb-3 pt-0">
-                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Cancel
-                </button>
-                <button type="button" class="btn btn-maroon px-4" id="saveIngredient">
-                    <i class="fas fa-save me-2"></i>Save Ingredient
-                </button>
+            
+            <!-- Enhanced Modal Footer -->
+            <div class="modal-footer">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div class="keyboard-hints">
+                        <small class="text-muted">
+                            <i class="fas fa-keyboard me-1"></i>
+                            Ctrl+S to save • Esc to close
+                        </small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary btn-lg" id="saveIngredient">
+                            <i class="fas fa-plus me-2"></i>Add Ingredient
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Import CSV/Excel Modal -->
+<!-- Enhanced Import CSV/Excel Modal -->
 <div class="modal fade" id="importCsvModal" tabindex="-1" aria-labelledby="importCsvModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content enhanced-import-modal landscape-modal">
+      <!-- Enhanced Modal Header -->
       <div class="modal-header">
-        <h5 class="modal-title" id="importCsvModalLabel">Import Ingredients from CSV/Excel</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="d-flex align-items-center">
+          <div class="import-icon me-3">
+            <i class="fas fa-file-import"></i>
+          </div>
+          <div>
+            <h5 class="modal-title mb-0" id="importCsvModalLabel">Import Ingredients from CSV</h5>
+            <small class="text-light opacity-75">Bulk import ingredients from CSV/Excel file</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">
+          <span class="close-x">×</span>
+        </button>
       </div>
-      <form id="importCsvForm" enctype="multipart/form-data">
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="csvFile" class="form-label">Select CSV or Excel file</label>
-            <input type="file" class="form-control" id="csvFile" name="csvFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
-            <div class="form-text">Accepted formats: .csv, .xlsx</div>
+      
+      <!-- Enhanced Modal Body -->
+      <div class="modal-body">
+        <form id="importCsvForm" enctype="multipart/form-data">
+          <div class="row g-4">
+            <!-- Left Column - File Upload -->
+            <div class="col-lg-6">
+              <div class="import-section">
+                <h6 class="section-title">
+                  <i class="fas fa-upload me-2"></i>File Upload
+                </h6>
+                
+                <div class="upload-area-large">
+                  <div class="upload-icon-large">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                  </div>
+                  <div class="upload-title">Choose your CSV/Excel file</div>
+                  <div class="upload-description">
+                    Drag and drop your file here or click to browse
+                  </div>
+                  <div class="upload-formats">
+                    <span class="format-badge">CSV</span>
+                    <span class="format-badge">XLSX</span>
+                    <span class="format-badge">XLS</span>
+                  </div>
+                  <input type="file" class="file-input-large" id="csvFile" name="csvFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right Column - Template Requirements -->
+            <div class="col-lg-6">
+              <div class="template-section">
+                <h6 class="section-title">
+                  <i class="fas fa-info-circle me-2"></i>Template Requirements
+                </h6>
+                
+                <div class="template-info">
+                  <div class="template-header">
+                    <i class="fas fa-table me-2"></i>
+                    Required columns for your CSV file:
+                  </div>
+                  
+                  <div class="columns-grid-landscape">
+                    <div class="column-badge">category_id</div>
+                    <div class="column-badge">ingredient_name</div>
+                    <div class="column-badge">ingredient_quantity</div>
+                    <div class="column-badge">ingredient_unit</div>
+                    <div class="column-badge">branch_id</div>
+                    <div class="column-badge">ingredient_status</div>
+                    <div class="column-badge">consume_before</div>
+                    <div class="column-badge">[notes]</div>
+                  </div>
+                  
+                  <div class="template-download">
+                    <div class="download-link">
+                      <i class="fas fa-download me-2"></i>
+                      <a href="sample_ingredients_import.csv" download>Download Sample CSV Template</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="alert alert-info small">
-            <b>Template columns:</b> category_id, ingredient_name, ingredient_quantity, ingredient_unit, [notes]<br>
-            <a href="sample_ingredients_import.csv" download>Download sample CSV</a>
+        </form>
+      </div>
+      
+      <!-- Enhanced Modal Footer -->
+      <div class="modal-footer">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="keyboard-hints">
+            <small class="text-muted">
+              <i class="fas fa-keyboard me-1"></i>
+              Esc to close
+            </small>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">
+              <i class="fas fa-times me-2"></i>Cancel
+            </button>
+            <button type="submit" class="btn btn-primary btn-lg" form="importCsvForm">
+              <i class="fas fa-file-import me-2"></i>Import Ingredients
+            </button>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Import</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
@@ -728,9 +1550,11 @@ function showFeedbackModal(type, title, text) {
 $(document).ready(function() {
     $('#ingredientTable').DataTable({
         "processing": true,
-        "serverSide": true,
+        "serverSide": false, // Changed to false to load all data at once
+        "pageLength": 10, // Show 10 records per page by default
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], // Multiple options including "All"
         "ajax": {
-            "url": "ingredients_ajax.php",
+            "url": "get_all_ingredients.php", // New endpoint for all data
             "type": "GET"
         },
         "columns": [
@@ -740,6 +1564,64 @@ $(document).ready(function() {
             { "data": "ingredient_quantity" },
             { "data": "ingredient_unit" },
             { "data": "branch_name" },
+            { 
+                "data": "consume_before",
+                "render": function(data, type, row) {
+                    if (data) {
+                        const date = new Date(data);
+                        const today = new Date();
+                        const diffTime = date - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        let badgeClass = 'badge bg-success';
+                        if (diffDays <= 7) {
+                            badgeClass = 'badge bg-danger';
+                        } else if (diffDays <= 30) {
+                            badgeClass = 'badge bg-warning';
+                        }
+                        
+                        return `<span class="${badgeClass}">${date.toLocaleDateString()}</span>`;
+                    }
+                    return '<span class="badge bg-secondary">No date</span>';
+                }
+            },
+            { 
+                "data": "ingredient_status",
+                "render": function(data, type, row) {
+                    const currentStock = parseFloat(row.ingredient_quantity) || 0;
+                    const threshold = parseFloat(row.minimum_stock) || 0;
+                    
+                    let badgeClass = 'badge bg-success';
+                    let icon = '🟢';
+                    let status = data;
+                    let alertIndicator = '';
+                    
+                    // Check if current stock is below threshold
+                    if (currentStock <= 0) {
+                        badgeClass = 'badge bg-danger';
+                        icon = '🔴';
+                        status = 'Out of Stock';
+                        alertIndicator = '<i class="fas fa-bell text-danger ms-1" title="Critical Alert!"></i>';
+                    } else if (currentStock <= threshold) {
+                        badgeClass = 'badge bg-warning';
+                        icon = '🟡';
+                        status = 'Below Threshold';
+                        alertIndicator = '<i class="fas fa-bell text-warning ms-1" title="Low Stock Alert!"></i>';
+                    } else if (data === 'Low Stock') {
+                        badgeClass = 'badge bg-warning';
+                        icon = '🟡';
+                        alertIndicator = '<i class="fas fa-bell text-warning ms-1" title="Manual Low Stock"></i>';
+                    }
+                    
+                    return `
+                        <div>
+                            <span class="${badgeClass}">${icon} ${status}</span>
+                            ${alertIndicator}
+                            ${threshold > 0 ? `<br><small class="text-muted">Threshold: ${threshold}</small>` : ''}
+                        </div>
+                    `;
+                }
+            },
             {
                 "data": null,
                 "render": function(data, type, row) {
@@ -757,7 +1639,13 @@ $(document).ready(function() {
                         </div>`;
                 }
             }
-        ]
+        ],
+        "dom": '<"top"lf>rt<"bottom"ip><"clear">', // Show length menu, search, pagination, and info
+        "paging": true, // Enable pagination
+        "info": true, // Show "Showing X to Y of Z entries" info
+        "searching": true, // Keep search functionality
+        "ordering": true, // Keep sorting functionality
+        "lengthChange": true // Show the "Show X entries" dropdown
     });
 
     // Handle Delete Button Click
@@ -912,8 +1800,65 @@ $('#viewIngredientModal').on('hidden.bs.modal', function () {
 
 
 
+// Date validation function
+function validateConsumeBefore() {
+    const dateAdded = document.getElementById('date_added').value;
+    const consumeBefore = document.getElementById('consume_before').value;
+    const errorDiv = document.getElementById('consume_before_error');
+    const consumeBeforeInput = document.getElementById('consume_before');
+    
+    if (dateAdded && consumeBefore) {
+        const addedDate = new Date(dateAdded);
+        const consumeDate = new Date(consumeBefore);
+        
+        if (consumeDate <= addedDate) {
+            errorDiv.style.display = 'block';
+            consumeBeforeInput.classList.add('is-invalid');
+            return false;
+        } else {
+            errorDiv.style.display = 'none';
+            consumeBeforeInput.classList.remove('is-invalid');
+            return true;
+        }
+    }
+    
+    return true;
+}
+
+// Add event listeners for date validation
+$(document).ready(function() {
+    $('#date_added, #consume_before').on('change', function() {
+        validateConsumeBefore();
+    });
+    
+    // Set minimum date for consume_before based on date_added
+    $('#date_added').on('change', function() {
+        const dateAdded = $(this).val();
+        if (dateAdded) {
+            $('#consume_before').attr('min', dateAdded);
+        }
+    });
+    
+    // Set initial minimum date
+    const currentDate = $('#date_added').val();
+    if (currentDate) {
+        $('#consume_before').attr('min', currentDate);
+    }
+});
+
 // Handle Add Ingredient button click
 $('#saveIngredient').click(function() {
+    // Validate dates before submission
+    if (!validateConsumeBefore()) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Date',
+            text: 'Consume before date must be after the date added.',
+            confirmButtonColor: '#8B4543'
+        });
+        return;
+    }
+    
     var formData = $('#addIngredientForm').serialize();
     
     $.ajax({
