@@ -1,4 +1,8 @@
 <?php
+// Suppress warnings to prevent them from breaking JSON output
+error_reporting(E_ERROR | E_PARSE);
+ini_set('display_errors', 0);
+
 require_once 'db_connect.php';
 require_once 'auth_function.php';
 
@@ -63,28 +67,34 @@ try {
         throw new Exception('Request not found');
     }
 
-    // If status is approved, validate stock availability first
+    // If status is approved, we'll allow approval regardless of current stock availability
+    // The admin can approve requests and add ingredients to the branch later
     if ($status === 'approved') {
         $ingredients_json = json_decode($request_data['ingredients'], true);
         
         if ($ingredients_json && is_array($ingredients_json)) {
-            // Check if there's enough stock for all requested ingredients
+            // Log which ingredients are being approved (for admin reference)
             foreach ($ingredients_json as $ingredient) {
                 if (isset($ingredient['ingredient_id']) && isset($ingredient['quantity'])) {
                     $ingredient_id = $ingredient['ingredient_id'];
                     $requested_quantity = floatval($ingredient['quantity']);
                     
-                    // Get current stock for this ingredient
-                    $stock_check = $pdo->prepare("SELECT ingredient_name, ingredient_quantity, ingredient_unit FROM ingredients WHERE ingredient_id = ? AND branch_id = ?");
+                    // Get ingredient name for logging
+                    $ingredient_name_stmt = $pdo->prepare("SELECT ingredient_name FROM ingredients WHERE ingredient_id = ?");
+                    $ingredient_name_stmt->execute([$ingredient_id]);
+                    $ingredient_name = $ingredient_name_stmt->fetchColumn() ?: "Unknown ingredient";
+                    
+                    // Check if ingredient exists in branch (for logging purposes only)
+                    $stock_check = $pdo->prepare("SELECT i.ingredient_name, bi.quantity as ingredient_quantity, i.ingredient_unit 
+                                                  FROM ingredients i 
+                                                  INNER JOIN branch_ingredient bi ON i.ingredient_id = bi.ingredient_id 
+                                                  WHERE i.ingredient_id = ? AND bi.branch_id = ? AND bi.status = 'active'");
                     $stock_check->execute([$ingredient_id, $request_data['branch_id']]);
                     $current_stock = $stock_check->fetch(PDO::FETCH_ASSOC);
                     
                     if (!$current_stock) {
-                        throw new Exception("Ingredient not found in this branch");
-                    }
-                    
-                    if ($current_stock['ingredient_quantity'] < $requested_quantity) {
-                        throw new Exception("Insufficient stock for {$current_stock['ingredient_name']}. Available: {$current_stock['ingredient_quantity']} {$current_stock['ingredient_unit']}, Requested: {$requested_quantity} {$current_stock['ingredient_unit']}");
+                        // Log that this ingredient needs to be added to the branch
+                        error_log("Approved request for ingredient '$ingredient_name' that is not currently in branch. Admin should add this ingredient to the branch.");
                     }
                 }
             }
@@ -114,7 +124,7 @@ try {
             throw new Exception('Failed to update request status');
         }
 
-        // If status is approved, deduct ingredient quantities from inventory
+        // If status is approved, handle ingredient quantities (deduct from main branch, add to requesting branch)
         if ($status === 'approved') {
             $ingredients_json = json_decode($request_data['ingredients'], true);
             
@@ -123,31 +133,123 @@ try {
                     if (isset($ingredient['ingredient_id']) && isset($ingredient['quantity'])) {
                         $ingredient_id = $ingredient['ingredient_id'];
                         $requested_quantity = floatval($ingredient['quantity']);
+                        $requesting_branch_id = $request_data['branch_id'];
+                        $main_branch_id = 5; // Main branch ID (More Bites Main)
                         
-                        // Get current quantity before deduction
-                        $current_qty_stmt = $pdo->prepare("SELECT ingredient_quantity FROM ingredients WHERE ingredient_id = ? AND branch_id = ?");
-                        $current_qty_stmt->execute([$ingredient_id, $request_data['branch_id']]);
-                        $current_quantity = $current_qty_stmt->fetchColumn();
-                        $new_quantity = $current_quantity - $requested_quantity;
+                        // 1. DEDUCT FROM MAIN BRANCH (branch_id = 5)
+                        // Check if ingredient exists in main branch
+                        $main_branch_check = $pdo->prepare("SELECT quantity FROM branch_ingredient WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'");
+                        $main_branch_check->execute([$ingredient_id, $main_branch_id]);
+                        $main_branch_quantity = $main_branch_check->fetchColumn();
                         
-                        // Deduct from ingredient quantity (this is the key change - we DEDUCT, not add)
-                        $update_ingredient = $pdo->prepare("
-                            UPDATE ingredients 
-                            SET ingredient_quantity = ?,
-                                ingredient_status = CASE 
-                                    WHEN ? <= 0 THEN 'Out of Stock'
-                                    WHEN ? <= 5 THEN 'Low Stock'
-                                    ELSE 'Available'
-                                END
-                            WHERE ingredient_id = ? AND branch_id = ?
-                        ");
-                        
-                        if (!$update_ingredient->execute([$new_quantity, $new_quantity, $new_quantity, $ingredient_id, $request_data['branch_id']])) {
-                            throw new Exception('Failed to update ingredient quantity');
+                        if ($main_branch_quantity !== false) {
+                            // Deduct from main branch
+                            $new_main_quantity = $main_branch_quantity - $requested_quantity;
+                            
+                            // Update main branch ingredient quantity
+                            $update_main_branch = $pdo->prepare("
+                                UPDATE branch_ingredient 
+                                SET quantity = ?
+                                WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'
+                            ");
+                            
+                            if (!$update_main_branch->execute([$new_main_quantity, $ingredient_id, $main_branch_id])) {
+                                throw new Exception('Failed to update main branch ingredient quantity');
+                            }
+                            
+                            // Log deduction from main branch
+                            $main_movement_stmt = $pdo->prepare("
+                                INSERT INTO stock_movements (
+                                    ingredient_id, 
+                                    branch_id, 
+                                    movement_type, 
+                                    quantity, 
+                                    reason, 
+                                    reference_id, 
+                                    reference_type, 
+                                    movement_date, 
+                                    performed_by
+                                ) VALUES (?, ?, 'deduction', ?, ?, ?, 'ingredient_request', NOW(), ?)
+                            ");
+                            
+                            $main_movement_stmt->execute([
+                                $ingredient_id,
+                                $main_branch_id,
+                                $requested_quantity,
+                                "Stockman request approved - transferred to branch $requesting_branch_id - ID: $requestId",
+                                $requestId,
+                                $updatedBy ?: null
+                            ]);
+                        } else {
+                            // Main branch doesn't have this ingredient - create it with 0 quantity
+                            $insert_main_branch = $pdo->prepare("
+                                INSERT INTO branch_ingredient (branch_id, ingredient_id, quantity, minimum_stock, status)
+                                VALUES (?, ?, 0, 5, 'active')
+                            ");
+                            
+                            if (!$insert_main_branch->execute([$main_branch_id, $ingredient_id])) {
+                                throw new Exception('Failed to create ingredient in main branch');
+                            }
+                            
+                            // Log creation in main branch
+                            $main_movement_stmt = $pdo->prepare("
+                                INSERT INTO stock_movements (
+                                    ingredient_id, 
+                                    branch_id, 
+                                    movement_type, 
+                                    quantity, 
+                                    reason, 
+                                    reference_id, 
+                                    reference_type, 
+                                    movement_date, 
+                                    performed_by
+                                ) VALUES (?, ?, 'addition', ?, ?, ?, 'ingredient_request', NOW(), ?)
+                            ");
+                            
+                            $main_movement_stmt->execute([
+                                $ingredient_id,
+                                $main_branch_id,
+                                0,
+                                "Created ingredient in main branch for request - ID: $requestId",
+                                $requestId,
+                                $updatedBy ?: null
+                            ]);
                         }
                         
-                        // Log the stock deduction
-                        $stock_movement_stmt = $pdo->prepare("
+                        // 2. ADD TO REQUESTING BRANCH
+                        // Check if ingredient exists in requesting branch
+                        $requesting_branch_check = $pdo->prepare("SELECT quantity FROM branch_ingredient WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'");
+                        $requesting_branch_check->execute([$ingredient_id, $requesting_branch_id]);
+                        $requesting_branch_quantity = $requesting_branch_check->fetchColumn();
+                        
+                        if ($requesting_branch_quantity !== false) {
+                            // Add to existing ingredient in requesting branch
+                            $new_requesting_quantity = $requesting_branch_quantity + $requested_quantity;
+                            
+                            // Update requesting branch ingredient quantity
+                            $update_requesting_branch = $pdo->prepare("
+                                UPDATE branch_ingredient 
+                                SET quantity = ?
+                                WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'
+                            ");
+                            
+                            if (!$update_requesting_branch->execute([$new_requesting_quantity, $ingredient_id, $requesting_branch_id])) {
+                                throw new Exception('Failed to update requesting branch ingredient quantity');
+                            }
+                        } else {
+                            // Create ingredient in requesting branch with requested quantity
+                            $insert_requesting_branch = $pdo->prepare("
+                                INSERT INTO branch_ingredient (branch_id, ingredient_id, quantity, minimum_stock, status)
+                                VALUES (?, ?, ?, 5, 'active')
+                            ");
+                            
+                            if (!$insert_requesting_branch->execute([$requesting_branch_id, $ingredient_id, $requested_quantity])) {
+                                throw new Exception('Failed to create ingredient in requesting branch');
+                            }
+                        }
+                        
+                        // Log addition to requesting branch
+                        $requesting_movement_stmt = $pdo->prepare("
                             INSERT INTO stock_movements (
                                 ingredient_id, 
                                 branch_id, 
@@ -158,16 +260,16 @@ try {
                                 reference_type, 
                                 movement_date, 
                                 performed_by
-                            ) VALUES (?, ?, 'deduction', ?, ?, ?, 'ingredient_request', NOW(), ?)
+                            ) VALUES (?, ?, 'addition', ?, ?, ?, 'ingredient_request', NOW(), ?)
                         ");
                         
-                        $stock_movement_stmt->execute([
+                        $requesting_movement_stmt->execute([
                             $ingredient_id,
-                            $request_data['branch_id'],
+                            $requesting_branch_id,
                             $requested_quantity,
-                            "Stockman request approved - ID: $requestId",
+                            "Stockman request approved - received from main branch - ID: $requestId",
                             $requestId,
-                            $updatedBy
+                            $updatedBy ?: null
                         ]);
                     }
                 }
@@ -184,25 +286,20 @@ try {
                         $ingredient_id = $ingredient['ingredient_id'];
                         $returned_quantity = floatval($ingredient['quantity']);
                         
-                        // Get current quantity before restoration
-                        $current_qty_stmt = $pdo->prepare("SELECT ingredient_quantity FROM ingredients WHERE ingredient_id = ? AND branch_id = ?");
+                        // Get current quantity before restoration from branch_ingredient table
+                        $current_qty_stmt = $pdo->prepare("SELECT quantity FROM branch_ingredient WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'");
                         $current_qty_stmt->execute([$ingredient_id, $request_data['branch_id']]);
                         $current_quantity = $current_qty_stmt->fetchColumn();
                         $new_quantity = $current_quantity + $returned_quantity;
                         
-                        // Restore ingredient quantity back to inventory
+                        // Restore ingredient quantity back to inventory in branch_ingredient table
                         $update_ingredient = $pdo->prepare("
-                            UPDATE ingredients 
-                            SET ingredient_quantity = ?,
-                                ingredient_status = CASE 
-                                    WHEN ? <= 0 THEN 'Out of Stock'
-                                    WHEN ? <= 5 THEN 'Low Stock'
-                                    ELSE 'Available'
-                                END
-                            WHERE ingredient_id = ? AND branch_id = ?
+                            UPDATE branch_ingredient 
+                            SET quantity = ?
+                            WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'
                         ");
                         
-                        if (!$update_ingredient->execute([$new_quantity, $new_quantity, $new_quantity, $ingredient_id, $request_data['branch_id']])) {
+                        if (!$update_ingredient->execute([$new_quantity, $ingredient_id, $request_data['branch_id']])) {
                             throw new Exception('Failed to update ingredient quantity');
                         }
                         
@@ -227,7 +324,7 @@ try {
                             $returned_quantity,
                             "Stockman request returned - ID: $requestId",
                             $requestId,
-                            $updatedBy
+                            $updatedBy ?: null
                         ]);
                     }
                 }
@@ -241,8 +338,8 @@ try {
         $branch_name = $pdo->query("SELECT branch_name FROM pos_branch WHERE branch_id = " . $request_data['branch_id'])->fetchColumn();
         
         if ($status === 'approved') {
-            $action_message = "Approved ingredient request and deducted quantities from inventory";
-            $log_details = "Request ID: $requestId, Status: $status, Branch: $branch_name, Ingredients deducted from inventory";
+            $action_message = "Approved ingredient request and transferred quantities from main branch";
+            $log_details = "Request ID: $requestId, Status: $status, Branch: $branch_name, Ingredients transferred from main branch";
         } elseif ($status === 'returned') {
             $action_message = "Processed ingredient return and restored quantities to inventory";
             $log_details = "Request ID: $requestId, Status: $status, Branch: $branch_name, Ingredients restored to inventory";
@@ -257,7 +354,7 @@ try {
         
         // Set appropriate success message based on status
         if ($status === 'approved') {
-            $message = 'Request approved and ingredients deducted from inventory successfully';
+            $message = 'Request approved and ingredients transferred from main branch successfully';
         } elseif ($status === 'returned') {
             $message = 'Return processed and ingredients restored to inventory successfully';
         } else {
@@ -272,10 +369,23 @@ try {
         throw $e;
     }
 
-} catch (Exception $e) {
+} catch (PDOException $e) {
+    error_log("Database error in update_ingredient_request.php: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(array(
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => 'Database error: ' . $e->getMessage(),
+        'debug_info' => [
+            'request_id' => $requestId ?? 'not set',
+            'status' => $status ?? 'not set',
+            'branch_id' => $request_data['branch_id'] ?? 'not set'
+        ]
+    ));
+} catch (Exception $e) {
+    error_log("General error in update_ingredient_request.php: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(array(
+        'success' => false,
+        'message' => 'An error occurred: ' . $e->getMessage()
     ));
 } 

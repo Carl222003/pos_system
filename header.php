@@ -1026,6 +1026,12 @@
                                             </a>
                                         </li>
                                         <li class="menu-item">
+                                            <a href="request_stock_updates.php" class="menu-link">
+                                                <i class="fa-solid fa-edit"></i>
+                                                <span>Update Stock</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item">
                                             <a href="stockman_activity_log.php" class="menu-link">
                                                 <i class="fa-solid fa-clipboard-list"></i>
                                                 <span>Activity Log</span>
@@ -1063,6 +1069,12 @@
                                             <a href="ingredient_requests.php" class="menu-link">
                                                 <i class="fa-solid fa-clipboard-list"></i>
                                                 <span>List of Request</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item">
+                                            <a href="admin_stock_update_requests.php" class="menu-link">
+                                                <i class="fa-solid fa-edit"></i>
+                                                <span>Stock Update Requests</span>
                                             </a>
                                         </li>
                                         <li class="menu-item">

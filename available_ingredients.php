@@ -620,16 +620,18 @@ include('header.php');
     box-shadow: 0 4px 15px rgba(139, 69, 67, 0.2);
 }
 
-.view-btn:hover {
-    background: #8B4543;
-    color: white;
-    border-color: #8B4543;
-}
+
 
 .request-btn:hover {
     background: #007bff;
     color: white;
     border-color: #007bff;
+}
+
+.adjust-btn:hover {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
 }
 
 .action-buttons {
@@ -658,16 +660,18 @@ include('header.php');
     box-shadow: 0 2px 8px rgba(139, 69, 67, 0.2);
 }
 
-.view-table-btn:hover {
-    background: #8B4543;
-    color: white;
-    border-color: #8B4543;
-}
+
 
 .request-table-btn:hover {
     background: #007bff;
     color: white;
     border-color: #007bff;
+}
+
+.adjust-table-btn:hover {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
 }
 
 .stock-badge {
@@ -881,9 +885,9 @@ function createIngredientCard(ingredient) {
         ` : ''}
         
         <div class="card-actions">
-            <button class="card-action-btn view-btn" onclick="viewDetails(${ingredient.ingredient_id})">
-                <i class="fas fa-eye"></i>
-                View Details
+            <button class="card-action-btn adjust-btn" onclick="adjustQuantity(${ingredient.ingredient_id}, '${ingredient.ingredient_name}', ${ingredient.ingredient_quantity}, '${ingredient.ingredient_unit}')">
+                <i class="fas fa-edit"></i>
+                Adjust Quantity
             </button>
             <button class="card-action-btn request-btn" onclick="requestStock(${ingredient.ingredient_id})" ${ingredient.availability_status === 'available' ? 'disabled' : ''}>
                 <i class="fas fa-shopping-cart"></i>
@@ -931,8 +935,8 @@ function createIngredientRow(ingredient) {
         </td>
         <td>
             <div class="action-buttons">
-                <button class="table-action-btn view-table-btn" onclick="viewDetails(${ingredient.ingredient_id})" title="View Details">
-                    <i class="fas fa-eye"></i>
+                <button class="table-action-btn adjust-table-btn" onclick="adjustQuantity(${ingredient.ingredient_id}, '${ingredient.ingredient_name}', ${ingredient.ingredient_quantity}, '${ingredient.ingredient_unit}')" title="Adjust Quantity">
+                    <i class="fas fa-edit"></i>
                 </button>
                 <button class="table-action-btn request-table-btn" onclick="requestStock(${ingredient.ingredient_id})" title="Request Stock" ${ingredient.availability_status === 'available' ? 'disabled' : ''}>
                     <i class="fas fa-shopping-cart"></i>
@@ -975,7 +979,181 @@ function refreshIngredients() {
         btn.disabled = false;
     }, 2000);
 }
+
+// Adjust Quantity Function
+function adjustQuantity(ingredientId, ingredientName, currentQuantity, unit) {
+    // Populate the modal with ingredient information
+    document.getElementById('adjustIngredientName').textContent = ingredientName;
+    document.getElementById('adjustCurrentQuantity').textContent = `${currentQuantity} ${unit}`;
+    document.getElementById('adjustIngredientId').value = ingredientId;
+    document.getElementById('adjustNewQuantity').value = currentQuantity;
+    document.getElementById('adjustUnit').textContent = unit;
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('adjustQuantityModal'));
+    modal.show();
+}
+
+// Submit quantity adjustment
+function submitQuantityAdjustment() {
+    const ingredientId = document.getElementById('adjustIngredientId').value;
+    const newQuantity = document.getElementById('adjustNewQuantity').value;
+    const reason = document.getElementById('adjustReason').value;
+    const notes = document.getElementById('adjustNotes').value;
+    
+    // Validate inputs
+    if (!newQuantity || newQuantity < 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Quantity',
+            text: 'Please enter a valid quantity (0 or greater).',
+            confirmButtonColor: '#8B4543'
+        });
+        return;
+    }
+    
+    if (!reason.trim()) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Reason Required',
+            text: 'Please provide a reason for this quantity adjustment.',
+            confirmButtonColor: '#8B4543'
+        });
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('submitAdjustment');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+    submitBtn.disabled = true;
+    
+    // Submit the adjustment
+    fetch('adjust_ingredient_quantity.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            ingredient_id: ingredientId,
+            new_quantity: parseFloat(newQuantity),
+            reason: reason,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Quantity Updated!',
+                text: data.message,
+                confirmButtonColor: '#8B4543'
+            }).then(() => {
+                // Close modal and refresh ingredients
+                const modal = bootstrap.Modal.getInstance(document.getElementById('adjustQuantityModal'));
+                modal.hide();
+                loadAvailableIngredients();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: data.message || 'An error occurred while updating the quantity.',
+                confirmButtonColor: '#8B4543'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Network Error',
+            text: 'An error occurred while updating the quantity.',
+            confirmButtonColor: '#8B4543'
+        });
+    })
+    .finally(() => {
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
 </script>
+
+<!-- Adjust Quantity Modal -->
+<div class="modal fade" id="adjustQuantityModal" tabindex="-1" aria-labelledby="adjustQuantityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-maroon text-white">
+                <h5 class="modal-title" id="adjustQuantityModalLabel">
+                    <i class="fas fa-edit me-2"></i>Adjust Ingredient Quantity
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ingredient Name</label>
+                            <div class="form-control-plaintext" id="adjustIngredientName"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Current Quantity</label>
+                            <div class="form-control-plaintext" id="adjustCurrentQuantity"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="adjustNewQuantity" class="form-label fw-bold">New Quantity <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="adjustNewQuantity" min="0" step="0.01" required>
+                                <span class="input-group-text" id="adjustUnit"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="adjustReason" class="form-label fw-bold">Reason for Adjustment <span class="text-danger">*</span></label>
+                            <select class="form-select" id="adjustReason" required>
+                                <option value="">Select a reason...</option>
+                                <option value="Stock Count Correction">Stock Count Correction</option>
+                                <option value="Damaged/Lost Items">Damaged/Lost Items</option>
+                                <option value="Expired Items">Expired Items</option>
+                                <option value="Received New Stock">Received New Stock</option>
+                                <option value="Used in Production">Used in Production</option>
+                                <option value="Transfer to Other Branch">Transfer to Other Branch</option>
+                                <option value="Theft/Loss">Theft/Loss</option>
+                                <option value="Quality Control Rejection">Quality Control Rejection</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="adjustNotes" class="form-label fw-bold">Additional Notes</label>
+                    <textarea class="form-control" id="adjustNotes" rows="3" placeholder="Provide additional details about this quantity adjustment..."></textarea>
+                </div>
+                
+                <input type="hidden" id="adjustIngredientId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-maroon" id="submitAdjustment" onclick="submitQuantityAdjustment()">
+                    <i class="fas fa-save me-2"></i>Update Quantity
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php include('footer.php'); ?>
 

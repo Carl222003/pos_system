@@ -2036,6 +2036,7 @@ include('header.php');
                     <th style="color: #8B4543;">INGREDIENTS</th>
                     <th style="color: #8B4543;">BRANCHES</th>
                     <th style="color: #8B4543;">STATUS</th>
+                    <th style="color: #8B4543;">QUANTITY</th>
                     <th style="color: #8B4543;">IMAGE</th>
                     <th style="color: #8B4543;">ACTION</th>
                 </tr>
@@ -2137,6 +2138,17 @@ include('header.php');
                                 </div>
                                 
                                 <div class="mb-4">
+                                    <label for="product_quantity" class="form-label">
+                                        <i class="fas fa-cubes me-1"></i>Quantity
+                                    </label>
+                                    <input type="number" class="form-control form-control-lg" id="product_quantity" name="product_quantity" min="0" step="1" value="0" required>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Set the initial stock quantity for this product
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
                                     <label for="product_image" class="form-label">
                                         <i class="fas fa-image me-1"></i>Product Image
                                     </label>
@@ -2222,8 +2234,6 @@ include('header.php');
                                                 </label>
                                             </div>
                                         <?php endforeach; ?>
-                                        <!-- Hidden field to ensure branches field is always sent -->
-                                        <input type="hidden" name="branches[]" value="">
                                     </div>
                                     <div class="form-text">
                                         <i class="fas fa-info-circle me-1"></i>
@@ -2676,6 +2686,15 @@ body {
 }
 .badge-secondary {
     background-color: #6c757d;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+.badge-quantity {
+    background-color: #17a2b8;
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 6px;
@@ -5203,6 +5222,16 @@ $(document).ready(function() {
                     } else {
                         // Treat blank/null/other as Inactive
                         return '<span class="badge badge-inactive">Inactive</span>';
+                    }
+                }
+            },
+            { 
+                data: 'product_quantity',
+                render: function(data) {
+                    if (data !== null && data !== undefined) {
+                        return '<span class="badge badge-quantity">' + data + '</span>';
+                    } else {
+                        return '<span class="text-muted">0</span>';
                     }
                 }
             },

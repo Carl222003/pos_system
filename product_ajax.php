@@ -24,7 +24,8 @@ $columns = [
     4 => 'p.description',
     5 => 'p.ingredients',
     6 => 'p.product_status',
-    7 => 'p.product_image'
+    7 => 'p.product_quantity',
+    8 => 'p.product_image'
 ];
 
 // Get the column name to order by
@@ -80,16 +81,17 @@ try {
         p.description,
         p.ingredients,
         p.product_status,
+        p.product_quantity,
         p.product_image,
         GROUP_CONCAT(b.branch_name SEPARATOR ', ') as branch_names
     " . $baseQuery;
     
     if ($usePosBranchProduct) {
         $query .= " LEFT JOIN pos_branch_product bp ON p.product_id = bp.product_id";
-        $query .= " LEFT JOIN pos_branch b ON bp.branch_id = b.branch_id";
+        $query .= " LEFT JOIN pos_branch b ON bp.branch_id = b.branch_id AND b.status = 'Active'";
     } else {
         $query .= " LEFT JOIN product_branch pb ON p.product_id = pb.product_id";
-        $query .= " LEFT JOIN pos_branch b ON pb.branch_id = b.branch_id";
+        $query .= " LEFT JOIN pos_branch b ON pb.branch_id = b.branch_id AND b.status = 'Active'";
     }
     
     $query .= $searchCondition . " GROUP BY p.product_id";
@@ -123,8 +125,13 @@ try {
         $row['description'] = !empty($row['description']) ? $row['description'] : '-';
         $row['ingredients'] = !empty($row['ingredients']) ? $row['ingredients'] : '-';
         
+        // Format branch names
+        if (empty($row['branch_names'])) {
+            $row['branch_names'] = 'No branches assigned';
+        }
+        
         // Debug: Log status for each row
-        error_log("Product ID: {$row['product_id']}, Status: {$row['product_status']}");
+        error_log("Product ID: {$row['product_id']}, Status: {$row['product_status']}, Branches: {$row['branch_names']}");
     }
 
     // Prepare the response

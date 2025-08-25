@@ -12,7 +12,8 @@ try {
         'category_id',
         'product_name',
         'product_price',
-        'product_status'
+        'product_status',
+        'product_quantity'
     ];
 
     foreach ($required_fields as $field) {
@@ -24,6 +25,10 @@ try {
     // Validate numeric fields
     if (!is_numeric($_POST['product_price']) || $_POST['product_price'] <= 0) {
         throw new Exception('Invalid product price');
+    }
+    
+    if (!is_numeric($_POST['product_quantity']) || $_POST['product_quantity'] < 0) {
+        throw new Exception('Invalid product quantity');
     }
 
     // Handle image upload if provided
@@ -61,6 +66,7 @@ try {
             ingredients,
             product_image,
             product_status,
+            product_quantity,
             created_at
         ) VALUES (
             :category_id,
@@ -70,6 +76,7 @@ try {
             :ingredients,
             :product_image,
             :product_status,
+            :product_quantity,
             NOW()
         )
     ");
@@ -81,25 +88,32 @@ try {
         'description' => !empty($_POST['description']) ? $_POST['description'] : null,
         'ingredients' => !empty($_POST['ingredients']) ? $_POST['ingredients'] : null,
         'product_image' => $product_image,
-        'product_status' => $_POST['product_status']
+        'product_status' => $_POST['product_status'],
+        'product_quantity' => intval($_POST['product_quantity'])
     ]);
 
     $product_id = $pdo->lastInsertId();
 
     // Handle branch assignments
-    if (isset($_POST['branches']) && is_array($_POST['branches']) && !empty($_POST['branches'])) {
-        // Check which table to use
-        $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
-        $usePosBranchProduct = in_array('pos_branch_product', $tables);
+    if (isset($_POST['branches']) && is_array($_POST['branches'])) {
+        // Filter out empty values and ensure we have valid branch IDs
+        $valid_branches = array_filter($_POST['branches'], function($branch_id) {
+            return is_numeric($branch_id) && $branch_id > 0;
+        });
         
-        if ($usePosBranchProduct) {
-            // Use pos_branch_product table
-            $branch_stmt = $pdo->prepare("INSERT INTO pos_branch_product (product_id, branch_id, quantity) VALUES (?, ?, 10)");
+        if (!empty($valid_branches)) {
+            // Check which table to use
+            $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+            $usePosBranchProduct = in_array('pos_branch_product', $tables);
             
-            foreach ($_POST['branches'] as $branch_id) {
-                if (is_numeric($branch_id)) {
+            if ($usePosBranchProduct) {
+                // Use pos_branch_product table
+                $product_quantity = intval($_POST['product_quantity']);
+                $branch_stmt = $pdo->prepare("INSERT INTO pos_branch_product (product_id, branch_id, quantity) VALUES (?, ?, ?)");
+                
+                foreach ($valid_branches as $branch_id) {
                     try {
-                        $branch_stmt->execute([$product_id, $branch_id]);
+                        $branch_stmt->execute([$product_id, $branch_id, $product_quantity]);
                     } catch (PDOException $e) {
                         // Ignore duplicate entry errors
                         if ($e->getCode() != 23000) {
@@ -107,13 +121,11 @@ try {
                         }
                     }
                 }
-            }
-        } else {
-            // Fallback to product_branch table
-            $branch_stmt = $pdo->prepare("INSERT INTO product_branch (product_id, branch_id) VALUES (?, ?)");
-            
-            foreach ($_POST['branches'] as $branch_id) {
-                if (is_numeric($branch_id)) {
+            } else {
+                // Fallback to product_branch table
+                $branch_stmt = $pdo->prepare("INSERT INTO product_branch (product_id, branch_id) VALUES (?, ?)");
+                
+                foreach ($valid_branches as $branch_id) {
                     try {
                         $branch_stmt->execute([$product_id, $branch_id]);
                     } catch (PDOException $e) {

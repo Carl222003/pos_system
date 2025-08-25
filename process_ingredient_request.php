@@ -48,6 +48,7 @@ $ingredients = $_POST['ingredients'] ?? [];
 $quantities = $_POST['quantity'] ?? [];
 $notes = $_POST['notes'] ?? '';
 
+// Validate that ingredients are provided
 if (empty($ingredients) || !is_array($ingredients)) {
     echo json_encode(['success' => false, 'message' => 'No ingredients selected.']);
     exit();
@@ -64,6 +65,8 @@ foreach ($ingredients as $ingredient_id) {
         ];
     }
 }
+
+
 
 if (empty($ingredient_list)) {
     echo json_encode(['success' => false, 'message' => 'No valid ingredient quantities provided.']);

@@ -25,35 +25,36 @@ try {
     $branch = $branch_stmt->fetch(PDO::FETCH_ASSOC);
     $branch_name = $branch['branch_name'] ?? 'Unknown Branch';
     
-    // Check if ingredients table has branch_id column
-    $columns_check = $pdo->query("SHOW COLUMNS FROM ingredients LIKE 'branch_id'");
-    $has_branch_id = $columns_check->rowCount() > 0;
+    // Check if branch_ingredient table exists for branch-specific filtering
+    $tables_check = $pdo->query("SHOW TABLES LIKE 'branch_ingredient'");
+    $has_branch_ingredient = $tables_check->rowCount() > 0;
     
-    if ($has_branch_id) {
-        // Get only ingredients specifically assigned to this branch
+    if ($has_branch_ingredient) {
+        // Get only ingredients specifically assigned to this branch via branch_ingredient table
         $query = "SELECT 
                     i.ingredient_id,
                     i.ingredient_name,
-                    i.ingredient_quantity,
+                    bi.quantity as ingredient_quantity,
                     i.ingredient_unit,
                     i.ingredient_status,
-                    i.minimum_stock,
+                    bi.minimum_stock,
                     i.consume_before,
                     i.date_added,
-                    i.branch_id,
+                    bi.branch_id,
                     c.category_name,
                     c.category_id,
                     b.branch_name
                   FROM ingredients i
+                  INNER JOIN branch_ingredient bi ON i.ingredient_id = bi.ingredient_id
                   LEFT JOIN pos_category c ON i.category_id = c.category_id
-                  LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
-                  WHERE i.branch_id = ? 
+                  LEFT JOIN pos_branch b ON bi.branch_id = b.branch_id
+                  WHERE bi.branch_id = ? 
+                  AND bi.status = 'active'
                   AND i.ingredient_status != 'archived'
-                  AND i.ingredient_status != 'unassigned'
                   ORDER BY 
                     CASE 
-                        WHEN i.ingredient_quantity <= 0 THEN 1
-                        WHEN i.ingredient_quantity <= i.minimum_stock THEN 2
+                        WHEN bi.quantity <= 0 THEN 1
+                        WHEN bi.quantity <= bi.minimum_stock THEN 2
                         ELSE 3
                     END,
                     i.ingredient_name";
@@ -196,17 +197,28 @@ try {
         'stats' => $stats,
         'branch_id' => $branch_id,
         'branch_name' => $branch_name,
-        'has_branch_filtering' => $has_branch_id,
+        'has_branch_filtering' => $has_branch_ingredient,
         'timestamp' => date('Y-m-d H:i:s'),
-        'message' => $has_branch_id ? 
+        'message' => $has_branch_ingredient ? 
             "Showing branch-specific ingredients for $branch_name" : 
             "Showing all ingredients (branch filtering not available)"
     ]);
     
-} catch (Exception $e) {
+} catch (PDOException $e) {
+    error_log("Database error in get_available_ingredients.php: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => 'Database error: ' . $e->getMessage(),
+        'debug_info' => [
+            'branch_id' => $branch_id ?? 'not set',
+            'has_branch_ingredient' => $has_branch_ingredient ?? 'not set'
+        ]
+    ]);
+} catch (Exception $e) {
+    error_log("General error in get_available_ingredients.php: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'error' => 'An error occurred: ' . $e->getMessage()
     ]);
 }
 ?>

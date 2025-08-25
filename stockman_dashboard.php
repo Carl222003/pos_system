@@ -12,7 +12,7 @@ include('header.php');
 ?>
 
 <style>
-/* Enhanced Stockman Dashboard Styles */
+/* Enhanced Stock Analytics Dashboard Styles */
 .stockman-dashboard-bg {
     background: linear-gradient(135deg, #f8f5f5 0%, #f0f0f0 100%);
     min-height: 100vh;
@@ -59,7 +59,7 @@ include('header.php');
     animation: slideInLeft 1s ease-out 0.5s both;
 }
 
-/* Enhanced Overview Cards */
+/* Enhanced Analytics Overview Cards */
 .stockman-overview-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -139,7 +139,25 @@ include('header.php');
     line-height: 1;
 }
 
-/* Enhanced Cards */
+.stockman-overview-card .card-trend {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.stockman-overview-card .card-trend.positive {
+    color: #28a745;
+}
+
+.stockman-overview-card .card-trend.negative {
+    color: #dc3545;
+}
+
+.stockman-overview-card .card-trend.neutral {
+    color: #6c757d;
+}
+
+/* Enhanced Analytics Cards */
 .stockman-card {
     background: #fff;
     border-radius: 1.5rem;
@@ -175,6 +193,322 @@ include('header.php');
 
 .stockman-card .card-body {
     padding: 2rem;
+}
+
+/* Enhanced Analytics Grid Layout */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.analytics-chart-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.analytics-insights-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Recommendation Items Styling */
+.recommendation-item {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.recommendation-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 69, 67, 0.1);
+}
+
+.recommendation-item .border-danger {
+    border-left-color: #dc3545 !important;
+}
+
+.recommendation-item .border-warning {
+    border-left-color: #ffc107 !important;
+}
+
+.recommendation-item .border-info {
+    border-left-color: #17a2b8 !important;
+}
+
+.recommendation-item .border-success {
+    border-left-color: #28a745 !important;
+}
+
+/* Enhanced Chart Containers */
+.chart-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 300px;
+    position: relative;
+    border: 1px solid rgba(139, 69, 67, 0.1);
+}
+
+.chart-container canvas {
+    border-radius: 8px;
+}
+
+/* Enhanced Analytics Cards with Hover Effects */
+.stockman-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px rgba(139, 69, 67, 0.08);
+    margin-bottom: 2rem;
+    border: none;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.stockman-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8B4543 0%, #b97a6a 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stockman-card:hover::before {
+    opacity: 1;
+}
+
+.stockman-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(139, 69, 67, 0.12);
+}
+
+/* Section Headers */
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    color: #8B4543;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    color: #8B4543;
+    font-size: 1.5rem;
+}
+
+/* Category Cards Container */
+.category-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Category Card */
+.category-card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(139, 69, 67, 0.1);
+    padding: 1.5rem;
+    border-left: 4px solid #8B4543;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 69, 67, 0.05), transparent);
+    transition: left 0.6s ease;
+}
+
+.category-card:hover::before {
+    left: 100%;
+}
+
+.category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(139, 69, 67, 0.15);
+    border-left-color: #b97a6a;
+}
+
+.category-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.category-card-header i {
+    color: #8B4543;
+    font-size: 1.2rem;
+}
+
+.category-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #495057;
+    margin: 0;
+}
+
+.category-card-subtitle {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.category-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    padding: 0.8rem;
+    text-align: center;
+    border: 1px solid rgba(139, 69, 67, 0.1);
+    min-width: 0; /* Allow shrinking */
+    overflow: hidden; /* Prevent overflow */
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.stat-value.available {
+    color: #28a745;
+}
+
+.stat-value.low-stock {
+    color: #ffc107;
+}
+
+.stat-value.healthy {
+    color: #17a2b8;
+}
+
+.stat-value.zero {
+    color: #dc3545;
+}
+
+.category-card-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-view-items {
+    background: linear-gradient(135deg, #8B4543 0%, #b97a6a 100%);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.2);
+}
+
+.btn-view-items:hover {
+    background: linear-gradient(135deg, #7a3d3b 0%, #a65d5d 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 69, 67, 0.3);
+}
+
+/* Enhanced Chart Containers */
+.chart-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 300px;
+    position: relative;
+}
+
+.chart-container canvas {
+    border-radius: 8px;
+}
+
+/* Analytics Insights Cards */
+.insight-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border-left: 4px solid #8B4543;
+    transition: all 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(139, 69, 67, 0.1);
+}
+
+.insight-card .insight-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #8B4543;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.insight-card .insight-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.insight-card .insight-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin: 0;
 }
 
 /* Enhanced Tables */
@@ -306,13 +640,6 @@ include('header.php');
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Enhanced Chart Container */
-#stockStatusChart {
-    border-radius: 12px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    padding: 1rem;
-}
-
 /* Loading States */
 .loading-overlay {
     position: absolute;
@@ -382,6 +709,16 @@ include('header.php');
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 1.5rem;
     }
+    
+    .analytics-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .analytics-chart-section {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -412,6 +749,27 @@ include('header.php');
     .table-responsive {
         border-radius: 12px;
         overflow: hidden;
+    }
+    
+    .category-cards-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .category-stats {
+        gap: 0.5rem;
+    }
+    
+    .stat-box {
+        padding: 0.6rem;
+    }
+    
+    .stat-label {
+        font-size: 0.65rem;
+    }
+    
+    .stat-value {
+        font-size: 1rem;
     }
 }
 
@@ -490,17 +848,18 @@ include('header.php');
 <div class="stockman-dashboard-bg">
     <div class="container-fluid px-4">
         <div class="stockman-section-title">
-            <span class="section-icon"><i class="fas fa-clipboard-list"></i></span>
-            Stock Management Dashboard
+            <span class="section-icon"><i class="fas fa-chart-line"></i></span>
+            Stock Analytics Dashboard
         </div>
         
-        <!-- Overview Cards -->
+        <!-- Analytics Overview Cards -->
         <div class="stockman-overview-cards">
             <div class="stockman-overview-card">
                 <span class="icon"><i class="fas fa-boxes"></i></span>
                 <div class="card-content">
                     <span class="card-title">Total Items</span>
                     <span class="card-value" id="totalItems">0</span>
+                    <span class="card-trend positive" id="totalItemsTrend">+5% this week</span>
                 </div>
             </div>
             <div class="stockman-overview-card">
@@ -508,6 +867,7 @@ include('header.php');
                 <div class="card-content">
                     <span class="card-title">Low Stock Items</span>
                     <span class="card-value" id="lowStockItems">0</span>
+                    <span class="card-trend negative" id="lowStockTrend">+2 this week</span>
                 </div>
             </div>
             <div class="stockman-overview-card">
@@ -515,6 +875,7 @@ include('header.php');
                 <div class="card-content">
                     <span class="card-title">Stock Movements</span>
                     <span class="card-value" id="stockMovements">0</span>
+                    <span class="card-trend positive" id="movementsTrend">+12% this week</span>
                 </div>
             </div>
             <div class="stockman-overview-card">
@@ -522,53 +883,185 @@ include('header.php');
                 <div class="card-content">
                     <span class="card-title">Expiring Items</span>
                     <span class="card-value" id="expiringItems">0</span>
+                    <span class="card-trend neutral" id="expiringTrend">No change</span>
                 </div>
+            </div>
+            <div class="stockman-overview-card">
+                <span class="icon"><i class="fas fa-chart-line"></i></span>
+                <div class="card-content">
+                    <span class="card-title">Stock Turnover</span>
+                    <span class="card-value" id="stockTurnover">0%</span>
+                    <span class="card-trend positive" id="turnoverTrend">+8% this month</span>
             </div>
         </div>
         
-        <!-- Main Content Row -->
-        <div class="row">
-            <!-- Stock Inventory Table -->
-            <div class="col-xl-8">
-                <div class="stockman-card mb-4">
+        </div>
+        
+        <!-- Enhanced Analytics Grid -->
+        <div class="analytics-grid">
+            <!-- Charts Section -->
+            <div class="analytics-chart-section">
+                <!-- Stock Status Chart -->
+                <div class="stockman-card">
                     <div class="card-header">
-                        <i class="fas fa-boxes me-1"></i>
-                        Stock Inventory
+                        <i class="fas fa-chart-pie me-1"></i>
+                        Stock Status Distribution
                     </div>
-                    <div class="card-body position-relative">
-                        <div class="loading-overlay" id="stockLoadingOverlay" style="display: none;">
-                            <div class="loading-spinner"></div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="stockStatusChart" width="100%" height="300"></canvas>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="stockTable">
-                                <thead>
-                                    <tr>
-                                        <th>Ingredient Name</th>
-                                        <th>Current Stock</th>
-                                        <th>Category</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Stock items will be loaded here dynamically -->
-                                </tbody>
-                            </table>
+                        </div>
+                    </div>
+                
+                <!-- Stock Movement Trends -->
+                <div class="stockman-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line me-1"></i>
+                        Stock Movement Trends
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="stockMovementChart" width="100%" height="300"></canvas>
+                        </div>
+                </div>
+            </div>
+            
+                <!-- Category Performance -->
+                <div class="stockman-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar me-1"></i>
+                        Category Performance
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="categoryChart" width="100%" height="300"></canvas>
+                    </div>
+                    </div>
+                </div>
+                
+                <!-- Stock Turnover Analysis -->
+                <div class="stockman-card">
+                    <div class="card-header">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Stock Turnover Analysis
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="turnoverChart" width="100%" height="300"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Stock Status Chart -->
-            <div class="col-xl-4">
-                <div class="stockman-card mb-4">
+            <!-- Enhanced Analytics Insights Section -->
+            <div class="analytics-insights-section">
+                <!-- Critical Stock Alerts -->
+                <div class="stockman-card">
                     <div class="card-header">
-                        <i class="fas fa-chart-pie me-1"></i>
-                        Stock Status Overview
+                        <i class="fas fa-exclamation-circle me-1"></i>
+                        Critical Stock Alerts
                     </div>
                     <div class="card-body">
-                        <canvas id="stockStatusChart" width="100%" height="300"></canvas>
+                        <div id="criticalAlerts">
+                            <!-- Critical alerts will be loaded here -->
+                        </div>
                     </div>
+                </div>
+                
+                <!-- Stock Performance Insights -->
+                <div class="stockman-card">
+                    <div class="card-header">
+                        <i class="fas fa-lightbulb me-1"></i>
+                        Stock Insights
+                    </div>
+                    <div class="card-body">
+                        <div class="insight-card">
+                            <div class="insight-title">
+                                <i class="fas fa-trending-up"></i>
+                                Fastest Moving Items
+                            </div>
+                            <div class="insight-value" id="fastestMoving">0</div>
+                            <div class="insight-description">Items with highest turnover rate</div>
+                        </div>
+                        
+                        <div class="insight-card">
+                            <div class="insight-title">
+                                <i class="fas fa-trending-down"></i>
+                                Slowest Moving Items
+                            </div>
+                            <div class="insight-value" id="slowestMoving">0</div>
+                            <div class="insight-description">Items with lowest turnover rate</div>
+                        </div>
+                        
+                        <div class="insight-card">
+                            <div class="insight-title">
+                                <i class="fas fa-calendar-alt"></i>
+                                Expiring Soon
+                            </div>
+                            <div class="insight-value" id="expiringSoon">0</div>
+                            <div class="insight-description">Items expiring within 30 days</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reorder Recommendations -->
+                <div class="stockman-card">
+                    <div class="card-header">
+                        <i class="fas fa-shopping-cart me-1"></i>
+                        Reorder Recommendations
+                    </div>
+                    <div class="card-body">
+                        <div id="reorderRecommendations">
+                            <!-- Reorder recommendations will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stock Value Analytics -->
+                <div class="stockman-card">
+                    <div class="card-header">
+                        <i class="fas fa-coins me-1"></i>
+                        Stock Value Analytics
+                    </div>
+                    <div class="card-body">
+                        <div class="insight-card">
+                            <div class="insight-title">
+                                <i class="fas fa-chart-pie"></i>
+                                Total Stock Value
+                            </div>
+                            <div class="insight-value" id="totalStockValue">₱0</div>
+                            <div class="insight-description">Current inventory value</div>
+                        </div>
+                        
+                        <div class="insight-card">
+                            <div class="insight-title">
+                                <i class="fas fa-percentage"></i>
+                                Turnover Rate
+                            </div>
+                            <div class="insight-value" id="turnoverRate">0%</div>
+                            <div class="insight-description">Monthly stock turnover</div>
+                        </div>
+                        
+                        <div class="insight-card">
+                            <div class="insight-title">
+                                <i class="fas fa-clock"></i>
+                                Average Age
+                            </div>
+                            <div class="insight-value" id="averageAge">0 days</div>
+                            <div class="insight-description">Average stock age</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory by Category Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+              
+                <div class="category-cards-container" id="categoryCardsContainer">
+                    <!-- Category cards will be loaded here dynamically -->
                 </div>
             </div>
         </div>
@@ -579,7 +1072,7 @@ include('header.php');
                 <div class="stockman-card mb-4">
                     <div class="card-header">
                         <i class="fas fa-clipboard-check me-1"></i>
-                        Request Stock Updates
+                        Stock Requests Updates
                     </div>
                     <div class="card-body position-relative">
                         <div class="loading-overlay" id="requestsLoadingOverlay" style="display: none;">
@@ -610,16 +1103,9 @@ include('header.php');
     </div>
 </div>
 
-
-
 <script>
 $(document).ready(function() {
     // Initialize DataTables
-    $('#stockTable').DataTable({
-        pageLength: 10,
-        order: [[0, 'asc']]
-    });
-
     $('#requestsTable').DataTable({
         pageLength: 10,
         order: [[0, 'desc']]
@@ -628,28 +1114,160 @@ $(document).ready(function() {
     // Initialize stock status chart
     const ctx = document.getElementById('stockStatusChart').getContext('2d');
     const stockStatusChart = new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels: ['Adequate', 'Low Stock', 'Out of Stock'],
             datasets: [{
                 data: [0, 0, 0],
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                borderWidth: 0,
+                hoverOffset: 4
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+
+    // Initialize stock movement chart
+    const ctx2 = document.getElementById('stockMovementChart').getContext('2d');
+    const stockMovementChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Stock Movements',
+                data: [0, 0, 0, 0, 0, 0, 0],
+                borderColor: '#8B4543',
+                backgroundColor: 'rgba(139, 69, 67, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Initialize category performance chart
+    const ctx3 = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: ['Category 1', 'Category 2', 'Category 3'],
+            datasets: [{
+                label: 'Items Count',
+                data: [0, 0, 0],
+                backgroundColor: [
+                    'rgba(139, 69, 67, 0.8)',
+                    'rgba(185, 122, 106, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderColor: [
+                    '#8B4543',
+                    '#b97a6a',
+                    '#dc3545'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Initialize turnover analysis chart
+    const ctx4 = document.getElementById('turnoverChart').getContext('2d');
+    const turnoverChart = new Chart(ctx4, {
+        type: 'doughnut',
+        data: {
+            labels: ['High Turnover', 'Medium Turnover', 'Low Turnover'],
+            datasets: [{
+                data: [0, 0, 0],
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
         }
     });
 
     // Function to update dashboard data
     function updateDashboard() {
         // Update overview cards
-        $.get('get_stockman_stats.php', function(response) {
+        $.get('get_stockman_analytics.php', function(response) {
             $('#totalItems').text(response.total_items);
             $('#lowStockItems').text(response.low_stock_items);
             $('#stockMovements').text(response.stock_movements);
             $('#expiringItems').text(response.expiring_items);
+            $('#stockTurnover').text(response.stock_turnover + '%');
+
+            // Update trends
+            $('#totalItemsTrend').text(response.total_items_trend);
+            $('#lowStockTrend').text(response.low_stock_trend);
+            $('#movementsTrend').text(response.movements_trend);
+            $('#expiringTrend').text(response.expiring_trend);
+            $('#turnoverTrend').text(response.turnover_trend);
 
             // Update stock status chart
             stockStatusChart.data.datasets[0].data = [
@@ -658,69 +1276,41 @@ $(document).ready(function() {
                 response.out_of_stock
             ];
             stockStatusChart.update();
-        });
 
-        // Update stock table
-        $.get('get_stock_items.php', function(response) {
-            if (response.success) {
-                const tbody = $('#stockTable tbody');
-                tbody.empty();
+            // Update stock movement chart
+            stockMovementChart.data.datasets[0].data = response.weekly_movements;
+            stockMovementChart.update();
 
-                if (response.items.length === 0) {
-                    tbody.append(`
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">No ingredients found</td>
-                        </tr>
-                    `);
-                } else {
-                    response.items.forEach(item => {
-                        let statusClass = 'text-success';
-                        let statusBadge = '';
-                        
-                        switch (item.status) {
-                            case 'Out of Stock':
-                                statusClass = 'text-danger';
-                                statusBadge = '<span class="badge bg-danger">Out of Stock</span>';
-                                break;
-                            case 'Low Stock':
-                                statusClass = 'text-warning';
-                                statusBadge = '<span class="badge bg-warning">Low Stock</span>';
-                                break;
-                            case 'Adequate':
-                                statusClass = 'text-success';
-                                statusBadge = '<span class="badge bg-success">Adequate</span>';
-                                break;
-                        }
-                        
-                        tbody.append(`
-                            <tr>
-                                <td><strong>${item.item_name}</strong></td>
-                                <td>${item.current_stock}</td>
-                                <td>${item.category_name}</td>
-                                <td>${statusBadge}</td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <button class="btn btn-sm btn-outline-primary" onclick="adjustStock(${item.id})" title="Adjust Stock">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-info" onclick="viewDetails(${item.id})" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="viewStockMovements(${item.id})" title="View Stock History">
-                                            <i class="fas fa-history"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-warning" onclick="requestStock(${item.id})" title="Request Stock">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `);
-                    });
-                }
-            } else {
-                console.error('Error loading stock items:', response.error);
-            }
+            // Update insights
+            $('#fastestMoving').text(response.fastest_moving);
+            $('#slowestMoving').text(response.slowest_moving);
+            $('#expiringSoon').text(response.expiring_soon);
+
+            // Update stock value analytics
+            $('#totalStockValue').text(response.total_stock_value);
+            $('#turnoverRate').text(response.turnover_rate + '%');
+            $('#averageAge').text(response.average_age + ' days');
+
+            // Update charts
+            categoryChart.data.labels = response.category_labels;
+            categoryChart.data.datasets[0].data = response.category_data;
+            categoryChart.update();
+
+            turnoverChart.data.datasets[0].data = [
+                response.high_turnover,
+                response.medium_turnover,
+                response.low_turnover
+            ];
+            turnoverChart.update();
+
+            // Update critical alerts
+            updateCriticalAlerts(response.critical_alerts);
+
+            // Update reorder recommendations
+            updateReorderRecommendations(response.reorder_recommendations);
+
+            // Update category cards
+            updateCategoryCards(response.category_cards);
         });
 
         // Update requests table
@@ -764,45 +1354,124 @@ $(document).ready(function() {
         });
     }
 
+    // Function to update critical alerts
+    function updateCriticalAlerts(alerts) {
+        const container = $('#criticalAlerts');
+        container.empty();
 
+        if (alerts.length === 0) {
+            container.append(`
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <p>No critical alerts at this time</p>
+                </div>
+            `);
+        } else {
+            alerts.forEach(alert => {
+                container.append(`
+                    <div class="alert alert-${alert.severity} d-flex align-items-center mb-2" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <div>
+                            <strong>${alert.title}</strong><br>
+                            <small>${alert.description}</small>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+    }
+
+    // Function to update reorder recommendations
+    function updateReorderRecommendations(recommendations) {
+        const container = $('#reorderRecommendations');
+        container.empty();
+
+        if (recommendations.length === 0) {
+            container.append(`
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                    <p>No reorder recommendations at this time</p>
+                </div>
+            `);
+        } else {
+            recommendations.forEach(rec => {
+                container.append(`
+                    <div class="recommendation-item mb-2 p-2 border-start border-${rec.priority} border-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="text-${rec.priority}">${rec.item_name}</strong>
+                                <br>
+                                <small class="text-muted">Current: ${rec.current_stock} | Recommended: ${rec.recommended_quantity}</small>
+                            </div>
+                            <span class="badge bg-${rec.priority}">${rec.priority.toUpperCase()}</span>
+                        </div>
+                        <small class="text-muted">${rec.reason}</small>
+                    </div>
+                `);
+            });
+        }
+    }
+
+    // Function to update category cards
+    function updateCategoryCards(categoryCards) {
+        const container = $('#categoryCardsContainer');
+        container.empty();
+
+        if (categoryCards.length === 0) {
+            container.append(`
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-tags fa-3x mb-3"></i>
+                    <h5>No Categories Found</h5>
+                    <p>No inventory categories available at this time.</p>
+                </div>
+            `);
+        } else {
+            categoryCards.forEach(category => {
+                const availableClass = category.available > 0 ? 'available' : 'zero';
+                const lowStockClass = category.low_stock > 0 ? 'low-stock' : 'zero';
+                const healthyClass = category.healthy > 0 ? 'healthy' : 'zero';
+                
+                container.append(`
+                    <div class="category-card">
+                        <div class="category-card-header">
+                            <i class="fas fa-tag"></i>
+                            <div>
+                                <div class="category-card-title">${category.category_name}</div>
+                                <div class="category-card-subtitle">
+                                    <i class="fas fa-boxes"></i>
+                                    ${category.total_items} items
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="category-stats">
+                            <div class="stat-box">
+                                <div class="stat-label">Available</div>
+                                <div class="stat-value ${availableClass}">${category.available}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Low Stock</div>
+                                <div class="stat-value ${lowStockClass}">${category.low_stock}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Healthy</div>
+                                <div class="stat-value ${healthyClass}">${category.healthy}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="category-card-actions">
+                            <button class="btn-view-items" onclick="viewCategoryItems('${category.category_id}')">
+                                <i class="fas fa-chevron-down"></i>
+                                View Items
+                            </button>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+    }
 
     // Action functions
-    window.adjustStock = function(ingredientId) {
-        // Show adjust stock modal
-        $('#adjustStockModalBody').html('<div class="text-center p-4"><div class="loading-spinner"></div><p class="mt-2">Loading adjustment form...</p></div>');
-        $('#adjustStockModal').modal('show');
-        $.get('adjust_stock_modal.php', { id: ingredientId }, function(data) {
-            $('#adjustStockModalBody').html(data);
-        });
-    };
-
-    window.viewStockMovements = function(ingredientId) {
-        // Show stock movements modal
-        $('#stockMovementsModalBody').html('<div class="text-center p-4"><div class="loading-spinner"></div><p class="mt-2">Loading stock history...</p></div>');
-        $('#stockMovementsModal').modal('show');
-        $.get('stock_movements_modal.php', { id: ingredientId }, function(data) {
-            $('#stockMovementsModalBody').html(data);
-        });
-    };
-
-    window.viewDetails = function(ingredientId) {
-        // Show ingredient details modal
-        $('#viewDetailsModalBody').html('<div class="text-center p-4">Loading...</div>');
-        $('#viewDetailsModal').modal('show');
-        $.get('view_ingredient_details.php', { id: ingredientId }, function(data) {
-            $('#viewDetailsModalBody').html(data);
-        });
-    };
-
-    window.requestStock = function(ingredientId) {
-        // Show request stock modal with pre-selected ingredient
-        $('#requestStockModalBody').html('<div class="text-center p-4">Loading...</div>');
-        $('#requestStockModal').modal('show');
-        $.get('request_stock_modal.php', { ingredient_id: ingredientId }, function(data) {
-            $('#requestStockModalBody').html(data);
-        });
-    };
-
     window.updateDeliveryStatus = function(requestId) {
         // Show delivery status update modal
         console.log('Updating delivery status for request ID:', requestId);
@@ -817,6 +1486,15 @@ $(document).ready(function() {
         $('#deliveryModal').modal('show');
     };
 
+    window.viewCategoryItems = function(categoryId) {
+        // Show category items modal
+        $('#categoryItemsModalBody').html('<div class="text-center p-4"><div class="loading-spinner"></div><p class="mt-2">Loading category items...</p></div>');
+        $('#categoryItemsModal').modal('show');
+        $.get('get_category_items.php', { category_id: categoryId }, function(data) {
+            $('#categoryItemsModalBody').html(data);
+        });
+    };
+
     // Initial load
     updateDashboard();
 
@@ -824,27 +1502,7 @@ $(document).ready(function() {
     setInterval(updateDashboard, 300000);
     
     // Add modal hidden event handlers for proper cleanup
-    $('#adjustStockModal').on('hidden.bs.modal', function () {
-        $('body').removeClass('modal-open');
-        $('.modal-backdrop').remove();
-    });
-    
-    $('#viewDetailsModal').on('hidden.bs.modal', function () {
-        $('body').removeClass('modal-open');
-        $('.modal-backdrop').remove();
-    });
-    
-    $('#requestStockModal').on('hidden.bs.modal', function () {
-        $('body').removeClass('modal-open');
-        $('.modal-backdrop').remove();
-    });
-    
     $('#deliveryModal').on('hidden.bs.modal', function () {
-        $('body').removeClass('modal-open');
-        $('.modal-backdrop').remove();
-    });
-    
-    $('#stockMovementsModal').on('hidden.bs.modal', function () {
         $('body').removeClass('modal-open');
         $('.modal-backdrop').remove();
     });
@@ -921,113 +1579,19 @@ $(document).ready(function() {
 });
 </script>
 
-<!-- Adjust Stock Modal -->
-<div class="modal fade" id="adjustStockModal" tabindex="-1" aria-labelledby="adjustStockModalLabel" aria-hidden="true">
+<!-- Category Items Modal -->
+<div class="modal fade" id="categoryItemsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content modal-no-padding">
-            <div class="modal-body modal-body-no-padding" id="adjustStockModalBody">
-                <!-- AJAX-loaded content here -->
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- View Details Modal -->
-<div class="modal fade" id="viewDetailsModal" tabindex="-1" aria-labelledby="viewDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content modal-no-padding">
-            <div class="modal-body modal-body-no-padding" id="viewDetailsModalBody">
-                <!-- AJAX-loaded content here -->
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-.modal-xl {
-    max-width: 1000px;
-    width: 1000px;
-}
-
-.modal-no-padding {
-    border-radius: 20px;
-    overflow: hidden;
-    border: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-}
-
-.modal-body-no-padding {
-    padding: 0 !important;
-    border-radius: 20px;
-}
-
-@media (max-width: 1200px) {
-    .modal-xl {
-        max-width: 90vw;
-        width: 90vw;
-    }
-}
-
-@media (max-width: 768px) {
-    .modal-xl {
-        max-width: 95vw;
-        width: 95vw;
-        margin: 1rem auto;
-    }
-}
-</style>
-
-<!-- Request Stock Modal -->
-<div class="modal fade" id="requestStockModal" tabindex="-1" aria-labelledby="requestStockModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-request-landscape">
-        <div class="modal-content request-landscape-content">
-            <div class="modal-body modal-body-no-padding" id="requestStockModalBody">
-                <!-- AJAX-loaded content here -->
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-.modal-request-landscape {
-    max-width: 900px;
-    width: 900px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - 3.5rem);
-}
-
-.request-landscape-content {
-    border-radius: 20px;
-    overflow: hidden;
-    border: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-}
-
-@media (max-width: 1200px) {
-    .modal-request-landscape {
-        max-width: 85vw;
-        width: 85vw;
-    }
-}
-
-@media (max-width: 768px) {
-    .modal-request-landscape {
-        max-width: 95vw;
-        width: 95vw;
-        min-height: calc(100vh - 2rem);
-    }
-}
-</style>
-
-<!-- Stock Movements Modal -->
-<div class="modal fade" id="stockMovementsModal" tabindex="-1" aria-labelledby="stockMovementsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-body" id="stockMovementsModalBody">
-                <!-- AJAX-loaded content here -->
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-tags me-1"></i>
+                    Category Items
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="categoryItemsModalBody">
+                <!-- Category items will be loaded here -->
             </div>
         </div>
     </div>

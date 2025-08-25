@@ -17,7 +17,7 @@ if (!$isAjax) {
 // Fetch all active categories (show even if no ingredients)
 $categories = $pdo->query("SELECT category_id, category_name FROM pos_category WHERE status = 'active' ORDER BY category_name")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch all ingredients with category info for this stockman's branch
+// Get stockman's branch information for display purposes
 $user_id = $_SESSION['user_id'];
 $branch_id = $_SESSION['branch_id'] ?? null;
 
@@ -31,16 +31,41 @@ if (!$branch_id) {
 // Get pre-selected ingredient if provided
 $pre_selected_ingredient = $_GET['ingredient_id'] ?? null;
 
-if (!$branch_id) {
-    $ingredients = [];
-} else {
-    $stmt = $pdo->prepare("SELECT i.ingredient_id, i.ingredient_name, i.ingredient_unit, i.ingredient_quantity, i.ingredient_status, i.category_id, c.category_name
-        FROM ingredients i
-        LEFT JOIN pos_category c ON i.category_id = c.category_id
-        WHERE i.branch_id = ?
-        ORDER BY c.category_name, i.ingredient_name");
-    $stmt->execute([$branch_id]);
-    $ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch ALL ingredients from ALL branches and categories
+// This allows stockmen to see all available ingredients and request any of them
+$stmt = $pdo->prepare("
+    SELECT 
+        i.ingredient_id, 
+        i.ingredient_name, 
+        i.ingredient_unit, 
+        i.ingredient_quantity, 
+        i.ingredient_status, 
+        i.category_id, 
+        c.category_name,
+        CASE 
+            WHEN i.branch_id = ? THEN 'Current Branch'
+            WHEN i.branch_id IS NOT NULL THEN 'Other Branch'
+            ELSE 'Not Stocked'
+        END as availability_status,
+        COALESCE(b.branch_name, 'Not Assigned') as branch_name
+    FROM ingredients i
+    LEFT JOIN pos_category c ON i.category_id = c.category_id
+    LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
+    WHERE c.status = 'active'
+    ORDER BY c.category_name, i.ingredient_name
+");
+
+$stmt->execute([$branch_id]);
+$ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Group ingredients by category for better organization
+$ingredients_by_category = [];
+foreach ($ingredients as $ingredient) {
+    $category_id = $ingredient['category_id'];
+    if (!isset($ingredients_by_category[$category_id])) {
+        $ingredients_by_category[$category_id] = [];
+    }
+    $ingredients_by_category[$category_id][] = $ingredient;
 }
 ?>
 <style>
@@ -239,6 +264,58 @@ if (!$branch_id) {
     margin-bottom: 0 !important;
 }
 
+/* Availability badges */
+.availability-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.availability-current-branch {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.availability-other-branch {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.availability-not-stocked {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Stock status */
+.stock-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.stock-status.available {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.stock-status.unavailable {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+
+
 /* Ensure form elements are properly sized */
 .form-control, .form-select {
     width: 100%;
@@ -260,6 +337,7 @@ if (!$branch_id) {
                 <label for="categorySelect" class="form-label">Select Category</label>
                 <select id="categorySelect" class="form-select" required>
                     <option value="">-- Select Category --</option>
+                    <option value="all">📋 Show All Ingredients</option>
                     <?php foreach ($categories as $cat): ?>
                         <option value="<?php echo $cat['category_id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
                     <?php endforeach; ?>
@@ -267,38 +345,56 @@ if (!$branch_id) {
             </div>
             <div class="mb-3">
                 <label for="ingredients" class="form-label">Select Ingredients</label>
+                <small class="form-text text-muted d-block mb-2">
+                    <i class="fas fa-info-circle me-1"></i>
+                    All available ingredients from all categories are shown. You can request any ingredient regardless of current stock status.
+                </small>
                 <div id="ingredient-list">
                     <?php if (empty($ingredients)): ?>
                         <div class="alert alert-info text-center">
                             <i class="fas fa-info-circle me-2"></i>
-                            No ingredients are currently available for your branch. Please contact the administrator.
+                            No ingredients are currently available. Please contact the administrator.
                         </div>
                     <?php else: ?>
                         <?php foreach ($ingredients as $ingredient): ?>
-                            <div class="row mb-2 align-items-center ingredient-row ingredient-cat-<?php echo $ingredient['category_id']; ?><?php if ($ingredient['ingredient_status'] !== 'Available') echo ' unavailable'; ?>" style="display:none;">
-                                <div class="col-md-6">
-                                    <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
+                            <div class="row mb-2 align-items-center ingredient-row ingredient-cat-<?php echo $ingredient['category_id']; ?>" style="display:none;">
+                                <div class="col-md-5">
+                                    <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
                                     <label for="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
                                         <strong><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
                                         <span class="text-muted">(<?php echo htmlspecialchars($ingredient['ingredient_unit']); ?>)</span>
-                                        <span class="ingredient-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
-                                            <?php if ($ingredient['ingredient_status'] === 'Available') {
-                                                echo 'Available: ' . htmlspecialchars($ingredient['ingredient_quantity']);
-                                            } else {
-                                                echo 'Unavailable';
-                                            } ?>
-                                        </span><br>
-                                        <small>Category: <?php echo htmlspecialchars($ingredient['category_name']); ?></small>
+                                        <br>
+                                        <small class="text-muted">Category: <?php echo htmlspecialchars($ingredient['category_name']); ?></small>
                                     </label>
                                 </div>
-                                <div class="col-md-4">
-                                    <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Quantity" <?php if ($ingredient['ingredient_status'] !== 'Available') echo 'disabled'; ?>>
+                                <div class="col-md-3">
+                                    <span class="availability-badge availability-<?php echo strtolower(str_replace(' ', '-', $ingredient['availability_status'])); ?>">
+                                        <i class="fas fa-<?php echo ($ingredient['availability_status'] === 'Current Branch') ? 'check-circle' : (($ingredient['availability_status'] === 'Other Branch') ? 'building' : 'plus-circle'); ?> me-1"></i>
+                                        <?php echo htmlspecialchars($ingredient['availability_status']); ?>
+                                    </span>
+                                    <?php if ($ingredient['availability_status'] !== 'Not Stocked'): ?>
+                                        <br><small class="text-muted"><?php echo htmlspecialchars($ingredient['branch_name']); ?></small>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-md-2">
+                                    <span class="stock-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
+                                        <?php if ($ingredient['ingredient_status'] === 'Available') {
+                                            echo 'Stock: ' . htmlspecialchars($ingredient['ingredient_quantity']);
+                                        } else {
+                                            echo 'No Stock';
+                                        } ?>
+                                    </span>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Qty">
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
             </div>
+            
+
             <div class="mb-3">
                 <label for="notes" class="form-label">Notes (optional)</label>
                 <textarea name="notes" id="notes" class="form-control" rows="2"></textarea>
@@ -320,7 +416,11 @@ $(document).ready(function() {
     $('#categorySelect').on('change', function() {
         var catId = $(this).val();
         $('#ingredient-list .ingredient-row').hide();
-        if (catId) {
+        if (catId === 'all') {
+            // Show all ingredients from all categories
+            $('#ingredient-list .ingredient-row').show();
+        } else if (catId) {
+            // Show ingredients from specific category
             $('#ingredient-list .ingredient-cat-' + catId).show();
         }
     });
@@ -355,6 +455,7 @@ $(document).ready(function() {
         
         // Validate form before submission
         const selectedIngredients = $('input[name="ingredients[]"]:checked');
+        
         if (selectedIngredients.length === 0) {
             Swal.fire({
                 icon: 'warning',
