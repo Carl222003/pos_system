@@ -244,6 +244,67 @@ $existing_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+
+.requests-table .table {
+    margin: 0;
+}
+
+.requests-table .table th {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.requests-table .table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-color: #eee;
+}
+
+.requests-table .btn-info {
+    background: var(--info-color);
+    border: none;
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.requests-table .btn-info:hover {
+    background: #138496;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.3);
+}
+
+/* Pagination Controls Styling */
+.pagination-controls .btn-outline-secondary {
+    border: none;
+    color: #6c757d;
+    background: transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.pagination-controls .btn-outline-secondary:hover:not(:disabled) {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.pagination-controls .btn-outline-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-controls .btn-outline-secondary:not(:disabled):active {
+    transform: translateY(0);
 }
 
 .table {
@@ -684,72 +745,117 @@ $existing_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </form>
         </div>
         
-        <!-- Existing Requests Table -->
+        <!-- Stock Requests Updates Table -->
         <div class="requests-table">
             <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
                 <h5 class="mb-0">
-                    <i class="fas fa-history me-2"></i>
-                    My Stock Update Requests
+                    <i class="fas fa-clipboard-check me-2"></i>
+                    Stock Requests Updates
                 </h5>
                 <button class="btn btn-outline-primary btn-sm" onclick="refreshRequests()">
                     <i class="fas fa-sync-alt"></i> Refresh
                 </button>
             </div>
             
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Ingredient</th>
-                        <th>Update Type</th>
-                        <th>Quantity</th>
-                        <th>Urgency</th>
-                        <th>Status</th>
-                        <th>Request Date</th>
-                        <th>Admin Response</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="requestsTableBody">
-                    <tr>
-                        <td colspan="8" class="loading">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p>Loading your requests...</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                         <div class="table-responsive">
+                 <table class="table table-hover" id="requestsTable">
+                     <thead>
+                         <tr>
+                             <th>Date Requested</th>
+                             <th>Ingredients</th>
+                             <th>Status</th>
+                             <th>Delivery Status</th>
+                             <th>Delivery Notes</th>
+                             <th>Updated By</th>
+                             <th>Actions</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <tr>
+                             <td colspan="7" class="loading">
+                                 <div class="spinner-border text-primary" role="status">
+                                     <span class="visually-hidden">Loading...</span>
+                                 </div>
+                                 <p>Loading your requests...</p>
+                             </td>
+                         </tr>
+                     </tbody>
+                 </table>
+                 
+                 <!-- Pagination Controls -->
+                 <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                     <div class="text-muted">
+                         Showing <span id="startRecord">0</span> to <span id="endRecord">0</span> of <span id="totalRecords">0</span> entries
+                     </div>
+                     <div class="pagination-controls">
+                         <button class="btn btn-outline-secondary btn-sm" id="prevBtn" onclick="previousPage()" disabled>
+                             <i class="fas fa-chevron-left"></i> Previous
+                         </button>
+                         <button class="btn btn-outline-secondary btn-sm ms-2" id="nextBtn" onclick="nextPage()">
+                             Next <i class="fas fa-chevron-right"></i>
+                         </button>
+                     </div>
+                 </div>
+             </div>
         </div>
     </div>
 </div>
 
-<!-- Request Details Modal -->
-<div class="modal fade" id="requestDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<!-- Delivery Status Update Modal -->
+<div class="modal fade" id="deliveryModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Request Details</h5>
+                <h5 class="modal-title">
+                    <i class="fas fa-truck me-1"></i>
+                    Update Delivery Status
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="requestDetailsBody">
-                <!-- Content loaded dynamically -->
+            <div class="modal-body">
+                <form id="deliveryForm">
+                    <input type="hidden" id="deliveryRequestId">
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Status</label>
+                        <select class="form-select" id="deliveryStatus">
+                            <option value="delivered">Delivered</option>
+                            <option value="returned">Returned</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Date</label>
+                        <input type="datetime-local" class="form-control" id="deliveryDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Notes</label>
+                        <textarea class="form-control" id="deliveryNotes" rows="3" placeholder="Enter delivery notes, return reasons, or cancellation details..."></textarea>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info" id="updateDelivery">
+                    <i class="fas fa-save me-1"></i>
+                    Update Delivery
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+// Pagination variables
 let allRequests = [];
+let currentPage = 1;
+const itemsPerPage = 5;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     loadStats();
     loadRequests();
     setupFormHandlers();
+    setupDeliveryHandlers();
 });
 
 function loadStats() {
@@ -767,79 +873,97 @@ function loadStats() {
 }
 
 function loadRequests() {
-    fetch('get_stock_update_requests.php')
+    fetch('get_stockman_requests.php')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                allRequests = data.requests;
-                displayRequests(data.requests);
+                allRequests = data.data;
+                currentPage = 1;
+                displayRequests();
             } else {
-                document.getElementById('requestsTableBody').innerHTML = 
-                    `<tr><td colspan="8" class="no-data">❌ Error: ${data.error}</td></tr>`;
+                document.getElementById('requestsTable').querySelector('tbody').innerHTML = 
+                    `<tr><td colspan="7" class="no-data">❌ Error: ${data.error}</td></tr>`;
             }
         })
         .catch(error => {
             console.error('Error loading requests:', error);
-            document.getElementById('requestsTableBody').innerHTML = 
-                `<tr><td colspan="8" class="no-data">❌ Error loading requests</td></tr>`;
+            document.getElementById('requestsTable').querySelector('tbody').innerHTML = 
+                `<tr><td colspan="7" class="no-data">❌ Error loading requests</td></tr>`;
         });
 }
 
-function displayRequests(requests) {
-    const tbody = document.getElementById('requestsTableBody');
+function displayRequests() {
+    const tbody = document.getElementById('requestsTable').querySelector('tbody');
     
-    if (requests.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="no-data">📝 No requests found</td></tr>';
+    if (allRequests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="no-data">📝 No requests found</td></tr>';
+        updatePaginationInfo(0, 0, 0);
+        updatePaginationButtons(false, false);
         return;
     }
     
-    tbody.innerHTML = requests.map(request => {
-        const urgencyClass = request.urgency_level;
-        const statusClass = request.status;
+    // Calculate pagination
+    const totalRecords = allRequests.length;
+    const totalPages = Math.ceil(totalRecords / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalRecords);
+    const currentPageData = allRequests.slice(startIndex, endIndex);
+    
+    // Display current page data
+    tbody.innerHTML = currentPageData.map(request => {
+        // Add delivery update button for approved requests that are not delivered, cancelled, or returned
+        let actionButton = '';
+        if (request.status.includes('APPROVED') && 
+            request.delivery_status_raw !== 'delivered' && 
+            request.delivery_status_raw !== 'cancelled' && 
+            request.delivery_status_raw !== 'returned') {
+            actionButton = `<button class="btn btn-info btn-sm update-delivery" data-id="${request.request_id}" onclick="updateDeliveryStatus(${request.request_id})">
+                <i class="fas fa-truck"></i> Update Delivery
+            </button>`;
+        }
         
         return `
-            <tr class="${request.is_new ? 'new-request' : ''}">
-                <td>
-                    <strong>${request.ingredient_name}</strong>
-                    <br>
-                    <small class="text-muted">ID: ${request.ingredient_id}</small>
-                </td>
-                <td>
-                    <span class="badge bg-info">${request.update_type.toUpperCase()}</span>
-                </td>
-                <td>
-                    <strong>${request.quantity} ${request.unit}</strong>
-                </td>
-                <td>
-                    <span class="urgency-badge ${urgencyClass}">${urgencyClass.toUpperCase()}</span>
-                </td>
-                <td>
-                    <span class="status-badge ${statusClass}">${statusClass.toUpperCase()}</span>
-                </td>
-                <td>
-                    <small>${new Date(request.request_date).toLocaleDateString()}</small>
-                    <br>
-                    <small class="text-muted">${new Date(request.request_date).toLocaleTimeString()}</small>
-                </td>
-                <td>
-                    ${request.admin_response ? 
-                        `<small>${request.admin_response}</small>` : 
-                        '<small class="text-muted">No response yet</small>'
-                    }
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-outline-info" onclick="viewRequestDetails(${request.request_id})">
-                        <i class="fas fa-eye"></i> View
-                    </button>
-                    ${request.status === 'pending' ? 
-                        `<button class="btn btn-sm btn-outline-warning ms-1" onclick="cancelRequest(${request.request_id})">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>` : ''
-                    }
-                </td>
+            <tr>
+                <td>${request.request_date}</td>
+                <td>${request.ingredients}</td>
+                <td>${request.status}</td>
+                <td>${request.delivery_status}</td>
+                <td>${request.delivery_notes}</td>
+                <td>${request.updated_by}</td>
+                <td>${actionButton}</td>
             </tr>
         `;
     }).join('');
+    
+    // Update pagination info and buttons
+    updatePaginationInfo(startIndex + 1, endIndex, totalRecords);
+    updatePaginationButtons(currentPage > 1, currentPage < totalPages);
+}
+
+function updatePaginationInfo(start, end, total) {
+    document.getElementById('startRecord').textContent = start;
+    document.getElementById('endRecord').textContent = end;
+    document.getElementById('totalRecords').textContent = total;
+}
+
+function updatePaginationButtons(hasPrevious, hasNext) {
+    document.getElementById('prevBtn').disabled = !hasPrevious;
+    document.getElementById('nextBtn').disabled = !hasNext;
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        displayRequests();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(allRequests.length / itemsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        displayRequests();
+    }
 }
 
 function setupFormHandlers() {
@@ -902,132 +1026,111 @@ function resetForm() {
     document.getElementById('stockUpdateForm').reset();
 }
 
-function viewRequestDetails(requestId) {
-    fetch(`get_stock_update_request_details.php?request_id=${requestId}`)
+function setupDeliveryHandlers() {
+    // Delivery status change handler
+    document.getElementById('deliveryStatus').addEventListener('change', function() {
+        const status = this.value;
+        const notesField = document.getElementById('deliveryNotes');
+        const notesLabel = document.querySelector('label[for="deliveryNotes"]');
+        
+        if (status === 'returned' || status === 'cancelled') {
+            notesField.setAttribute('required', 'required');
+            notesLabel.innerHTML = 'Delivery Notes <span class="text-danger">*</span>';
+            notesField.classList.add('border-warning');
+        } else {
+            notesField.removeAttribute('required');
+            notesLabel.innerHTML = 'Delivery Notes';
+            notesField.classList.remove('border-warning');
+        }
+    });
+    
+    // Update delivery button handler
+    document.getElementById('updateDelivery').addEventListener('click', function() {
+        const requestId = document.getElementById('deliveryRequestId').value;
+        const deliveryStatus = document.getElementById('deliveryStatus').value;
+        const deliveryDate = document.getElementById('deliveryDate').value;
+        const deliveryNotes = document.getElementById('deliveryNotes').value.trim();
+        
+        // Validate required fields
+        if ((deliveryStatus === 'returned' || deliveryStatus === 'cancelled') && !deliveryNotes) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Delivery Notes Required',
+                text: 'Please provide delivery notes when returning or cancelling a delivery.',
+                confirmButtonColor: '#8B4543'
+            });
+            return;
+        }
+        
+        // Submit delivery update
+        fetch('update_delivery_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                request_id: requestId,
+                delivery_status: deliveryStatus,
+                delivery_date: deliveryDate,
+                delivery_notes: deliveryNotes
+            })
+        })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const request = data.request;
-                const modalBody = document.getElementById('requestDetailsBody');
-                
-                modalBody.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="text-primary">Request Information</h6>
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td><strong>Ingredient:</strong></td>
-                                    <td>${request.ingredient_name}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Update Type:</strong></td>
-                                    <td><span class="badge bg-info">${request.update_type.toUpperCase()}</span></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Quantity:</strong></td>
-                                    <td><strong>${request.quantity} ${request.unit}</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Urgency:</strong></td>
-                                    <td><span class="urgency-badge ${request.urgency_level}">${request.urgency_level.toUpperCase()}</span></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Priority:</strong></td>
-                                    <td><span class="badge bg-secondary">${request.priority.toUpperCase()}</span></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Status:</strong></td>
-                                    <td><span class="status-badge ${request.status}">${request.status.toUpperCase()}</span></td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-primary">Request Details</h6>
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td><strong>Request Date:</strong></td>
-                                    <td>${new Date(request.request_date).toLocaleString()}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Reason:</strong></td>
-                                    <td>${request.reason}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Notes:</strong></td>
-                                    <td>${request.notes || 'No additional notes'}</td>
-                                </tr>
-                                ${request.admin_response ? `
-                                <tr>
-                                    <td><strong>Admin Response:</strong></td>
-                                    <td>${request.admin_response}</td>
-                                </tr>
-                                ` : ''}
-                                ${request.response_date ? `
-                                <tr>
-                                    <td><strong>Response Date:</strong></td>
-                                    <td>${new Date(request.response_date).toLocaleString()}</td>
-                                </tr>
-                                ` : ''}
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
-            }
-        })
-        .catch(error => console.error('Error loading request details:', error));
-}
-
-function cancelRequest(requestId) {
-    Swal.fire({
-        title: 'Cancel Request?',
-        text: 'Are you sure you want to cancel this request? This action cannot be undone.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, cancel it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch('cancel_stock_update_request.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ request_id: requestId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Request Cancelled!',
-                        text: 'Your request has been cancelled successfully.',
-                        confirmButtonColor: '#8B4543'
-                    });
-                    loadStats();
-                    loadRequests();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Cancellation Failed',
-                        text: data.error || 'An error occurred while cancelling the request.',
-                        confirmButtonColor: '#8B4543'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error cancelling request:', error);
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Cancellation Failed',
-                    text: 'An error occurred while cancelling the request.',
+                    icon: 'success',
+                    title: 'Delivery Updated!',
+                    text: 'Delivery status has been updated successfully.',
                     confirmButtonColor: '#8B4543'
                 });
+                
+                // Close modal and refresh requests
+                bootstrap.Modal.getInstance(document.getElementById('deliveryModal')).hide();
+                loadRequests();
+                loadStats();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Update Failed',
+                    text: data.error || 'An error occurred while updating delivery status.',
+                    confirmButtonColor: '#8B4543'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error updating delivery:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: 'An error occurred while updating delivery status.',
+                confirmButtonColor: '#8B4543'
             });
-        }
+        });
     });
+    
+    // Modal hidden event
+    document.getElementById('deliveryModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('deliveryForm').reset();
+        document.getElementById('deliveryNotes').classList.remove('border-warning');
+        const notesLabel = document.querySelector('label[for="deliveryNotes"]');
+        notesLabel.innerHTML = 'Delivery Notes';
+    });
+}
+
+function updateDeliveryStatus(requestId) {
+    // Show delivery status update modal
+    console.log('Updating delivery status for request ID:', requestId);
+    document.getElementById('deliveryRequestId').value = requestId;
+    
+    // Set current date/time as default and minimum date
+    const now = new Date();
+    const currentDateTime = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
+    document.getElementById('deliveryDate').value = currentDateTime;
+    document.getElementById('deliveryDate').setAttribute('min', currentDateTime);
+    
+    const modal = new bootstrap.Modal(document.getElementById('deliveryModal'));
+    modal.show();
 }
 
 function refreshRequests() {

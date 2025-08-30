@@ -4430,9 +4430,9 @@ body {
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 0.5rem 1rem;
-    margin: 0 3px;
-    border: 1px solid #ddd;
+    padding: 0.5rem 0.5rem;
+    margin: 0;
+    border: none;
     border-radius: 6px;
     color: #8B4543 !important;
     background: white !important;
@@ -4441,14 +4441,14 @@ body {
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
     background: #f9f2f2 !important;
-    border-color: #8B4543;
+    border: none;
     color: #8B4543 !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
     background: #8B4543 !important;
     color: white !important;
-    border-color: #8B4543;
+    border: none;
     font-weight: 500;
 }
 
@@ -5193,6 +5193,7 @@ $(document).ready(function() {
         processing: true,
         serverSide: true,
         pageLength: 5,
+        pagingType: "simple", // Show only Previous/Next buttons
         lengthChange: false,
         columns: [
             { data: 'category_name' },
@@ -5264,14 +5265,12 @@ $(document).ready(function() {
                 }
             }
         ],
-        pageLength: 10,
-        lengthChange: false,
         language: {
             search: "",
             searchPlaceholder: "Search..."
         },
         dom: '<"top d-flex justify-content-between align-items-center"f>rt<"bottom d-flex justify-content-between align-items-center"ip><"clear">',
-        ordering: true,
+        ordering: false, // Disable sorting functionality
         responsive: true
     });
     

@@ -37,6 +37,31 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         
         <script>
+            // Update user activity periodically
+            function updateUserActivity() {
+                $.ajax({
+                    url: 'update_user_activity.php',
+                    method: 'POST',
+                    data: { update_activity: true },
+                    success: function(response) {
+                        if (response.success) {
+                            console.log('User activity updated:', response.timestamp);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error updating user activity:', error);
+                    }
+                });
+            }
+
+            // Update activity every 5 minutes
+            setInterval(updateUserActivity, 300000);
+            
+            // Update activity on page load
+            $(document).ready(function() {
+                updateUserActivity();
+            });
+
             // Check if CSS is loaded and initialize sidebar functionality
             window.onload = function() {
                 const link = document.querySelector('link[href^="styles/dashboard.css"]');
@@ -1071,12 +1096,7 @@
                                                 <span>List of Request</span>
                                             </a>
                                         </li>
-                                        <li class="menu-item">
-                                            <a href="admin_stock_update_requests.php" class="menu-link">
-                                                <i class="fa-solid fa-edit"></i>
-                                                <span>Stock Update Requests</span>
-                                            </a>
-                                        </li>
+                                        <!-- Stock Update Requests menu item removed -->
                                         <li class="menu-item">
                                             <a href="product.php" class="menu-link">
                                                 <i class="fa-solid fa-utensils"></i>
@@ -1097,12 +1117,7 @@
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li class="menu-item">
-                                            <a href="branch_sales.php?branch=main" class="menu-link">
-                                                <i class="fa-solid fa-chart-line"></i>
-                                                <span>Sales</span>
-                                            </a>
-                                        </li>
+                                        <!-- Sales menu item removed -->
                                         <li class="menu-item">
                                             <a href="archived_list.php" class="menu-link">
                                                 <i class="fa-solid fa-box-archive"></i>

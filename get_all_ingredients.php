@@ -39,13 +39,14 @@ try {
                     i.ingredient_name,
                     i.ingredient_quantity,
                     i.ingredient_unit,
-                    COALESCE(b.branch_name, 'All Branches') as branch_name,
                     i.consume_before,
-                    i.ingredient_status,
+                    CASE 
+                        WHEN i.consume_before IS NOT NULL AND i.consume_before <= CURDATE() THEN 'Out of Stock'
+                        ELSE i.ingredient_status
+                    END as ingredient_status,
                     i.minimum_stock
                   FROM ingredients i 
                   LEFT JOIN pos_category c ON i.category_id = c.category_id
-                  LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
                   WHERE i.ingredient_status != 'archived'
                   ORDER BY i.ingredient_name ASC";
     

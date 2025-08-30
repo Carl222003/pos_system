@@ -813,12 +813,12 @@ body:not(.modal-open) {
     min-width: 36px;
     height: 36px;
     padding: 0;
-    margin: 0 2px;
+    margin: 0 1px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 0.35rem;
-    border: 1px solid transparent;
+    border: none;
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-dark) !important;
@@ -829,19 +829,19 @@ body:not(.modal-open) {
 .dataTables_paginate .paginate_button:hover {
     color: var(--primary-color) !important;
     background: var(--hover-color);
-    border-color: var(--primary-color);
+    border: none;
 }
 
 .dataTables_paginate .paginate_button.current {
     background: var(--primary-color);
     color: white !important;
-    border-color: var(--primary-color);
+    border: none;
     font-weight: 600;
 }
 
 .dataTables_paginate .paginate_button.disabled {
     color: var(--border-color) !important;
-    border-color: var(--border-color);
+    border: none;
     cursor: not-allowed;
 }
 
@@ -1152,7 +1152,6 @@ h1 {
                                 <th>Ingredient Name</th>
                                 <th>Quantity</th>
                                 <th>Unit</th>
-                                <th>Branch</th>
                                 <th>Consume Before</th>
                                 <th>Status</th>
                                 <th>Action</th>
@@ -1327,23 +1326,7 @@ h1 {
                                     </div>
                                 </div>
                                 
-                                <div class="mb-4">
-                                    <label for="branch_id" class="form-label">
-                                        <i class="fas fa-store me-1"></i>Branch
-                                    </label>
-                                    <select name="branch_id" id="branch_id" class="form-select form-select-lg" required>
-                                        <option value="">Select Branch</option>
-                                        <?php 
-                                        $branches = $pdo->query("SELECT branch_id, branch_name FROM pos_branch WHERE status = 'Active' ORDER BY branch_name")->fetchAll(PDO::FETCH_ASSOC);
-                                        foreach ($branches as $branch): ?>
-                                            <option value="<?php echo htmlspecialchars($branch['branch_id']); ?>"><?php echo htmlspecialchars($branch['branch_name']); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        Select which branch will store this ingredient
-                                    </div>
-                                </div>
+
                                 
                                 <div class="mb-4">
                                     <label for="ingredient_status" class="form-label">
@@ -1360,27 +1343,7 @@ h1 {
                                     </div>
                                 </div>
                                 
-                                <div class="mb-4">
-                                    <label for="storage_location" class="form-label">
-                                        <i class="fas fa-map-marker-alt me-1"></i>Storage Location
-                                    </label>
-                                    <input type="text" name="storage_location" id="storage_location" class="form-control form-control-lg" placeholder="e.g., Refrigerator, Pantry, Freezer">
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        Where the ingredient is stored in the branch
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label for="cost_per_unit" class="form-label">
-                                        <i class="fas fa-dollar-sign me-1"></i>Cost per Unit
-                                    </label>
-                                    <input type="number" name="cost_per_unit" id="cost_per_unit" class="form-control form-control-lg" min="0" step="0.01" placeholder="0.00">
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        Cost per unit of the ingredient
-                                    </div>
-                                </div>
+
                                 
                                 <div class="mb-4">
                                     <label for="notes" class="form-label">
@@ -1551,8 +1514,8 @@ $(document).ready(function() {
     $('#ingredientTable').DataTable({
         "processing": true,
         "serverSide": false, // Changed to false to load all data at once
-        "pageLength": 10, // Show 10 records per page by default
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], // Multiple options including "All"
+        "pageLength": 5, // Show 5 records per page by default
+        "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]], // Multiple options including "All"
         "ajax": {
             "url": "get_all_ingredients.php", // New endpoint for all data
             "type": "GET"
@@ -1563,7 +1526,6 @@ $(document).ready(function() {
             { "data": "ingredient_name" },
             { "data": "ingredient_quantity" },
             { "data": "ingredient_unit" },
-            { "data": "branch_name" },
             { 
                 "data": "consume_before",
                 "render": function(data, type, row) {
@@ -1590,17 +1552,26 @@ $(document).ready(function() {
                 "render": function(data, type, row) {
                     const currentStock = parseFloat(row.ingredient_quantity) || 0;
                     const threshold = parseFloat(row.minimum_stock) || 0;
+                    const consumeBefore = row.consume_before;
                     
                     let badgeClass = 'badge bg-success';
                     let icon = '🟢';
                     let status = data;
                     let alertIndicator = '';
                     
-                    // Check if current stock is below threshold
-                    if (currentStock <= 0) {
+                    // Check if expired first
+                    let isExpired = false;
+                    if (consumeBefore) {
+                        const expiryDate = new Date(consumeBefore);
+                        const today = new Date();
+                        isExpired = expiryDate <= today;
+                    }
+                    
+                    // Check status based on expiration and stock
+                    if (currentStock <= 0 || isExpired) {
                         badgeClass = 'badge bg-danger';
                         icon = '🔴';
-                        status = 'Out of Stock';
+                        status = isExpired ? 'Expired' : 'Out of Stock';
                         alertIndicator = '<i class="fas fa-bell text-danger ms-1" title="Critical Alert!"></i>';
                     } else if (currentStock <= threshold) {
                         badgeClass = 'badge bg-warning';
@@ -1642,9 +1613,10 @@ $(document).ready(function() {
         ],
         "dom": '<"top"lf>rt<"bottom"ip><"clear">', // Show length menu, search, pagination, and info
         "paging": true, // Enable pagination
+        "pagingType": "simple", // Show only Previous/Next buttons
         "info": true, // Show "Showing X to Y of Z entries" info
         "searching": true, // Keep search functionality
-        "ordering": true, // Keep sorting functionality
+        "ordering": false, // Disable sorting functionality
         "lengthChange": true // Show the "Show X entries" dropdown
     });
 

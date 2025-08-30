@@ -936,7 +936,8 @@ $(document).ready(function() {
             }
         ],
         "order": [[1, "asc"]],
-        "pageLength": 10,
+        "pageLength": 5,
+        "pagingType": "simple", // Show only Previous/Next buttons
         "responsive": true
     });
 

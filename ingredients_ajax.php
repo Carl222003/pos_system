@@ -29,14 +29,12 @@ $totalRecords = $totalRecordsStmt->fetchColumn();
 // Get total filtered records
 $filterQuery = "SELECT COUNT(*) FROM ingredients i
                 LEFT JOIN pos_category c ON i.category_id = c.category_id
-                LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
                 WHERE i.ingredient_status != 'archived'";
 
 if (!empty($searchValue)) {
     $filterQuery .= " AND (i.ingredient_name LIKE :search 
                            OR c.category_name LIKE :search 
-                           OR i.ingredient_status LIKE :search
-                           OR b.branch_name LIKE :search)";
+                           OR i.ingredient_status LIKE :search)";
 }
 
 $filterStmt = $pdo->prepare($filterQuery);
@@ -48,18 +46,19 @@ $totalFilteredRecords = $filterStmt->fetchColumn();
 
 // Fetch data with ordering and pagination
 $dataQuery = "SELECT i.ingredient_id, c.category_name, i.ingredient_name, 
-                     i.ingredient_quantity, i.ingredient_unit, i.ingredient_status,
-                     b.branch_name, i.branch_id
+                     i.ingredient_quantity, i.ingredient_unit, i.consume_before,
+                     CASE 
+                         WHEN i.consume_before IS NOT NULL AND i.consume_before <= CURDATE() THEN 'Out of Stock'
+                         ELSE i.ingredient_status
+                     END as ingredient_status
               FROM ingredients i 
               LEFT JOIN pos_category c ON i.category_id = c.category_id 
-              LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
               WHERE i.ingredient_status != 'archived'";
 
 if (!empty($searchValue)) {
     $dataQuery .= " AND (i.ingredient_name LIKE :search 
                          OR c.category_name LIKE :search 
-                         OR i.ingredient_status LIKE :search
-                         OR b.branch_name LIKE :search)";
+                         OR i.ingredient_status LIKE :search)";
 }
 
 $dataQuery .= " ORDER BY $orderColumn $orderDir LIMIT :start, :limit";

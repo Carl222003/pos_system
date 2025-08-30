@@ -1538,12 +1538,12 @@ include('header.php');
     min-width: 36px;
     height: 36px;
     padding: 0;
-    margin: 0 2px;
+    margin: 0 1px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 0.35rem;
-    border: 1px solid transparent;
+    border: none;
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-dark) !important;
@@ -1554,13 +1554,13 @@ include('header.php');
 .dataTables_paginate .paginate_button:hover {
     color: var(--primary-color) !important;
     background: var(--hover-color);
-    border-color: var(--primary-color);
+    border: none;
 }
 
 .dataTables_paginate .paginate_button.current {
     background: var(--primary-color);
     color: white !important;
-    border-color: var(--primary-color);
+    border: none;
     font-weight: 600;
 }
 
@@ -2178,6 +2178,7 @@ $(document).ready(function() {
         "processing": true,
         "serverSide": true,
         "pageLength": 5,
+        "pagingType": "simple", // Show only Previous/Next buttons
         "lengthChange": false,
         "dom": 'ftip',
         "ajax": {

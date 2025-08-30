@@ -66,7 +66,7 @@ include('header.php');
                     <div class="inventory-alerts">
                         <h6 class="text-muted mb-3">Inventory Status</h6>
                         <div class="row g-3">
-                            <div class="col-6">
+                            <div class="col-12">
                                 <div class="alert alert-warning mb-0">
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-exclamation-triangle me-2"></i>
@@ -77,17 +77,7 @@ include('header.php');
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div class="alert alert-danger mb-0">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-clock me-2"></i>
-                                        <div>
-                                            <div class="alert-label">Expiring</div>
-                                            <div class="alert-value expiring-count" id="expiring-<?php echo $branch['branch_id']; ?>">0</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- Expiring count removed since ingredients table doesn't have expiry_date column -->
                         </div>
                     </div>
                 </div>
@@ -692,6 +682,117 @@ function updateSalesDisplay(branchId, salesData) {
     }
 }
 
+// Initialize sales comparison chart
+let salesComparisonChart = null;
+
+function initializeSalesComparisonChart() {
+    const ctx = document.getElementById('salesComparisonChart');
+    if (!ctx) return;
+    
+    salesComparisonChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Sales',
+                data: [],
+                backgroundColor: 'rgba(139, 69, 67, 0.8)',
+                borderColor: '#8B4543',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '₱' + context.parsed.y.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            });
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString('en-US');
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function loadSalesComparison() {
+    const period = $('#trendPeriod').val();
+    
+    $.ajax({
+        url: 'get_branch_comparison.php',
+        method: 'GET',
+        data: { period: period },
+        success: function(response) {
+            if (response.success) {
+                updateSalesComparisonChart(response.data);
+                updateComparisonTable(response.data);
+            } else {
+                console.error('Error loading sales comparison:', response.error);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Ajax error:', error);
+        }
+    });
+}
+
+function updateSalesComparisonChart(data) {
+    if (!salesComparisonChart) {
+        initializeSalesComparisonChart();
+    }
+    
+    const labels = data.map(branch => branch.branch_name);
+    const sales = data.map(branch => branch.total_sales);
+    
+    salesComparisonChart.data.labels = labels;
+    salesComparisonChart.data.datasets[0].data = sales;
+    salesComparisonChart.update();
+}
+
+function updateComparisonTable(data) {
+    const tbody = $('#branchComparisonTable tbody');
+    tbody.empty();
+    
+    data.forEach(branch => {
+        const statusClass = branch.status === 'Operating' ? 'success' : 'secondary';
+        const topProducts = branch.top_products.length > 0 ? branch.top_products.join(', ') : 'No data';
+        
+        tbody.append(`
+            <tr>
+                <td>
+                    <span class="badge bg-primary">#${branch.rank}</span>
+                </td>
+                <td><strong>${branch.branch_name}</strong></td>
+                <td>
+                    <span class="badge bg-${statusClass}">${branch.status}</span>
+                </td>
+                <td class="text-end">${branch.total_orders}</td>
+                <td class="text-end">₱${parseFloat(branch.total_sales).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td class="text-end">₱${parseFloat(branch.average_sale).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td><small>${topProducts}</small></td>
+            </tr>
+        `);
+    });
+}
+
 function loadRealtimeInventory() {
     // For now, use the simple inventory API that works system-wide
     fetch('test_inventory_simple.php')
@@ -983,18 +1084,18 @@ $(document).ready(function() {
                     $('#sales-' + branchId).text('₱' + parseFloat(data.today_sales || 0).toFixed(2));
                     $('#orders-' + branchId).text(data.today_orders || 0);
 
-                    // Update cashier status: show all assigned cashiers, highlight active ones
+                    // Update cashier status: show only active (online) cashiers
                     let cashierHtml = '';
-                    if (data.all_cashiers && data.all_cashiers.length > 0) {
-                        cashierHtml = data.all_cashiers.map(function(cashier) {
-                            if (cashier.is_active) {
-                                return `<span style="color: #218838; font-weight: bold;"><i class='fas fa-circle' style='font-size:8px;color:#28a745;margin-right:4px;'></i>${cashier.full_name}</span>`;
-                            } else {
-                                return `<span style="color: #888;">${cashier.full_name}</span>`;
-                            }
+                    if (data.active_cashiers && data.active_cashiers.length > 0) {
+                        cashierHtml = data.active_cashiers.map(function(cashier) {
+                            return `<span style="color: #218838; font-weight: bold;"><i class='fas fa-circle' style='font-size:8px;color:#28a745;margin-right:4px;'></i>${cashier.full_name}</span>`;
                         }).join(', ');
+                        cashierHtml += ` <span class="badge bg-success ms-1">${data.total_active_cashiers}</span>`;
                     } else {
-                        cashierHtml = '<span style="color:#888;">None assigned</span>';
+                        cashierHtml = '<span style="color:#888;">No active cashiers</span>';
+                        if (data.total_assigned_cashiers > 0) {
+                            cashierHtml += ` <span class="badge bg-secondary ms-1">${data.total_assigned_cashiers} assigned</span>`;
+                        }
                     }
                     $('#cashiers-' + branchId + ' .cashier-list').html(cashierHtml);
 
@@ -1006,7 +1107,7 @@ $(document).ready(function() {
 
                     // Update inventory alerts
                     $('#lowstock-' + branchId).text(data.low_stock_count || 0);
-                    $('#expiring-' + branchId).text(data.expiring_count || 0);
+                    // Expiring count removed since ingredients table doesn't have expiry_date column
                 } else {
                     // Show error in all fields for this branch
                     $('#sales-' + branchId).text('Error');
@@ -1014,7 +1115,7 @@ $(document).ready(function() {
                     $('#cashiers-' + branchId + ' .cashier-list').text('Error');
                     $('#status-' + branchId).html('<span class="badge bg-danger">Error</span>');
                     $('#lowstock-' + branchId).text('!');
-                    $('#expiring-' + branchId).text('!');
+                    // Expiring count removed
                     console.error('Data error for branch_id=' + branchId, data);
                 }
             }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
@@ -1024,7 +1125,7 @@ $(document).ready(function() {
                 $('#cashiers-' + branchId + ' .cashier-list').text('Error');
                 $('#status-' + branchId).html('<span class="badge bg-danger">Error</span>');
                 $('#lowstock-' + branchId).text('!');
-                $('#expiring-' + branchId).text('!');
+                                    // Expiring count removed
                 // Debug log
                 console.error('AJAX error for branch_id=' + branchId, textStatus, errorThrown, jqXHR.responseText);
             });
@@ -1042,6 +1143,61 @@ $(document).ready(function() {
         }, 1000);
     });
 
+    // Initialize sales comparison chart
+    initializeSalesComparisonChart();
+    
+    // Load initial sales comparison data
+    loadSalesComparison();
+    
+    // Handle trend period change
+    $('#trendPeriod').on('change', function() {
+        loadSalesComparison();
+    });
+    
+    // Handle comparison period change
+    $('#comparisonPeriod').on('change', function() {
+        const period = $(this).val();
+        if (period === 'custom') {
+            $('#startDate, #endDate').prop('disabled', false);
+        } else {
+            $('#startDate, #endDate').prop('disabled', true);
+            loadSalesComparison();
+        }
+    });
+    
+    // Handle apply filter button
+    $('#applyFilter').on('click', function() {
+        const period = $('#comparisonPeriod').val();
+        const startDate = $('#startDate').val();
+        const endDate = $('#endDate').val();
+        
+        if (period === 'custom' && (!startDate || !endDate)) {
+            alert('Please select both start and end dates for custom range.');
+            return;
+        }
+        
+        $.ajax({
+            url: 'get_branch_comparison.php',
+            method: 'GET',
+            data: { 
+                period: period,
+                start_date: startDate,
+                end_date: endDate
+            },
+            success: function(response) {
+                if (response.success) {
+                    updateSalesComparisonChart(response.data);
+                    updateComparisonTable(response.data);
+                } else {
+                    console.error('Error loading comparison data:', response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Ajax error:', error);
+            }
+        });
+    });
+    
     // Handle View Sales button click
     $('.view-sales-btn').on('click', function() {
         const branchId = $(this).data('branch-id');

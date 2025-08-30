@@ -74,20 +74,13 @@ foreach ($rows as $i => $row) {
         $skipped[] = 'Row '.($i+2).': invalid or missing category (got: '.($row['category_id'] ?? $row['category_name'] ?? 'none').')';
         continue;
     }
-    $stmt = $pdo->prepare("INSERT INTO ingredients (category_id, ingredient_name, ingredient_quantity, ingredient_unit, ingredient_status, branch_id) VALUES (?, ?, ?, ?, 'Available', ?)");
-    // Default to first active branch if not specified
-    $branch_id = $row['branch_id'] ?? null;
-    if (!$branch_id) {
-        $branchStmt = $pdo->query("SELECT branch_id FROM pos_branch WHERE status = 'Active' LIMIT 1");
-        $branch_id = $branchStmt->fetchColumn();
-    }
+    $stmt = $pdo->prepare("INSERT INTO ingredients (category_id, ingredient_name, ingredient_quantity, ingredient_unit, ingredient_status) VALUES (?, ?, ?, ?, 'Available')");
     
     $stmt->execute([
         $category_id,
         $row['ingredient_name'],
         $row['ingredient_quantity'] ?? 0,
-        $row['ingredient_unit'] ?? '',
-        $branch_id
+        $row['ingredient_unit'] ?? ''
     ]);
     $inserted++;
 }

@@ -31,8 +31,8 @@ if (!$branch_id) {
 // Get pre-selected ingredient if provided
 $pre_selected_ingredient = $_GET['ingredient_id'] ?? null;
 
-// Fetch ALL ingredients from ALL branches and categories
-// This allows stockmen to see all available ingredients and request any of them
+// Fetch ingredients that are in stock (quantity > 0) and not expired from ALL branches and categories
+// This allows stockmen to see only available ingredients and request any of them
 $stmt = $pdo->prepare("
     SELECT 
         i.ingredient_id, 
@@ -51,7 +51,9 @@ $stmt = $pdo->prepare("
     FROM ingredients i
     LEFT JOIN pos_category c ON i.category_id = c.category_id
     LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
-    WHERE c.status = 'active'
+    WHERE c.status = 'active' 
+    AND i.ingredient_quantity > 0
+    AND (i.consume_before IS NULL OR i.consume_before > CURDATE())
     ORDER BY c.category_name, i.ingredient_name
 ");
 
@@ -325,6 +327,17 @@ foreach ($ingredients as $ingredient) {
 .mb-3 {
     margin-bottom: 1.5rem !important;
 }
+
+/* Invalid input styling */
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
 </style>
 <div class="container-fluid px-4">
     <div class="stockman-header">
@@ -361,7 +374,7 @@ foreach ($ingredients as $ingredient) {
                                 <div class="col-md-5">
                                     <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['ingredient_id']; ?>" id="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
                                     <label for="ingredient_<?php echo $ingredient['ingredient_id']; ?>">
-                                        <strong><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
+                                        <strong class="ingredient-name"><?php echo htmlspecialchars($ingredient['ingredient_name']); ?></strong>
                                         <span class="text-muted">(<?php echo htmlspecialchars($ingredient['ingredient_unit']); ?>)</span>
                                         <br>
                                         <small class="text-muted">Category: <?php echo htmlspecialchars($ingredient['category_name']); ?></small>
@@ -379,14 +392,14 @@ foreach ($ingredients as $ingredient) {
                                 <div class="col-md-2">
                                     <span class="stock-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
                                         <?php if ($ingredient['ingredient_status'] === 'Available') {
-                                            echo 'Stock: ' . htmlspecialchars($ingredient['ingredient_quantity']);
+                                            echo 'Stock: <span class="stock-quantity">' . htmlspecialchars($ingredient['ingredient_quantity']) . '</span>';
                                         } else {
                                             echo 'No Stock';
                                         } ?>
                                     </span>
                                 </div>
                                 <div class="col-md-2">
-                                    <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Qty">
+                                    <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" max="<?php echo $ingredient['ingredient_quantity']; ?>" placeholder="Qty" data-max-stock="<?php echo $ingredient['ingredient_quantity']; ?>">
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -410,6 +423,20 @@ $(document).ready(function() {
         const qtyInput = $(this).closest('.row').find('input[type="number"]');
         qtyInput.prop('disabled', !this.checked);
         if (!this.checked) qtyInput.val('');
+    });
+
+    // Real-time validation for quantity inputs
+    $('#ingredient-list input[type="number"]').on('input', function() {
+        const maxStock = parseInt($(this).attr('data-max-stock')) || 0;
+        const currentValue = parseInt($(this).val()) || 0;
+        
+        if (currentValue > maxStock) {
+            $(this).addClass('is-invalid');
+            $(this).attr('title', `Maximum available stock is ${maxStock}`);
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).removeAttr('title');
+        }
     });
 
     // Category filter logic
@@ -470,14 +497,27 @@ $(document).ready(function() {
             return;
         }
         
-        // Check if quantities are entered for selected ingredients
+        // Check if quantities are entered for selected ingredients and validate against available stock
         let hasQuantities = false;
+        let invalidQuantities = [];
+        
         selectedIngredients.each(function() {
             const ingredientId = $(this).val();
-            const quantity = $(`input[name="quantity[${ingredientId}]"]`).val();
-            if (quantity && quantity > 0) {
+            const quantity = parseInt($(`input[name="quantity[${ingredientId}]"]`).val()) || 0;
+            const availableStock = parseInt($(this).closest('.ingredient-row').find('.stock-quantity').text()) || 0;
+            const ingredientName = $(this).closest('.ingredient-row').find('.ingredient-name').text().trim();
+            
+            if (quantity > 0) {
                 hasQuantities = true;
-                return false; // break the loop
+                
+                // Check if requested quantity exceeds available stock
+                if (quantity > availableStock) {
+                    invalidQuantities.push({
+                        name: ingredientName,
+                        requested: quantity,
+                        available: availableStock
+                    });
+                }
             }
         });
         
@@ -490,6 +530,27 @@ $(document).ready(function() {
                 confirmButtonColor: '#ffc107',
                 customClass: {
                     confirmButton: 'swal2-confirm-warning'
+                }
+            });
+            return;
+        }
+        
+        // Check for invalid quantities (exceeding available stock)
+        if (invalidQuantities.length > 0) {
+            let errorMessage = 'The following quantities exceed available stock:\n\n';
+            invalidQuantities.forEach(function(item) {
+                errorMessage += `• ${item.name}: Requested ${item.requested}, Available ${item.available}\n`;
+            });
+            errorMessage += '\nPlease adjust the quantities to match available stock.';
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Quantities',
+                text: errorMessage,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3545',
+                customClass: {
+                    confirmButton: 'swal2-confirm-error'
                 }
             });
             return;

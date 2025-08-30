@@ -2,179 +2,139 @@
 require_once 'db_connect.php';
 require_once 'auth_function.php';
 
+checkAdminLogin();
+
 header('Content-Type: application/json');
 
 try {
-    // Check if branch_id is provided
-    if (!isset($_GET['branch_id'])) {
+    $branch_id = $_GET['branch_id'] ?? null;
+    $period = $_GET['period'] ?? 'daily';
+    
+    if (!$branch_id) {
         throw new Exception('Branch ID is required');
     }
 
-    $branchId = $_GET['branch_id'];
-    $period = $_GET['period'] ?? 'today';
+    $today = date('Y-m-d');
 
     // Get today's statistics
-    $todayStats = getTodayStats($pdo, $branchId);
+    $stmt = $pdo->prepare("
+        SELECT 
+            COUNT(*) as total_orders,
+            COALESCE(SUM(total_amount), 0) as total_sales,
+            COALESCE(AVG(total_amount), 0) as average_sale,
+            COALESCE(MAX(total_amount), 0) as highest_sale
+        FROM pos_orders 
+        WHERE branch_id = ? 
+        AND DATE(order_date) = ?
+        AND order_status != 'cancelled'
+    ");
+    $stmt->execute([$branch_id, $today]);
+    $today_stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Get sales trend data
-    $salesTrend = getSalesTrend($pdo, $branchId, $period);
-
-    // Get payment methods distribution
-    $paymentMethods = getPaymentMethods($pdo, $branchId);
-
-    echo json_encode([
-        'today_stats' => $todayStats,
-        'sales_trend' => $salesTrend,
-        'payment_methods' => $paymentMethods
-    ]);
-
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
-}
-
-function getTodayStats($pdo, $branchId) {
-    $sql = "SELECT 
-                COUNT(*) as total_orders,
-                COALESCE(SUM(total_amount), 0) as total_sales,
-                COALESCE(AVG(total_amount), 0) as average_sale,
-                COALESCE(MAX(total_amount), 0) as highest_sale
-            FROM pos_orders 
-            WHERE branch_id = :branch_id 
-            AND DATE(created_at) = CURDATE()
-            AND status = 'Completed'";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['branch_id' => $branchId]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-function getSalesTrend($pdo, $branchId, $period) {
-    $labels = [];
-    $data = [];
-
+    // Get sales trend data based on period
+    $sales_trend = ['labels' => [], 'data' => []];
+    
     switch ($period) {
-        case 'today':
-            // Get hourly sales for today
-            $sql = "SELECT 
-                        HOUR(created_at) as hour,
-                        COALESCE(SUM(total_amount), 0) as total
-                    FROM pos_orders 
-                    WHERE branch_id = :branch_id 
-                    AND DATE(created_at) = CURDATE()
-                    AND status = 'Completed'
-                    GROUP BY HOUR(created_at)
-                    ORDER BY HOUR(created_at)";
-
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute(['branch_id' => $branchId]);
-            
-            // Initialize all hours with 0
-            for ($i = 0; $i < 24; $i++) {
-                $labels[] = sprintf("%02d:00", $i);
-                $data[$i] = 0;
-            }
-
-            // Fill in actual data
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $data[$row['hour']] = floatval($row['total']);
-            }
-            break;
-
-        case 'week':
-            // Get daily sales for the past week
-            $sql = "SELECT 
-                        DATE(created_at) as date,
-                        COALESCE(SUM(total_amount), 0) as total
-                    FROM pos_orders 
-                    WHERE branch_id = :branch_id 
-                    AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-                    AND status = 'Completed'
-                    GROUP BY DATE(created_at)
-                    ORDER BY DATE(created_at)";
-
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute(['branch_id' => $branchId]);
-
-            // Get the past 7 days
+        case 'daily':
+            // Last 7 days
             for ($i = 6; $i >= 0; $i--) {
                 $date = date('Y-m-d', strtotime("-$i days"));
-                $labels[] = date('M d', strtotime($date));
-                $data[$date] = 0;
-            }
-
-            // Fill in actual data
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $data[$row['date']] = floatval($row['total']);
+                $day_name = date('D', strtotime($date));
+                
+                $stmt = $pdo->prepare("
+                    SELECT COALESCE(SUM(total_amount), 0) as daily_sales
+                    FROM pos_orders 
+                    WHERE branch_id = ? 
+                    AND DATE(order_date) = ?
+                    AND order_status != 'cancelled'
+                ");
+                $stmt->execute([$branch_id, $date]);
+                $daily_sales = $stmt->fetchColumn();
+                
+                $sales_trend['labels'][] = $day_name;
+                $sales_trend['data'][] = (float)$daily_sales;
             }
             break;
-
-        case 'month':
-            // Get daily sales for the current month
-            $sql = "SELECT 
-                        DATE(created_at) as date,
-                        COALESCE(SUM(total_amount), 0) as total
+            
+        case 'weekly':
+            // Last 4 weeks
+            for ($i = 3; $i >= 0; $i--) {
+                $week_start = date('Y-m-d', strtotime("-$i weeks"));
+                $week_end = date('Y-m-d', strtotime("-$i weeks +6 days"));
+                $week_label = 'Week ' . (4 - $i);
+                
+                $stmt = $pdo->prepare("
+                    SELECT COALESCE(SUM(total_amount), 0) as weekly_sales
                     FROM pos_orders 
-                    WHERE branch_id = :branch_id 
-                    AND MONTH(created_at) = MONTH(CURRENT_DATE())
-                    AND YEAR(created_at) = YEAR(CURRENT_DATE())
-                    AND status = 'Completed'
-                    GROUP BY DATE(created_at)
-                    ORDER BY DATE(created_at)";
-
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute(['branch_id' => $branchId]);
-
-            // Get all days in current month up to today
-            $firstDay = date('Y-m-01');
-            $today = date('Y-m-d');
-            $current = $firstDay;
-
-            while (strtotime($current) <= strtotime($today)) {
-                $labels[] = date('M d', strtotime($current));
-                $data[$current] = 0;
-                $current = date('Y-m-d', strtotime($current . ' +1 day'));
+                    WHERE branch_id = ? 
+                    AND DATE(order_date) BETWEEN ? AND ?
+                    AND order_status != 'cancelled'
+                ");
+                $stmt->execute([$branch_id, $week_start, $week_end]);
+                $weekly_sales = $stmt->fetchColumn();
+                
+                $sales_trend['labels'][] = $week_label;
+                $sales_trend['data'][] = (float)$weekly_sales;
             }
-
-            // Fill in actual data
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $data[$row['date']] = floatval($row['total']);
+            break;
+            
+        case 'monthly':
+            // Last 6 months
+            for ($i = 5; $i >= 0; $i--) {
+                $month_start = date('Y-m-01', strtotime("-$i months"));
+                $month_end = date('Y-m-t', strtotime("-$i months"));
+                $month_label = date('M Y', strtotime("-$i months"));
+                
+                $stmt = $pdo->prepare("
+                    SELECT COALESCE(SUM(total_amount), 0) as monthly_sales
+                    FROM pos_orders 
+                    WHERE branch_id = ? 
+                    AND DATE(order_date) BETWEEN ? AND ?
+                    AND order_status != 'cancelled'
+                ");
+                $stmt->execute([$branch_id, $month_start, $month_end]);
+                $monthly_sales = $stmt->fetchColumn();
+                
+                $sales_trend['labels'][] = $month_label;
+                $sales_trend['data'][] = (float)$monthly_sales;
             }
             break;
     }
 
-    return [
-        'labels' => $labels,
-        'data' => array_values($data)
-    ];
-}
+    // Get payment methods breakdown (simplified - assuming all orders are cash for now)
+    $stmt = $pdo->prepare("
+        SELECT 
+            COUNT(*) as total_orders
+        FROM pos_orders 
+        WHERE branch_id = ? 
+        AND DATE(order_date) = ?
+        AND order_status != 'cancelled'
+    ");
+    $stmt->execute([$branch_id, $today]);
+    $total_orders = $stmt->fetchColumn();
 
-function getPaymentMethods($pdo, $branchId) {
-    $sql = "SELECT 
-                payment_method,
-                COUNT(*) as count
-            FROM pos_orders 
-            WHERE branch_id = :branch_id 
-            AND DATE(created_at) = CURDATE()
-            AND status = 'Completed'
-            GROUP BY payment_method";
-
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['branch_id' => $branchId]);
-
-    $methods = [
-        'cash' => 0,
+    // For now, assume all payments are cash (you can modify this based on your payment_method field)
+    $payment_methods = [
+        'cash' => $total_orders,
         'credit_card' => 0,
         'e_wallet' => 0
     ];
 
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $method = strtolower(str_replace(' ', '_', $row['payment_method']));
-        if (isset($methods[$method])) {
-            $methods[$method] = intval($row['count']);
-        }
-    }
+    $response = [
+        'today_stats' => [
+            'total_orders' => (int)$today_stats['total_orders'],
+            'total_sales' => (float)$today_stats['total_sales'],
+            'average_sale' => (float)$today_stats['average_sale'],
+            'highest_sale' => (float)$today_stats['highest_sale']
+        ],
+        'sales_trend' => $sales_trend,
+        'payment_methods' => $payment_methods
+    ];
 
-    return $methods;
+    echo json_encode($response);
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
 }
 ?> 

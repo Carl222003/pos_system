@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 
 try {
     // Validate required fields
-    $required_fields = ['category_id', 'ingredient_name', 'ingredient_quantity', 'ingredient_unit', 'branch_id'];
+    $required_fields = ['category_id', 'ingredient_name', 'ingredient_quantity', 'ingredient_unit'];
     
     foreach ($required_fields as $field) {
         if (empty($_POST[$field])) {
@@ -32,18 +32,16 @@ try {
         }
     }
 
-    // Check if ingredient already exists in this branch
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM ingredients WHERE ingredient_name = ? AND branch_id = ? AND ingredient_status != 'archived'");
-    $stmt->execute([$_POST['ingredient_name'], $_POST['branch_id']]);
+    // Check if ingredient already exists (without branch restriction)
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM ingredients WHERE ingredient_name = ? AND ingredient_status != 'archived'");
+    $stmt->execute([$_POST['ingredient_name']]);
     if ($stmt->fetchColumn() > 0) {
-        throw new Exception("Ingredient already exists in this branch");
+        throw new Exception("Ingredient already exists");
     }
 
     // First, try to add the new columns if they don't exist
     try {
         $pdo->exec("ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS minimum_stock DECIMAL(10,2) DEFAULT 0");
-        $pdo->exec("ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS storage_location VARCHAR(255)");
-        $pdo->exec("ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS cost_per_unit DECIMAL(10,2)");
     } catch (Exception $e) {
         // Columns might already exist, continue
     }
@@ -56,11 +54,10 @@ try {
             ingredient_quantity, 
             ingredient_unit, 
             ingredient_status,
-            branch_id,
             date_added,
             consume_before,
             notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     $stmt->execute([
@@ -69,7 +66,6 @@ try {
         $_POST['ingredient_quantity'],
         $_POST['ingredient_unit'],
         $_POST['ingredient_status'] ?? 'Available',
-        $_POST['branch_id'],
         $_POST['date_added'] ?? date('Y-m-d'),
         $_POST['consume_before'] ?? null,
         $_POST['notes'] ?? null
@@ -81,16 +77,12 @@ try {
     try {
         $updateStmt = $pdo->prepare("
             UPDATE ingredients SET 
-                minimum_stock = ?,
-                storage_location = ?,
-                cost_per_unit = ?
+                minimum_stock = ?
             WHERE ingredient_id = ?
         ");
         
         $updateStmt->execute([
             $_POST['minimum_stock'] ?? 0,
-            $_POST['storage_location'] ?? null,
-            $_POST['cost_per_unit'] ?? null,
             $ingredient_id
         ]);
     } catch (Exception $e) {
@@ -101,8 +93,7 @@ try {
     $admin_id = $_SESSION['user_id'] ?? null;
     if ($admin_id) {
         $ingredient_name = $_POST['ingredient_name'];
-        $branch_name = $pdo->query("SELECT branch_name FROM pos_branch WHERE branch_id = " . $_POST['branch_id'])->fetchColumn();
-        logActivity($pdo, $admin_id, "Added ingredient", "Ingredient: $ingredient_name, Branch: $branch_name");
+        logActivity($pdo, $admin_id, "Added ingredient", "Ingredient: $ingredient_name");
     }
 
     echo json_encode([

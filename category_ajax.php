@@ -2,6 +2,11 @@
 
 require_once 'db_connect.php';
 
+// Set JSON header
+header('Content-Type: application/json');
+
+try {
+
 $columns = [
     0 => 'category_id',
     1 => 'category_name',
@@ -11,8 +16,8 @@ $columns = [
 
 $limit = $_GET['length'];
 $start = $_GET['start'];
-$order = $columns[$_GET['order'][0]['column']];
-$dir = $_GET['order'][0]['dir'];
+$order = isset($_GET['order'][0]['column']) ? $columns[$_GET['order'][0]['column']] : 'category_id';
+$dir = isset($_GET['order'][0]['dir']) ? $_GET['order'][0]['dir'] : 'ASC';
 
 $searchValue = $_GET['search']['value'];
 
@@ -46,4 +51,14 @@ $response = [
 
 echo json_encode($response);
 
+} catch (Exception $e) {
+    // Return error response
+    echo json_encode([
+        "draw" => isset($_GET['draw']) ? intval($_GET['draw']) : 0,
+        "recordsTotal" => 0,
+        "recordsFiltered" => 0,
+        "data" => [],
+        "error" => "Database error: " . $e->getMessage()
+    ]);
+}
 ?>

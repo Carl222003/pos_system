@@ -12,12 +12,11 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $ingredient_id = intval($_GET['id']);
 
 try {
-    // Get ingredient details with category and branch information
+    // Get ingredient details with category information
     $stmt = $pdo->prepare("
-        SELECT i.*, c.category_name, b.branch_name 
+        SELECT i.*, c.category_name
         FROM ingredients i 
         LEFT JOIN pos_category c ON i.category_id = c.category_id 
-        LEFT JOIN pos_branch b ON i.branch_id = b.branch_id 
         WHERE i.ingredient_id = ?
     ");
     $stmt->execute([$ingredient_id]);
@@ -149,15 +148,7 @@ try {
                 </div>
                 
                 <div class="info-list-enhanced">
-                    <div class="info-item-enhanced">
-                        <div class="item-icon">
-                            <i class="fas fa-building"></i>
-                        </div>
-                        <div class="item-content">
-                            <label>Branch</label>
-                            <span class="item-value"><?php echo htmlspecialchars($ingredient['branch_name'] ?? 'Not assigned'); ?></span>
-                        </div>
-                    </div>
+
                     
                     <div class="info-item-enhanced">
                         <div class="item-icon">

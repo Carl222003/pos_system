@@ -28,6 +28,7 @@ if ($ingredient_id) {
         $ingredient_quantity = (float) $ingredient['ingredient_quantity']; // Convert to float
         $ingredient_unit = $ingredient['ingredient_unit'];
         $ingredient_status = $ingredient['ingredient_status'];
+        $consume_before = $ingredient['consume_before'] ?? '';
     } else {
         $message = 'Ingredient not found.';
     }
@@ -39,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $ingredient_name = trim($_POST['ingredient_name']);
     $ingredient_unit = trim($_POST['ingredient_unit']);
     $ingredient_status = $_POST['ingredient_status'];
+    $consume_before = $_POST['consume_before'] ?? '';
     $change_quantity = isset($_POST['change_quantity']) ? (float) $_POST['change_quantity'] : 0; // Convert to float, default to 0
 
     // Validate fields
@@ -61,8 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (empty($errors)) {
-        $stmt = $pdo->prepare("UPDATE ingredients SET category_id = ?, ingredient_name = ?, ingredient_quantity = ?, ingredient_unit = ?, ingredient_status = ? WHERE ingredient_id = ?");
-        $stmt->execute([$category_id, $ingredient_name, $ingredient_quantity, $ingredient_unit, $ingredient_status, $ingredient_id]);
+        $stmt = $pdo->prepare("UPDATE ingredients SET category_id = ?, ingredient_name = ?, ingredient_quantity = ?, ingredient_unit = ?, ingredient_status = ?, consume_before = ? WHERE ingredient_id = ?");
+        $stmt->execute([$category_id, $ingredient_name, $ingredient_quantity, $ingredient_unit, $ingredient_status, $consume_before, $ingredient_id]);
         
         // Check if this is an AJAX request (modal mode)
         if (isset($_GET['modal']) && $_GET['modal'] == 1) {
@@ -1237,6 +1239,17 @@ if ($modal) {
                     </div>
                     
                     <div class="ingredient-form-group">
+                        <label for="consume_before" class="ingredient-form-label">
+                            <i class="fas fa-calendar-times"></i>Consume Before Date
+                        </label>
+                        <input type="date" name="consume_before" id="consume_before" class="ingredient-form-input" value="<?php echo htmlspecialchars($consume_before); ?>" min="<?php echo date('Y-m-d'); ?>">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i>
+                            Expiry date or best before date (cannot be before today)
+                        </div>
+                    </div>
+                    
+                    <div class="ingredient-form-group">
                         <label for="minimum_stock" class="ingredient-form-label">
                             <i class="fas fa-exclamation-triangle"></i>Minimum Stock Threshold
                         </label>
@@ -1247,16 +1260,7 @@ if ($modal) {
                         </div>
                     </div>
                     
-                    <div class="ingredient-form-group">
-                        <label for="storage_location" class="ingredient-form-label">
-                            <i class="fas fa-map-marker-alt"></i>Storage Location
-                        </label>
-                        <input type="text" name="storage_location" id="storage_location" class="ingredient-form-input" placeholder="e.g., Refrigerator, Pantry, Freezer" value="<?php echo isset($ingredient['storage_location']) ? htmlspecialchars($ingredient['storage_location']) : ''; ?>">
-                        <div class="form-text">
-                            <i class="fas fa-info-circle"></i>
-                            Where the ingredient is stored
-                        </div>
-                    </div>
+                    <!-- Storage Location field removed -->
                     
                     <div class="ingredient-form-group">
                         <label for="notes" class="ingredient-form-label">
@@ -1321,6 +1325,12 @@ if ($modal) {
             // Initial preview
             updateQuantityPreview();
         }
+        
+        // Date validation for consume_before
+        const consumeBeforeInput = document.getElementById('consume_before');
+        if (consumeBeforeInput) {
+            consumeBeforeInput.addEventListener('change', validateDate);
+        }
     });
     
     function validateField(e) {
@@ -1342,6 +1352,15 @@ if ($modal) {
         } else if (field.id === 'change_quantity' && value && parseFloat(value) < -1000) {
             isValid = false;
             feedback = 'Quantity change cannot be less than -1000.';
+        } else if (field.id === 'consume_before' && value) {
+            const selectedDate = new Date(value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
+            
+            if (selectedDate < today) {
+                isValid = false;
+                feedback = 'Consume before date cannot be before today.';
+            }
         }
         
         // Apply validation styling
@@ -1367,6 +1386,33 @@ if ($modal) {
         const feedbackElement = document.getElementById(field.id + '-feedback');
         if (feedbackElement) {
             feedbackElement.className = 'validation-feedback';
+        }
+    }
+    
+    function validateDate(e) {
+        const field = e.target;
+        const value = field.value;
+        
+        if (value) {
+            const selectedDate = new Date(value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
+            
+            field.classList.remove('is-valid', 'is-invalid');
+            
+            if (selectedDate < today) {
+                field.classList.add('is-invalid');
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Date',
+                    text: 'Consume before date cannot be before today.',
+                    confirmButtonColor: '#8B4543'
+                });
+                field.value = ''; // Clear the invalid date
+            } else {
+                field.classList.add('is-valid');
+            }
         }
     }
     

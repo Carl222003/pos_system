@@ -69,6 +69,9 @@ try {
         }
     }
     
+    // Add ORDER BY clause to sort by request_date in descending order (latest first)
+    $query .= " ORDER BY r.request_date DESC";
+    
     // Prepare and execute query
     $stmt = $pdo->prepare($query);
     
@@ -130,6 +133,7 @@ try {
             'ingredients' => $ingredients_display,
             'status' => $request['status'],
             'delivery_status' => isset($request['delivery_status']) ? $request['delivery_status'] : 'pending',
+            'delivery_notes' => isset($request['delivery_notes']) ? $request['delivery_notes'] : '',
             'updated_by' => $request['updated_by_name'] ?: 'N/A'
         );
     }

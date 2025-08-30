@@ -51,6 +51,7 @@ try {
                   WHERE bi.branch_id = ? 
                   AND bi.status = 'active'
                   AND i.ingredient_status != 'archived'
+                  AND (i.consume_before IS NULL OR i.consume_before > CURDATE())
                   ORDER BY 
                     CASE 
                         WHEN bi.quantity <= 0 THEN 1
@@ -77,6 +78,7 @@ try {
                   FROM ingredients i
                   LEFT JOIN pos_category c ON i.category_id = c.category_id
                   WHERE i.ingredient_status != 'archived'
+                  AND (i.consume_before IS NULL OR i.consume_before > CURDATE())
                   ORDER BY 
                     CASE 
                         WHEN i.ingredient_quantity <= 0 THEN 1
@@ -109,11 +111,20 @@ try {
         $quantity = floatval($ingredient['ingredient_quantity']);
         $min_stock = floatval($ingredient['minimum_stock']);
         
-        // Determine availability status based on quantity (like the second image)
-        if ($quantity <= 0) {
+        // Check if expired first
+        $is_expired = false;
+        if ($ingredient['consume_before']) {
+            $expire_time = strtotime($ingredient['consume_before']);
+            if ($expire_time <= $today) {
+                $is_expired = true;
+            }
+        }
+        
+        // Determine availability status based on quantity and expiration
+        if ($quantity <= 0 || $is_expired) {
             $ingredient['ingredient_status'] = 'Out of Stock';
             $ingredient['availability_status'] = 'unavailable';
-            $ingredient['status_display'] = 'OUT OF STOCK';
+            $ingredient['status_display'] = $is_expired ? 'EXPIRED' : 'OUT OF STOCK';
             $stats['out_of_stock']++;
             $ingredient['stock_level'] = 'out_of_stock';
         } elseif ($quantity <= $min_stock) {

@@ -1066,50 +1066,13 @@ include('header.php');
             </div>
         </div>
         
-        <!-- Request Stock Updates Table -->
-        <div class="row">
-            <div class="col-12">
-                <div class="stockman-card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-clipboard-check me-1"></i>
-                        Stock Requests Updates
-                    </div>
-                    <div class="card-body position-relative">
-                        <div class="loading-overlay" id="requestsLoadingOverlay" style="display: none;">
-                            <div class="loading-spinner"></div>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="requestsTable">
-                                <thead>
-                                    <tr>
-                                        <th>Date Requested</th>
-                                        <th>Ingredients</th>
-                                        <th>Status</th>
-                                        <th>Delivery Status</th>
-                                        <th>Notes</th>
-                                        <th>Updated By</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Request updates will be loaded here dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Stock Requests Updates table removed -->
     </div>
 </div>
 
 <script>
 $(document).ready(function() {
-    // Initialize DataTables
-    $('#requestsTable').DataTable({
-        pageLength: 10,
-        order: [[0, 'desc']]
-    });
+    // DataTable initialization removed
 
     // Initialize stock status chart
     const ctx = document.getElementById('stockStatusChart').getContext('2d');
@@ -1313,45 +1276,7 @@ $(document).ready(function() {
             updateCategoryCards(response.category_cards);
         });
 
-        // Update requests table
-        $.get('get_stockman_requests.php', function(response) {
-            if (response.success) {
-                const tbody = $('#requestsTable tbody');
-                tbody.empty();
-
-                if (response.data.length === 0) {
-                    tbody.append(`
-                        <tr>
-                            <td colspan="7" class="text-center text-muted">No requests found</td>
-                        </tr>
-                    `);
-                } else {
-                    response.data.forEach(request => {
-                        // Add delivery update button for approved requests that are not delivered yet
-                        let actionButton = '';
-                        if (request.status.includes('APPROVED') && request.delivery_status_raw !== 'delivered') {
-                            actionButton = `<button class="btn btn-info btn-sm update-delivery" data-id="${request.request_id}" onclick="updateDeliveryStatus(${request.request_id})">
-                                <i class="fas fa-truck"></i> Update Delivery
-                            </button>`;
-                        }
-                        
-                        tbody.append(`
-                            <tr>
-                                <td>${request.request_date}</td>
-                                <td>${request.ingredients}</td>
-                                <td>${request.status}</td>
-                                <td>${request.delivery_status}</td>
-                                <td>${request.notes}</td>
-                                <td>${request.updated_by}</td>
-                                <td>${actionButton}</td>
-                            </tr>
-                        `);
-                    });
-                }
-            } else {
-                console.error('Error loading requests:', response.error);
-            }
-        });
+        // Requests table update removed
     }
 
     // Function to update critical alerts
@@ -1472,19 +1397,7 @@ $(document).ready(function() {
     }
 
     // Action functions
-    window.updateDeliveryStatus = function(requestId) {
-        // Show delivery status update modal
-        console.log('Updating delivery status for request ID:', requestId);
-        $('#deliveryRequestId').val(requestId);
-        
-        // Set current date/time as default and minimum date
-        const now = new Date();
-        const currentDateTime = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
-        $('#deliveryDate').val(currentDateTime);
-        $('#deliveryDate').attr('min', currentDateTime);
-        
-        $('#deliveryModal').modal('show');
-    };
+    // updateDeliveryStatus function removed
 
     window.viewCategoryItems = function(categoryId) {
         // Show category items modal
@@ -1501,81 +1414,7 @@ $(document).ready(function() {
     // Refresh data every 5 minutes
     setInterval(updateDashboard, 300000);
     
-    // Add modal hidden event handlers for proper cleanup
-    $('#deliveryModal').on('hidden.bs.modal', function () {
-        $('body').removeClass('modal-open');
-        $('.modal-backdrop').remove();
-    });
-
-    // Update delivery submission
-    $('#updateDelivery').click(function() {
-        const requestId = $('#deliveryRequestId').val();
-        const deliveryStatus = $('#deliveryStatus').val();
-        const deliveryDate = $('#deliveryDate').val();
-        const deliveryNotes = $('#deliveryNotes').val();
-
-        console.log('Sending delivery update:', {
-            request_id: requestId,
-            delivery_status: deliveryStatus,
-            delivery_date: deliveryDate,
-            delivery_notes: deliveryNotes
-        });
-
-        $.ajax({
-            url: 'update_delivery_status.php',
-            method: 'POST',
-            data: {
-                request_id: requestId,
-                delivery_status: deliveryStatus,
-                delivery_date: deliveryDate,
-                delivery_notes: deliveryNotes
-            },
-            success: function(response) {
-                console.log(response);
-                if (response.success) {
-                    $('#deliveryModal').modal('hide');
-                    updateDashboard(); // Refresh the dashboard
-                    // Show success message using SweetAlert
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Delivery status updated successfully',
-                        confirmButtonColor: '#8B4543'
-                    });
-                } else {
-                    // Show error message using SweetAlert
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: response.message || 'Error updating delivery status',
-                        confirmButtonColor: '#8B4543'
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', xhr.responseText);
-                let errorMessage = 'Failed to update delivery status. Please try again.';
-                
-                // Try to parse error response
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    if (response.message) {
-                        errorMessage = response.message;
-                    }
-                } catch (e) {
-                    // If parsing fails, use default message
-                }
-                
-                // Show error message using SweetAlert
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: errorMessage,
-                    confirmButtonColor: '#8B4543'
-                });
-            }
-        });
-    });
+    // Delivery modal event handlers and update delivery submission removed
 });
 </script>
 
@@ -1597,49 +1436,6 @@ $(document).ready(function() {
     </div>
 </div>
 
-<!-- Delivery Status Update Modal -->
-<div class="modal fade" id="deliveryModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-truck me-1"></i>
-                    Update Delivery Status
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="deliveryForm">
-                    <input type="hidden" id="deliveryRequestId">
-                    <div class="mb-3">
-                        <label class="form-label">Delivery Status</label>
-                        <select class="form-select" id="deliveryStatus">
-                            <option value="pending">Pending</option>
-                            <option value="on_delivery">On Delivery</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="returned">Returned</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Delivery Date</label>
-                        <input type="datetime-local" class="form-control" id="deliveryDate">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Delivery Notes</label>
-                        <textarea class="form-control" id="deliveryNotes" rows="3" placeholder="Enter delivery notes, return reasons, or cancellation details..."></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-info" id="updateDelivery">
-                    <i class="fas fa-save me-1"></i>
-                    Update Delivery
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Delivery Status Update Modal removed -->
 
 <?php include('footer.php'); ?> 

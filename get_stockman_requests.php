@@ -104,6 +104,9 @@ try {
                 $delivery_status_badge = '<span class="badge bg-secondary">PENDING</span>';
         }
         
+        // Display only admin notes in delivery notes column
+        $admin_notes = $request['notes'] ?: '-';
+        
         $data[] = array(
             'request_id' => $request['request_id'],
             'request_date' => date('M j, Y g:i A', strtotime($request['request_date'])),
@@ -112,6 +115,7 @@ try {
             'delivery_status' => $delivery_status_badge,
             'delivery_status_raw' => $delivery_status, // Add raw delivery status for button logic
             'notes' => $request['notes'] ?: '-',
+            'delivery_notes' => $admin_notes,
             'updated_by' => $request['updated_by_name'] ?: '-'
         );
     }

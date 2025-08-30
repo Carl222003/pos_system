@@ -506,12 +506,12 @@ include('header.php');
     min-width: 36px;
     height: 36px;
     padding: 0;
-    margin: 0 2px;
+    margin: 0 1px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 0.35rem;
-    border: 1px solid transparent;
+    border: none;
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-dark) !important;
@@ -522,13 +522,13 @@ include('header.php');
 .dataTables_paginate .paginate_button:hover {
     color: var(--primary-color) !important;
     background: var(--hover-color);
-    border-color: var(--primary-color);
+    border: none;
 }
 
 .dataTables_paginate .paginate_button.current {
     background: var(--primary-color);
     color: white !important;
-    border-color: var(--primary-color);
+    border: none;
     font-weight: 600;
 }
 
@@ -903,13 +903,10 @@ h1 {
                                     </div>
                                     <div class="mb-2">
                                         <label for="filterDeliveryStatusSelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Delivery Status</label>
-                                        <select id="filterDeliveryStatusSelect" class="form-select">
-                                            <option value="">All Delivery Status</option>
-                                            <option value="pending">Pending</option>
-                                            <option value="received">Received</option>
-
-                                            <option value="on_delivery">On Delivery</option>
-                                        </select>
+                                                                <select id="filterDeliveryStatusSelect" class="form-select">
+                            <option value="">All Delivery Status</option>
+                            <option value="received">Received</option>
+                        </select>
                                     </div>
                                     <div class="d-flex gap-2">
                                         <button id="applyIngredientFilter" class="btn btn-primary flex-fill" style="background: #8B4543; border: none; border-radius: 0.7rem; font-weight: 600;">Apply Filter</button>
@@ -930,6 +927,7 @@ h1 {
                                     <th>Ingredients</th>
                                     <th>Request Status</th>
                                     <th>Delivery Status</th>
+                                    <th>Notes</th>
                                     <th>Updated By</th>
                                     <th>Actions</th>
                                 </tr>
@@ -1050,10 +1048,8 @@ h1 {
                     <div class="mb-3">
                         <label class="form-label">Delivery Status</label>
                         <select class="form-select" id="deliveryStatus">
-                            <option value="pending">Pending</option>
-                            <option value="on_delivery">On Delivery</option>
                             <option value="delivered">Delivered</option>
-
+                            <option value="returned">Returned</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
                     </div>
@@ -1174,7 +1170,8 @@ $(document).ready(function() {
         pageLength: 5, // Show only 5 records per page to force pagination
         lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]], // Available page lengths
         paging: true, // Ensure pagination is enabled
-        pagingType: 'simple_numbers', // Show only Previous, Next, and page numbers
+        pagingType: 'simple', // Show only Previous/Next buttons
+        ordering: false, // Disable client-side sorting since we sort on server
         ajax: {
             url: 'ingredient_requests_ajax.php',
             type: 'POST',
@@ -1205,8 +1202,10 @@ $(document).ready(function() {
             { 
                 data: 'request_date',
                 render: function(data) {
-                    return new Date(data).toLocaleString();
-                }
+                    const date = new Date(data);
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                },
+                type: 'datetime'
             },
             { data: 'ingredients' },
             {
@@ -1227,15 +1226,29 @@ $(document).ready(function() {
                         'pending': 'bg-secondary',
                         'on_delivery': 'bg-info',
                         'delivered': 'bg-success',
+                        'returned': 'bg-warning',
                         'cancelled': 'bg-danger'
                     };
                     const deliveryStatusText = {
                         'pending': 'PENDING',
                         'on_delivery': 'ON DELIVERY',
                         'delivered': 'DELIVERED',
+                        'returned': 'RETURNED',
                         'cancelled': 'CANCELLED'
                     };
                     return `<span class="badge ${deliveryStatusClasses[data] || 'bg-secondary'}">${deliveryStatusText[data] || 'PENDING'}</span>`;
+                }
+            },
+            {
+                data: 'delivery_notes',
+                render: function(data) {
+                    if (data && data.trim() !== '') {
+                        // Truncate long notes and show full text on hover
+                        const truncatedText = data.length > 50 ? data.substring(0, 50) + '...' : data;
+                        return `<span title="${data.replace(/"/g, '&quot;')}" style="cursor: help;">${truncatedText}</span>`;
+                    } else {
+                        return '<span class="text-muted">-</span>';
+                    }
                 }
             },
             { 
@@ -1265,7 +1278,7 @@ $(document).ready(function() {
                 }
             }
         ],
-        order: [[2, 'desc']]
+        order: [[1, 'desc']]
     });
 
     // Filter panel logic
