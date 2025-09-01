@@ -30,11 +30,14 @@ function sendPreCreationVerification($form_data, $pdo) {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
+        // Set timezone to Asia/Manila for accurate expiration time
+        date_default_timezone_set('Asia/Manila');
+        
         // Generate 6-digit verification code
         $verification_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
-        // Set expiration time (10 minutes from now)
-        $expires_at = date('Y-m-d H:i:s', time() + (10 * 60));
+        // Set expiration time (10 minutes from now) in Asia/Manila timezone
+        $expires_at = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
         // Store form data as JSON (excluding sensitive password)
         $safe_form_data = $form_data;
@@ -112,24 +115,34 @@ function sendPreCreationVerification($form_data, $pdo) {
             'X-Mailer: PHP/' . phpversion()
         );
 
-        // Attempt PHPMailer (Gmail SMTP) first
+        // Attempt PHPMailer (Gmail SMTP) first - this is the preferred method
         $email_result = null;
-        if (function_exists('sendVerificationEmailPHPMailer')) {
+        $phpmailer_available = function_exists('sendVerificationEmailPHPMailer');
+        
+        if ($phpmailer_available) {
+            error_log("📧 Attempting PHPMailer for {$form_data['user_email']}");
             $pmResult = sendVerificationEmailPHPMailer($form_data['user_email'], $verification_code, $form_data['user_name']);
+            
             if (is_array($pmResult) && !empty($pmResult['success'])) {
                 $email_result = [
                     'success' => true,
                     'method' => 'PHPMailer SMTP',
                     'mail_attempt' => true,
-                    'message' => 'Email sent successfully via PHPMailer'
+                    'message' => 'Email sent successfully via PHPMailer',
+                    'details' => $pmResult
                 ];
+                error_log("✅ PHPMailer success: " . json_encode($pmResult));
             } else {
+                error_log("❌ PHPMailer failed: " . json_encode($pmResult));
                 // Fallback to simple mail
                 $email_result = sendSimpleVerificationEmail($form_data['user_email'], $verification_code, $form_data['user_name']);
+                $email_result['fallback_reason'] = 'PHPMailer failed: ' . ($pmResult['error'] ?? 'Unknown error');
             }
         } else {
+            error_log("⚠️ PHPMailer not available, using simple mail");
             // PHPMailer not available - use simple mail
             $email_result = sendSimpleVerificationEmail($form_data['user_email'], $verification_code, $form_data['user_name']);
+            $email_result['fallback_reason'] = 'PHPMailer function not available';
         }
         
         // Log verification attempt
@@ -140,19 +153,25 @@ function sendPreCreationVerification($form_data, $pdo) {
             'success' => true, // Always return success for form processing
             'verification_id' => $verification_id,
             'verification_code' => $verification_code, // Always include for backup
-            'email_attempt' => $email_result
+            'email_attempt' => $email_result,
+            'requires_verification' => true
         ];
 
-        // Always show verification code for development
-        $response['test_mode'] = true;
-        $response['email_method'] = $email_result['method'];
-        $response['message'] = "Verification code sent! Check your email or use the code shown in the modal.";
-        
-        if (!empty($email_result['mail_attempt'])) {
-            $response['email_status'] = "Email attempted via {$email_result['method']}";
+        // Determine email status and message
+        if (!empty($email_result['mail_attempt']) && $email_result['success']) {
+            $response['email_status'] = "Email sent successfully via {$email_result['method']}";
+            $response['message'] = "Verification code sent to your email! Please check your inbox and enter the 6-digit code.";
+            $response['test_mode'] = false;
         } else {
-            $response['email_status'] = "Email simulated - using test mode";
+            $response['email_status'] = "Email sending failed - using backup code";
+            $response['message'] = "Email sending encountered an issue. Please use the verification code shown in the modal.";
+            $response['test_mode'] = true;
+            if (!empty($email_result['fallback_reason'])) {
+                $response['fallback_reason'] = $email_result['fallback_reason'];
+            }
         }
+        
+        $response['email_method'] = $email_result['method'] ?? 'Unknown';
 
         return $response;
 

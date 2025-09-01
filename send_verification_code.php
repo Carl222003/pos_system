@@ -37,10 +37,13 @@ try {
         )
     ");
 
+    // Set timezone to Asia/Manila for accurate expiration time
+    date_default_timezone_set('Asia/Manila');
+    
     // Generate 6-digit verification code
     $verification_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
     
-    // Set expiration time (10 minutes from now)
+    // Set expiration time (10 minutes from now) in Asia/Manila timezone
     $expires_at = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
     // Delete any existing verification codes for this email

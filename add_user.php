@@ -157,6 +157,67 @@ include('header.php');
 </div>
 
 <style>
+/* Enhanced Modal Animations and Effects */
+@keyframes fadeInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes slideInRight {
+    from { 
+        opacity: 0; 
+        transform: translateX(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(0); 
+    }
+}
+
+/* Modal Animation Classes */
+.modal.fade .modal-dialog {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.verification-icon {
+    animation: pulse 2s infinite;
+}
+
+/* Enhanced Button Hover Effects */
+#modalVerifyBtn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4) !important;
+}
+
+#modalResendBtn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 30px rgba(108, 117, 125, 0.4) !important;
+}
+
+/* Enhanced Input Focus Effects */
+#modalVerificationCode:focus {
+    transform: scale(1.02);
+    box-shadow: 0 12px 35px rgba(220, 53, 69, 0.25) !important;
+    border-color: #28a745 !important;
+}
+
+/* Timer Animation */
+#modalVerificationTimer {
+    animation: pulse 2s infinite;
+}
+
 /* Form Styling */
 .form-label {
     font-weight: 500;
@@ -338,58 +399,105 @@ function showEmailVerificationModal(email, verificationId, message, testCode = n
     // Create and show the verification modal
     const modalHtml = `
         <div class="modal fade" id="emailVerificationModal" tabindex="-1" aria-labelledby="emailVerificationModalLabel" aria-hidden="true" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="emailVerificationModalLabel">
-                            <i class="fas fa-envelope-circle-check me-2"></i>Email Verification Required
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content" style="border: none; border-radius: 20px; box-shadow: 0 20px 60px rgba(220, 53, 69, 0.3); overflow: hidden;">
+                    <!-- Enhanced Header with Gradient -->
+                    <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white; border: none; padding: 25px 30px; position: relative;">
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>'); opacity: 0.3;"></div>
+                        <h5 class="modal-title" id="emailVerificationModalLabel" style="font-size: 1.5rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 1; position: relative;">
+                            <i class="fas fa-envelope-circle-check me-2" style="color: #28a745;"></i>Email Verification Required
                         </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
+                    
+                    <div class="modal-body" style="padding: 30px; background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);">
+                        <!-- Enhanced Icon and Title Section -->
                         <div class="text-center mb-4">
-                            <div class="verification-icon mb-3">
-                                <i class="fas fa-envelope fa-3x text-primary"></i>
+                            <div class="verification-icon mb-4" style="position: relative;">
+                                <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #dc3545, #c82333); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 10px 30px rgba(220, 53, 69, 0.4); position: relative;">
+                                    <i class="fas fa-envelope fa-3x" style="color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"></i>
+                                </div>
+                                <div style="position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; background: linear-gradient(135deg, #28a745, #20c997); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);">
+                                    <i class="fas fa-check" style="color: white; font-size: 0.8rem;"></i>
+                                </div>
                             </div>
-                            <h6>Verification Required</h6>
-                            <p class="text-muted">${message}</p>
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-1"></i>
-                                A verification code has been sent to <strong>${email}</strong>
+                            <h4 style="color: #dc3545; font-weight: 700; margin-bottom: 15px; text-shadow: 0 1px 2px rgba(220, 53, 69, 0.1);">🔐 Verification Required</h4>
+                            <p style="color: #6c757d; font-size: 1.1rem; margin-bottom: 20px; line-height: 1.6;">${message}</p>
+                            
+                            <!-- Enhanced Email Info Box -->
+                            <div style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 2px solid #2196f3; border-radius: 15px; padding: 20px; margin: 20px 0; box-shadow: 0 8px 25px rgba(33, 150, 243, 0.15);">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+                                    <i class="fas fa-envelope" style="color: #1976d2; font-size: 1.2rem;"></i>
+                                    <span style="color: #1976d2; font-weight: 600; font-size: 1.1rem;">Verification Code Sent!</span>
+                                </div>
+                                <p style="color: #1565c0; margin: 0; font-size: 1rem;">
+                                    A verification code has been sent to <strong style="color: #0d47a1;">${email}</strong>
+                                </p>
                             </div>
+                            
                             ${testCode ? `
-                            <div class="alert alert-warning">
-                                <i class="fas fa-code me-1"></i>
-                                <strong>Backup Code:</strong> <span class="fw-bold fs-5">${testCode}</span>
-                                <br><small>📧 Check your email first! Use this code only if email doesn't arrive.</small>
+                            <!-- Enhanced Backup Code Box -->
+                            <div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 2px solid #ff9800; border-radius: 15px; padding: 20px; margin: 20px 0; box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15);">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                                    <i class="fas fa-code" style="color: #f57c00; font-size: 1.2rem;"></i>
+                                    <span style="color: #f57c00; font-weight: 600; font-size: 1.1rem;">Backup Code Available</span>
+                                </div>
+                                <div style="text-align: center; margin-bottom: 15px;">
+                                    <span style="font-size: 1.2rem; color: #6c757d; font-weight: 500;">Code:</span>
+                                    <div style="background: white; border: 2px dashed #ff9800; border-radius: 10px; padding: 15px; margin: 10px 0; display: inline-block;">
+                                        <span style="font-family: 'Courier New', monospace; font-size: 2rem; font-weight: 800; color: #ff9800; letter-spacing: 0.5rem; text-shadow: 0 2px 4px rgba(255, 152, 0, 0.2);">${testCode}</span>
+                                    </div>
+                                </div>
+                                <p style="color: #e65100; margin: 0; font-size: 0.9rem; text-align: center; font-style: italic;">
+                                    📧 Check your email first! Use this code only if email doesn't arrive.
+                                </p>
                             </div>
                             ` : ''}
                         </div>
                         
-                        <div class="form-group mb-3">
-                            <label for="modalVerificationCode" class="form-label">Enter 6-Digit Verification Code</label>
-                            <input type="text" class="form-control text-center" id="modalVerificationCode" 
-                                   placeholder="000000" maxlength="6" style="font-size: 1.5rem; letter-spacing: 0.5rem;">
-                            <div class="form-text text-center">
-                                <span id="modalVerificationTimer">Code expires in 10:00</span>
+                        <!-- Enhanced Code Input Section -->
+                        <div class="form-group mb-4" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 20px; padding: 25px; border: 2px solid #dee2e6;">
+                            <label for="modalVerificationCode" class="form-label" style="color: #495057; font-weight: 600; font-size: 1.1rem; margin-bottom: 15px; text-align: center; display: block;">
+                                <i class="fas fa-key me-2" style="color: #dc3545;"></i>Enter 6-Digit Verification Code
+                            </label>
+                            <div style="position: relative; max-width: 300px; margin: 0 auto;">
+                                <input type="text" class="form-control text-center" id="modalVerificationCode" 
+                                       placeholder="000000" maxlength="6" 
+                                       style="font-size: 2rem; letter-spacing: 0.8rem; font-weight: 700; color: #dc3545; border: 3px solid #dc3545; border-radius: 15px; padding: 20px; background: white; box-shadow: 0 8px 25px rgba(220, 53, 69, 0.15); text-shadow: 0 1px 2px rgba(220, 53, 69, 0.1);">
+                                <div style="position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: white; padding: 0 8px; font-size: 0.8rem; color: #6c757d; font-weight: 500;">
+                                    🔐
+                                </div>
+                            </div>
+                            <div class="form-text text-center mt-3">
+                                <span id="modalVerificationTimer" style="color: #dc3545; font-weight: 600; font-size: 1rem; background: rgba(220, 53, 69, 0.1); padding: 8px 16px; border-radius: 20px; display: inline-block;">
+                                    <i class="fas fa-clock me-1"></i>Code expires in 10:00
+                                </span>
                             </div>
                         </div>
                         
                         <div id="modalVerificationStatus" style="display: none;"></div>
                         
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-primary" id="modalVerifyBtn">
-                                <i class="fas fa-check-circle me-1"></i> Verify Email
+                        <!-- Enhanced Action Buttons -->
+                        <div class="d-grid gap-3" style="max-width: 400px; margin: 0 auto;">
+                            <button type="button" class="btn" id="modalVerifyBtn" 
+                                    style="background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; padding: 15px; border-radius: 15px; font-weight: 600; font-size: 1.1rem; box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3); transition: all 0.3s ease;">
+                                <i class="fas fa-check-circle me-2"></i> Verify Email
                             </button>
-                            <button type="button" class="btn btn-outline-secondary" id="modalResendBtn">
-                                <i class="fas fa-redo me-1"></i> Resend Code
+                            <button type="button" class="btn" id="modalResendBtn" 
+                                    style="background: linear-gradient(135deg, #6c757d, #495057); border: none; color: white; padding: 12px; border-radius: 12px; font-weight: 500; font-size: 1rem; box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3); transition: all 0.3s ease;">
+                                <i class="fas fa-redo me-2"></i> Resend Code
                             </button>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light">
-                        <small class="text-muted">
-                            <i class="fas fa-shield-alt me-1"></i>
-                            This verification step ensures the security and validates your email before account creation
-                        </small>
+                    
+                    <!-- Enhanced Footer -->
+                    <div class="modal-footer" style="background: linear-gradient(135deg, #343a40, #495057); color: white; border: none; padding: 20px 30px; text-align: center;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
+                            <i class="fas fa-shield-alt" style="color: #28a745; font-size: 1.1rem;"></i>
+                            <small style="color: rgba(255,255,255,0.9); font-size: 0.95rem; line-height: 1.4;">
+                                This verification step ensures the security and validates your email before account creation
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -454,7 +562,11 @@ function initModalVerification(email, verificationId) {
             
             if (timeRemaining < 0) {
                 clearInterval(verificationTimer);
-                $('#modalVerificationTimer').html('<span class="text-danger">Verification code expired</span>');
+                $('#modalVerificationTimer').html(`
+                    <span style="color: #dc3545; font-weight: 700; background: rgba(220, 53, 69, 0.1); padding: 8px 16px; border-radius: 20px; display: inline-block; animation: pulse 1s infinite;">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Verification code expired
+                    </span>
+                `);
                 $('#modalVerifyBtn').prop('disabled', true);
                 showModalStatus('warning', 'Verification code has expired. Please request a new code.');
             }
@@ -544,15 +656,41 @@ function initModalVerification(email, verificationId) {
     }
     
     function showModalStatus(type, message) {
-        const alertClass = type === 'success' ? 'alert-success' : 
-                          type === 'error' ? 'alert-danger' : 'alert-warning';
-        const icon = type === 'success' ? 'check-circle' : 
-                     type === 'error' ? 'exclamation-circle' : 'exclamation-triangle';
+        let alertStyle, icon, iconColor;
         
-        $('#modalVerificationStatus').removeClass('alert-success alert-danger alert-warning')
-            .addClass('alert ' + alertClass)
-            .html('<i class="fas fa-' + icon + ' me-1"></i>' + message)
-            .show();
+        if (type === 'success') {
+            alertStyle = 'background: linear-gradient(135deg, #d4edda, #c3e6cb); border: 2px solid #28a745; color: #155724;';
+            icon = 'check-circle';
+            iconColor = '#28a745';
+        } else if (type === 'error') {
+            alertStyle = 'background: linear-gradient(135deg, #f8d7da, #f5c6cb); border: 2px solid #dc3545; color: #721c24;';
+            icon = 'exclamation-circle';
+            iconColor = '#dc3545';
+        } else {
+            alertStyle = 'background: linear-gradient(135deg, #fff3cd, #ffeaa7); border: 2px solid #ffc107; color: #856404;';
+            icon = 'exclamation-triangle';
+            iconColor = '#ffc107';
+        }
+        
+        const statusHtml = `
+            <div style="${alertStyle} border-radius: 15px; padding: 20px; margin: 20px 0; box-shadow: 0 8px 25px rgba(0,0,0,0.1); animation: slideInRight 0.5s ease-out;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 40px; height: 40px; background: ${iconColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                        <i class="fas fa-${icon}" style="color: white; font-size: 1.2rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 5px;">
+                            ${type === 'success' ? '✅ Success!' : type === 'error' ? '❌ Error!' : '⚠️ Warning!'}
+                        </div>
+                        <div style="font-size: 1rem; line-height: 1.4;">
+                            ${message}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        $('#modalVerificationStatus').html(statusHtml).show();
     }
 }
 

@@ -1,14 +1,14 @@
 <?php
 // Email configuration for real email sending
 // Set this to true to enable real email sending
-define('ENABLE_REAL_EMAIL', false); // Change to true to send real emails
+define('ENABLE_REAL_EMAIL', true); // Enable real email sending
 
 // Gmail SMTP configuration (if using Gmail)
 // IMPORTANT: Use a Gmail App Password (not your regular Gmail password)
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'carlmadelo22@gmail.com'); // Your Gmail address
-define('SMTP_PASSWORD', 'your-app-password');      // 16-character Gmail App Password
+define('SMTP_USERNAME', 'carlmadelo22@gmail.com'); // ← CHANGE THIS to your Gmail address
+define('SMTP_PASSWORD', 'ykod xjaj mmyx lznu');    // ← Replace with your Gmail App Password (16 characters)
 define('SMTP_ENCRYPTION', 'tls');
 
 // Function to send email using SMTP

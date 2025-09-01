@@ -3,10 +3,13 @@
 require_once 'db_connect.php';
 
 try {
-    // Delete expired verification codes (older than 1 hour for safety)
+    // Set timezone to Asia/Manila for accurate time comparison
+    date_default_timezone_set('Asia/Manila');
+    
+    // Delete expired verification codes (older than 1 hour for safety) using Asia/Manila timezone
     $stmt = $pdo->prepare("
         DELETE FROM pos_email_verification 
-        WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 HOUR)
+        WHERE expires_at < DATE_SUB(CONVERT_TZ(NOW(), @@session.time_zone, '+08:00'), INTERVAL 1 HOUR)
     ");
     $deleted = $stmt->execute();
     $rowsDeleted = $stmt->rowCount();

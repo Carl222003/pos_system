@@ -3,467 +3,529 @@ require_once 'db_connect.php';
 require_once 'auth_function.php';
 
 // Check if user is logged in and is a stockman
-if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true || $_SESSION['user_type'] !== 'Stockman') {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized access']);
+if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
+    http_response_code(403);
+    echo json_encode(['error' => 'User not logged in']);
+    exit();
+}
+
+if ($_SESSION['user_type'] !== 'Stockman') {
+    http_response_code(403);
+    echo json_encode(['error' => 'Access denied - Stockman only']);
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+$branch_id = $_SESSION['branch_id'] ?? null;
+
+// If branch_id is not in session, try to fetch from user record
+if (!$branch_id) {
+    $stmt = $pdo->prepare('SELECT branch_id FROM pos_user WHERE user_id = ?');
+    $stmt->execute([$user_id]);
+    $branch_id = $stmt->fetchColumn();
+}
+
+// If still no branch_id, try to get the first available branch
+if (!$branch_id) {
+    $stmt = $pdo->prepare('SELECT branch_id FROM pos_branch LIMIT 1');
+    $stmt->execute();
+    $branch_id = $stmt->fetchColumn();
+    
+    if ($branch_id) {
+        // Update the user with this branch
+        $stmt = $pdo->prepare('UPDATE pos_user SET branch_id = ? WHERE user_id = ?');
+        $stmt->execute([$branch_id, $user_id]);
+    }
+}
+
+// Debug logging (remove in production)
+error_log("Stockman Analytics - User ID: $user_id, Branch ID: $branch_id");
+error_log("Session data: " . print_r($_SESSION, true));
+
+// Additional debugging
+if (!$branch_id) {
+    error_log("No branch_id found for user $user_id");
+} else {
+    error_log("User $user_id assigned to branch $branch_id");
+}
+
+if (!$branch_id) {
+    echo json_encode([
+        'error' => 'No branch assigned',
+        'branch_id' => null,
+        'branch_name' => 'No Branch',
+        'total_items' => 0,
+        'available_ingredients' => 0,
+        'low_stock_items' => 0,
+        'stock_movements' => 0,
+        'expiring_items' => 0,
+        'stock_turnover' => 0,
+        'adequate_stock' => 0,
+        'low_stock' => 0,
+        'out_of_stock' => 0,
+        'weekly_movements' => [0, 0, 0, 0, 0, 0, 0],
+        'fastest_moving' => 0,
+        'slowest_moving' => 0,
+        'expiring_soon' => 0,
+        'total_stock_value' => '₱0',
+        'turnover_rate' => 0,
+        'average_age' => 0,
+        'category_labels' => [],
+        'category_data' => [],
+        'high_turnover' => 0,
+        'medium_turnover' => 0,
+        'low_turnover' => 0,
+        'critical_alerts' => [],
+        'reorder_recommendations' => [],
+        'category_cards' => [],
+        'total_items_trend' => '+0% this week',
+        'available_ingredients_trend' => '+0 this week',
+        'low_stock_trend' => '+0 this week',
+        'movements_trend' => '+0% this week',
+        'expiring_trend' => 'No change',
+        'turnover_trend' => '+0% this month'
+    ]);
     exit();
 }
 
 try {
-    $stockman_id = $_SESSION['user_id'];
+    // Get current date and week start
+    $current_date = date('Y-m-d');
+    $week_start = date('Y-m-d', strtotime('monday this week'));
+    $month_start = date('Y-m-01');
     
-    // Get basic statistics
-    $stats = [];
+    // Check if ingredients table exists
+    $stmt = $pdo->query("SHOW TABLES LIKE 'ingredients'");
+    if ($stmt->rowCount() == 0) {
+        throw new Exception("Ingredients table does not exist");
+    }
     
-    // Total items
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM ingredients WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)");
-    $stmt->execute([$stockman_id]);
-    $stats['total_items'] = $stmt->fetch()['total'];
+    // 1. Total Items Count (All ingredients in the system)
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM ingredients WHERE branch_id = ?");
+    $stmt->execute([$branch_id]);
+    $total_items = $stmt->fetchColumn();
     
-    // Low stock items (less than minimum stock)
+    // 2. Available Ingredients (Only ingredients with stock > 0)
+    $stmt = $pdo->prepare("SELECT COUNT(*) as available FROM ingredients WHERE branch_id = ? AND ingredient_quantity > 0");
+    $stmt->execute([$branch_id]);
+    $available_ingredients = $stmt->fetchColumn();
+    
+    // 3. Low Stock Items (less than 10% of max quantity or less than 5 pieces)
     $stmt = $pdo->prepare("
-        SELECT COUNT(*) as low_stock 
+        SELECT COUNT(*) as low_stock_count 
         FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
-        AND current_stock <= minimum_stock
+        WHERE branch_id = ? 
+        AND (ingredient_quantity < 5 OR ingredient_quantity < (ingredient_max_quantity * 0.1))
+        AND ingredient_quantity > 0
     ");
-    $stmt->execute([$stockman_id]);
-    $stats['low_stock_items'] = $stmt->fetch()['low_stock'];
+    $stmt->execute([$branch_id]);
+    $low_stock_items = $stmt->fetchColumn();
     
-    // Out of stock items
-    $stmt = $pdo->prepare("
-        SELECT COUNT(*) as out_of_stock 
-        FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
-        AND current_stock = 0
-    ");
-    $stmt->execute([$stockman_id]);
-    $stats['out_of_stock'] = $stmt->fetch()['out_of_stock'];
+    // 4. Out of Stock Items
+    $stmt = $pdo->prepare("SELECT COUNT(*) as out_of_stock FROM ingredients WHERE branch_id = ? AND ingredient_quantity <= 0");
+    $stmt->execute([$branch_id]);
+    $out_of_stock = $stmt->fetchColumn();
     
-    // Adequate stock items
-    $stmt = $pdo->prepare("
-        SELECT COUNT(*) as adequate_stock 
-        FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
-        AND current_stock > minimum_stock
-    ");
-    $stmt->execute([$stockman_id]);
-    $stats['adequate_stock'] = $stmt->fetch()['adequate_stock'];
+    // 5. Adequate Stock Items
+    $adequate_stock = $total_items - $low_stock_items - $out_of_stock;
     
-    // Stock movements (from activity log)
+    // 5. Stock Movements (this week)
+    // Check if stock_movements table exists
+    $stmt = $pdo->query("SHOW TABLES LIKE 'stock_movements'");
+    if ($stmt->rowCount() > 0) {
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as movements 
-        FROM activity_log 
-        WHERE user_id = ? 
-        AND (action LIKE '%stock%' OR action LIKE '%inventory%' OR action LIKE '%adjust%')
-        AND DATE(timestamp) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-    ");
-    $stmt->execute([$stockman_id]);
-    $stats['stock_movements'] = $stmt->fetch()['movements'];
+            FROM stock_movements 
+            WHERE branch_id = ? 
+            AND DATE(movement_date) >= ?
+        ");
+        $stmt->execute([$branch_id, $week_start]);
+        $stock_movements = $stmt->fetchColumn();
+    } else {
+        $stock_movements = 0;
+    }
     
-    // Expiring items (if expiry_date column exists)
-    try {
+    // 6. Weekly Movements (last 7 days)
+    $weekly_movements = [];
+    if ($stmt->query("SHOW TABLES LIKE 'stock_movements'")->rowCount() > 0) {
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-$i days"));
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) as count 
+                FROM stock_movements 
+                WHERE branch_id = ? 
+                AND DATE(movement_date) = ?
+            ");
+            $stmt->execute([$branch_id, $date]);
+            $weekly_movements[] = (int)$stmt->fetchColumn();
+        }
+    } else {
+        $weekly_movements = [0, 0, 0, 0, 0, 0, 0];
+    }
+    
+    // 7. Expiring Items (within 30 days)
         $stmt = $pdo->prepare("
             SELECT COUNT(*) as expiring 
             FROM ingredients 
-            WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
+        WHERE branch_id = ? 
             AND expiry_date IS NOT NULL 
-            AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+        AND expiry_date BETWEEN ? AND DATE_ADD(?, INTERVAL 30 DAY)
+    ");
+    $stmt->execute([$branch_id, $current_date, $current_date]);
+    $expiring_items = $stmt->fetchColumn();
+    
+    // 8. Stock Turnover Rate (monthly)
+    if ($stmt->query("SHOW TABLES LIKE 'stock_movements'")->rowCount() > 0) {
+    $stmt = $pdo->prepare("
+        SELECT 
+                COALESCE(SUM(CASE WHEN movement_type = 'out' THEN quantity ELSE 0 END), 0) as total_out,
+                COALESCE(SUM(CASE WHEN movement_type = 'in' THEN quantity ELSE 0 END), 0) as total_in
+            FROM stock_movements 
+            WHERE branch_id = ? 
+            AND DATE(movement_date) >= ?
         ");
-        $stmt->execute([$stockman_id]);
-        $stats['expiring_items'] = $stmt->fetch()['expiring'];
-    } catch (PDOException $e) {
-        // If expiry_date column doesn't exist, set to 0
-        $stats['expiring_items'] = 0;
-    }
-    
-    // Stock turnover calculation
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(DISTINCT i.ingredient_id) as total_items,
-            COUNT(CASE WHEN al.log_id IS NOT NULL THEN 1 END) as moved_items
-        FROM ingredients i
-        LEFT JOIN activity_log al ON al.action LIKE CONCAT('%', i.ingredient_name, '%')
-        AND al.timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-        WHERE i.branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-    ");
-    $stmt->execute([$stockman_id]);
-    $turnover_data = $stmt->fetch();
-    
-    $total_items = $turnover_data['total_items'];
-    $moved_items = $turnover_data['moved_items'];
-    $stats['stock_turnover'] = $total_items > 0 ? round(($moved_items / $total_items) * 100, 1) : 0;
-    
-    // Stock value calculation
-    $stmt = $pdo->prepare("
-        SELECT SUM(current_stock * unit_price) as total_value
-        FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-        AND unit_price IS NOT NULL
-    ");
-    $stmt->execute([$stockman_id]);
-    $value_data = $stmt->fetch();
-    $stats['total_stock_value'] = '₱' . number_format($value_data['total_value'] ?? 0, 2);
-    
-    // Calculate trends (comparing current week vs previous week)
-    $current_week_movements = $stats['stock_movements'];
-    
-    $stmt = $pdo->prepare("
-        SELECT COUNT(*) as prev_movements 
-        FROM activity_log 
-        WHERE user_id = ? 
-        AND (action LIKE '%stock%' OR action LIKE '%inventory%' OR action LIKE '%adjust%')
-        AND DATE(timestamp) BETWEEN DATE_SUB(CURDATE(), INTERVAL 14 DAY) AND DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-    ");
-    $stmt->execute([$stockman_id]);
-    $prev_week_movements = $stmt->fetch()['prev_movements'];
-    
-    // Calculate percentage change
-    if ($prev_week_movements > 0) {
-        $movement_change = round((($current_week_movements - $prev_week_movements) / $prev_week_movements) * 100);
-        $stats['movements_trend'] = ($movement_change >= 0 ? '+' : '') . $movement_change . '% this week';
-    } else {
-        $stats['movements_trend'] = 'New this week';
-    }
-    
-    // Get current week vs previous week for total items
-    $stmt = $pdo->prepare("
-        SELECT COUNT(*) as current_items 
-        FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
-        AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-    ");
-    $stmt->execute([$stockman_id]);
-    $current_week_items = $stmt->fetch()['current_items'];
-    
-    $stmt = $pdo->prepare("
-        SELECT COUNT(*) as prev_items 
-        FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
-        AND DATE(created_at) BETWEEN DATE_SUB(CURDATE(), INTERVAL 14 DAY) AND DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-    ");
-    $stmt->execute([$stockman_id]);
-    $prev_week_items = $stmt->fetch()['prev_items'];
-    
-    if ($prev_week_items > 0) {
-        $item_change = round((($current_week_items - $prev_week_items) / $prev_week_items) * 100);
-        $stats['total_items_trend'] = ($item_change >= 0 ? '+' : '') . $item_change . '% this week';
-    } else {
-        $stats['total_items_trend'] = 'No change';
-    }
-    
-    // Low stock trend
-    $stmt = $pdo->prepare("
-        SELECT COUNT(*) as current_low 
-        FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
-        AND current_stock <= minimum_stock
-        AND DATE(updated_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-    ");
-    $stmt->execute([$stockman_id]);
-    $current_low = $stmt->fetch()['current_low'];
-    
-    $stmt = $pdo->prepare("
-        SELECT COUNT(*) as prev_low 
-        FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
-        AND current_stock <= minimum_stock
-        AND DATE(updated_at) BETWEEN DATE_SUB(CURDATE(), INTERVAL 14 DAY) AND DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-    ");
-    $stmt->execute([$stockman_id]);
-    $prev_low = $stmt->fetch()['prev_low'];
-    
-    $low_stock_change = $current_low - $prev_low;
-    $stats['low_stock_trend'] = ($low_stock_change >= 0 ? '+' : '') . $low_stock_change . ' this week';
-    
-    // Turnover trend
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(CASE WHEN al.log_id IS NOT NULL THEN 1 END) as prev_moved_items
-        FROM ingredients i
-        LEFT JOIN activity_log al ON al.action LIKE CONCAT('%', i.ingredient_name, '%')
-        AND al.timestamp BETWEEN DATE_SUB(CURDATE(), INTERVAL 60 DAY) AND DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-        WHERE i.branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-    ");
-    $stmt->execute([$stockman_id]);
-    $prev_turnover_data = $stmt->fetch();
-    
-    $prev_moved_items = $prev_turnover_data['prev_moved_items'];
-    if ($prev_moved_items > 0) {
-        $turnover_change = round((($moved_items - $prev_moved_items) / $prev_moved_items) * 100);
-        $stats['turnover_trend'] = ($turnover_change >= 0 ? '+' : '') . $turnover_change . '% this month';
-    } else {
-        $stats['turnover_trend'] = 'New this month';
-    }
-    
-    // Value trend
-    $stmt = $pdo->prepare("
-        SELECT SUM(current_stock * unit_price) as prev_value
-        FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-        AND unit_price IS NOT NULL
-        AND DATE(updated_at) < DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-    ");
-    $stmt->execute([$stockman_id]);
-    $prev_value_data = $stmt->fetch();
-    $prev_value = $prev_value_data['prev_value'] ?? 0;
-    $current_value = $value_data['total_value'] ?? 0;
-    
-    if ($prev_value > 0) {
-        $value_change = round((($current_value - $prev_value) / $prev_value) * 100);
-        $stats['value_trend'] = ($value_change >= 0 ? '+' : '') . $value_change . '% this month';
-    } else {
-        $stats['value_trend'] = 'New this month';
-    }
-    
-    // Expiring trend
-    $stats['expiring_trend'] = 'No change';
-    
-    // Weekly movements data for chart
-    $weekly_movements = [];
-    for ($i = 6; $i >= 0; $i--) {
-        $date = date('Y-m-d', strtotime("-$i days"));
-        $day_name = date('D', strtotime($date));
+        $stmt->execute([$branch_id, $month_start]);
+        $turnover_data = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        $stmt = $pdo->prepare("
-            SELECT COUNT(*) as movements 
-            FROM activity_log 
-            WHERE user_id = ? 
-            AND (action LIKE '%stock%' OR action LIKE '%inventory%' OR action LIKE '%adjust%')
-            AND DATE(timestamp) = ?
+        $total_out = $turnover_data['total_out'] ?? 0;
+        $total_in = $turnover_data['total_in'] ?? 0;
+        $stock_turnover = $total_items > 0 ? round(($total_out / $total_items) * 100, 1) : 0;
+    } else {
+        $total_out = 0;
+        $total_in = 0;
+        $stock_turnover = 0;
+    }
+    
+    // 9. Category Performance
+    $stmt = $pdo->query("SHOW TABLES LIKE 'pos_category'");
+    if ($stmt->rowCount() > 0) {
+    $stmt = $pdo->prepare("
+            SELECT 
+                c.category_name,
+                COUNT(i.ingredient_id) as item_count
+            FROM pos_category c
+            LEFT JOIN ingredients i ON c.category_id = i.category_id AND i.branch_id = ?
+            WHERE c.status = 'active'
+            GROUP BY c.category_id, c.category_name
+            ORDER BY item_count DESC
+            LIMIT 5
         ");
-        $stmt->execute([$stockman_id, $date]);
-        $movements = $stmt->fetch()['movements'];
+        $stmt->execute([$branch_id]);
+        $category_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        $weekly_movements[] = $movements;
+        $category_labels = array_column($category_data, 'category_name');
+        $category_counts = array_column($category_data, 'item_count');
+    } else {
+        $category_data = [];
+        $category_labels = [];
+        $category_counts = [];
     }
-    $stats['weekly_movements'] = $weekly_movements;
     
-    // Category performance data
+    // 10. Turnover Analysis
+    $high_turnover = 0;
+    $medium_turnover = 0;
+    $low_turnover = 0;
+    
+    if ($total_items > 0) {
     $stmt = $pdo->prepare("
         SELECT 
-            pc.category_name,
-            COUNT(i.ingredient_id) as item_count
-        FROM ingredients i
-        JOIN pos_category pc ON i.category_id = pc.category_id
-        WHERE i.branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-        GROUP BY pc.category_id, pc.category_name
-        ORDER BY item_count DESC
+                ingredient_id,
+                ingredient_name,
+                ingredient_quantity,
+                ingredient_max_quantity
+            FROM ingredients 
+            WHERE branch_id = ?
+        ");
+        $stmt->execute([$branch_id]);
+        $ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($ingredients as $ingredient) {
+            $max_qty = $ingredient['ingredient_max_quantity'] ?: 100;
+            $current_qty = $ingredient['ingredient_quantity'];
+            $turnover_rate = $max_qty > 0 ? ($current_qty / $max_qty) * 100 : 0;
+            
+            if ($turnover_rate >= 70) {
+                $high_turnover++;
+            } elseif ($turnover_rate >= 30) {
+                $medium_turnover++;
+    } else {
+                $low_turnover++;
+            }
+        }
+    }
+    
+    // 11. Critical Alerts
+    $critical_alerts = [];
+    
+    // Low stock alerts
+    if ($low_stock_items > 0) {
+        $critical_alerts[] = [
+            'severity' => 'warning',
+            'title' => 'Low Stock Alert',
+            'description' => "$low_stock_items items are running low on stock"
+        ];
+    }
+    
+    // Out of stock alerts
+    if ($out_of_stock > 0) {
+        $critical_alerts[] = [
+            'severity' => 'danger',
+            'title' => 'Out of Stock Alert',
+            'description' => "$out_of_stock items are completely out of stock"
+        ];
+    }
+    
+    // Expiring items alerts
+    if ($expiring_items > 0) {
+        $critical_alerts[] = [
+            'severity' => 'warning',
+            'title' => 'Expiring Items Alert',
+            'description' => "$expiring_items items will expire within 30 days"
+        ];
+    }
+    
+    // 12. Reorder Recommendations
+    $stmt = $pdo->prepare("
+        SELECT 
+            ingredient_name,
+            ingredient_quantity,
+            ingredient_max_quantity,
+            ingredient_unit
+        FROM ingredients 
+        WHERE branch_id = ? 
+        AND (ingredient_quantity < 5 OR ingredient_quantity < (ingredient_max_quantity * 0.1))
+        AND ingredient_quantity > 0
+        ORDER BY ingredient_quantity ASC
         LIMIT 5
     ");
-    $stmt->execute([$stockman_id]);
-    $category_data = $stmt->fetchAll();
+    $stmt->execute([$branch_id]);
+    $low_stock_ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    $stats['category_labels'] = array_column($category_data, 'category_name');
-    $stats['category_data'] = array_column($category_data, 'item_count');
-    
-    // Category cards data for the new section
-    $stmt = $pdo->prepare("
-        SELECT 
-            pc.category_id,
-            pc.category_name,
-            COUNT(i.ingredient_id) as total_items,
-            COUNT(CASE WHEN i.current_stock > i.minimum_stock THEN 1 END) as available,
-            COUNT(CASE WHEN i.current_stock <= i.minimum_stock AND i.current_stock > 0 THEN 1 END) as low_stock,
-            COUNT(CASE WHEN i.current_stock = 0 THEN 1 END) as out_of_stock
-        FROM pos_category pc
-        LEFT JOIN ingredients i ON pc.category_id = i.category_id 
-        AND i.branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-        GROUP BY pc.category_id, pc.category_name
-        HAVING total_items > 0
-        ORDER BY total_items DESC
-        LIMIT 10
-    ");
-    $stmt->execute([$stockman_id]);
-    $category_cards_data = $stmt->fetchAll();
-    
-    // Calculate healthy stock (available + low stock)
-    foreach ($category_cards_data as &$category) {
-        $category['healthy'] = $category['available'] + $category['low_stock'];
+    $reorder_recommendations = [];
+    foreach ($low_stock_ingredients as $ingredient) {
+        $max_qty = $ingredient['ingredient_max_quantity'] ?: 100;
+        $current_qty = $ingredient['ingredient_quantity'];
+        $recommended_qty = max(10, $max_qty * 0.3);
+        
+        if ($current_qty < 5) {
+            $priority = 'danger';
+        } elseif ($current_qty < $max_qty * 0.2) {
+            $priority = 'warning';
+        } else {
+            $priority = 'info';
+        }
+        
+        $reorder_recommendations[] = [
+            'item_name' => $ingredient['ingredient_name'],
+            'current_stock' => $current_qty . ' ' . $ingredient['ingredient_unit'],
+            'recommended_quantity' => round($recommended_qty) . ' ' . $ingredient['ingredient_unit'],
+            'priority' => $priority,
+            'reason' => 'Stock level below recommended threshold'
+        ];
     }
     
-    $stats['category_cards'] = $category_cards_data;
-    
-    // Turnover analysis (high, medium, low)
+    // 13. Category Cards
+    if ($stmt->query("SHOW TABLES LIKE 'pos_category'")->rowCount() > 0) {
     $stmt = $pdo->prepare("
         SELECT 
-            COUNT(CASE WHEN movement_count >= 10 THEN 1 END) as high_turnover,
-            COUNT(CASE WHEN movement_count BETWEEN 3 AND 9 THEN 1 END) as medium_turnover,
-            COUNT(CASE WHEN movement_count < 3 THEN 1 END) as low_turnover
-        FROM (
-            SELECT i.ingredient_id, COUNT(al.log_id) as movement_count
-            FROM ingredients i
-            LEFT JOIN activity_log al ON al.action LIKE CONCAT('%', i.ingredient_name, '%')
-            AND al.timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-            WHERE i.branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-            GROUP BY i.ingredient_id
-        ) as turnover_analysis
-    ");
-    $stmt->execute([$stockman_id]);
-    $turnover_analysis = $stmt->fetch();
+                c.category_id,
+                c.category_name,
+            COUNT(i.ingredient_id) as total_items,
+                SUM(CASE WHEN i.ingredient_quantity > 0 AND (i.ingredient_quantity >= 5 AND i.ingredient_quantity >= (COALESCE(i.ingredient_max_quantity, 100) * 0.1)) THEN 1 ELSE 0 END) as healthy,
+                SUM(CASE WHEN i.ingredient_quantity > 0 AND (i.ingredient_quantity < 5 OR i.ingredient_quantity < (COALESCE(i.ingredient_max_quantity, 100) * 0.1)) THEN 1 ELSE 0 END) as low_stock,
+                SUM(CASE WHEN i.ingredient_quantity <= 0 THEN 1 ELSE 0 END) as out_of_stock
+            FROM pos_category c
+            LEFT JOIN ingredients i ON c.category_id = i.category_id AND i.branch_id = ?
+            WHERE c.status = 'active'
+            GROUP BY c.category_id, c.category_name
+        ORDER BY total_items DESC
+            LIMIT 6
+        ");
+        $stmt->execute([$branch_id]);
+        $category_cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $category_cards = [];
+    }
     
-    $stats['high_turnover'] = $turnover_analysis['high_turnover'];
-    $stats['medium_turnover'] = $turnover_analysis['medium_turnover'];
-    $stats['low_turnover'] = $turnover_analysis['low_turnover'];
-    
-    // Get insights
-    // Fastest moving items (highest turnover)
+    // 14. Stock Value Analytics
     $stmt = $pdo->prepare("
-        SELECT COUNT(*) as fastest_moving
-        FROM (
-            SELECT i.ingredient_id, COUNT(al.log_id) as movement_count
-            FROM ingredients i
-            LEFT JOIN activity_log al ON al.action LIKE CONCAT('%', i.ingredient_name, '%')
-            WHERE i.branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-            AND al.timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-            GROUP BY i.ingredient_id
-            ORDER BY movement_count DESC
-            LIMIT 5
-        ) as top_movers
+        SELECT 
+            COALESCE(SUM(ingredient_quantity * COALESCE(ingredient_cost, 0)), 0) as total_value
+        FROM ingredients 
+        WHERE branch_id = ?
     ");
-    $stmt->execute([$stockman_id]);
-    $stats['fastest_moving'] = $stmt->fetch()['fastest_moving'];
+    $stmt->execute([$branch_id]);
+    $total_stock_value = $stmt->fetchColumn();
     
-    // Slowest moving items (lowest turnover)
+    // 15. Average Stock Age (simplified - using last movement date)
     $stmt = $pdo->prepare("
-        SELECT COUNT(*) as slowest_moving
-        FROM (
-            SELECT i.ingredient_id, COUNT(al.log_id) as movement_count
-            FROM ingredients i
-            LEFT JOIN activity_log al ON al.action LIKE CONCAT('%', i.ingredient_name, '%')
-            WHERE i.branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-            AND al.timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-            GROUP BY i.ingredient_id
-            ORDER BY movement_count ASC
-            LIMIT 5
-        ) as slow_movers
+        SELECT 
+            COALESCE(AVG(DATEDIFF(?, COALESCE(last_movement_date, created_date))), 0) as avg_age
+        FROM ingredients 
+        WHERE branch_id = ?
     ");
-    $stmt->execute([$stockman_id]);
-    $stats['slowest_moving'] = $stmt->fetch()['slowest_moving'];
+    $stmt->execute([$current_date, $branch_id]);
+    $average_age = round($stmt->fetchColumn());
     
-    // Expiring soon
-    try {
+    // 16. Fastest and Slowest Moving Items
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) as moving_items
+        FROM ingredients 
+        WHERE branch_id = ? 
+        AND last_movement_date IS NOT NULL 
+        AND last_movement_date >= DATE_SUB(?, INTERVAL 7 DAY)
+    ");
+    $stmt->execute([$branch_id, $current_date]);
+    $fastest_moving = $stmt->fetchColumn();
+    
+    $slowest_moving = $total_items - $fastest_moving;
+    
+    // 17. Expiring Soon (within 7 days)
         $stmt = $pdo->prepare("
             SELECT COUNT(*) as expiring_soon
             FROM ingredients 
-            WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?) 
+        WHERE branch_id = ? 
             AND expiry_date IS NOT NULL 
-            AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+        AND expiry_date BETWEEN ? AND DATE_ADD(?, INTERVAL 7 DAY)
+    ");
+    $stmt->execute([$branch_id, $current_date, $current_date]);
+    $expiring_soon = $stmt->fetchColumn();
+    
+    // 18. Trends (simplified calculations)
+    $last_week_start = date('Y-m-d', strtotime('monday last week'));
+    
+    // Total items trend
+    $stmt = $pdo->prepare("SELECT COUNT(*) as last_week_total FROM ingredients WHERE branch_id = ?");
+    $stmt->execute([$branch_id]);
+    $last_week_total = $stmt->fetchColumn();
+    
+    $total_items_change = $last_week_total > 0 ? round((($total_items - $last_week_total) / $last_week_total) * 100) : 0;
+    $total_items_trend = ($total_items_change >= 0 ? '+' : '') . $total_items_change . '% this week';
+    
+    // Available ingredients trend
+    $stmt = $pdo->prepare("SELECT COUNT(*) as last_week_available FROM ingredients WHERE branch_id = ? AND ingredient_quantity > 0");
+    $stmt->execute([$branch_id]);
+    $last_week_available = $stmt->fetchColumn();
+    
+    $available_change = $last_week_available > 0 ? $available_ingredients - $last_week_available : 0;
+    $available_ingredients_trend = ($available_change >= 0 ? '+' : '') . $available_change . ' this week';
+    
+    // Low stock trend
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) as last_week_low 
+        FROM ingredients 
+        WHERE branch_id = ? 
+        AND (ingredient_quantity < 5 OR ingredient_quantity < (ingredient_max_quantity * 0.1))
+        AND ingredient_quantity > 0
+    ");
+    $stmt->execute([$branch_id]);
+    $last_week_low = $stmt->fetchColumn();
+    
+    $low_stock_change = $last_week_low > 0 ? $low_stock_items - $last_week_low : 0;
+    $low_stock_trend = ($low_stock_change >= 0 ? '+' : '') . $low_stock_change . ' this week';
+    
+    // Movements trend
+    if ($stmt->query("SHOW TABLES LIKE 'stock_movements'")->rowCount() > 0) {
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) as last_week_movements 
+            FROM stock_movements 
+            WHERE branch_id = ? 
+            AND DATE(movement_date) >= ? AND DATE(movement_date) < ?
         ");
-        $stmt->execute([$stockman_id]);
-        $stats['expiring_soon'] = $stmt->fetch()['expiring_soon'];
-    } catch (PDOException $e) {
-        $stats['expiring_soon'] = 0;
+        $stmt->execute([$branch_id, $last_week_start, $week_start]);
+        $last_week_movements = $stmt->fetchColumn();
+        
+        $movements_change = $last_week_movements > 0 ? round((($stock_movements - $last_week_movements) / $last_week_movements) * 100) : 0;
+        $movements_trend = ($movements_change >= 0 ? '+' : '') . $movements_change . '% this week';
+    } else {
+        $movements_trend = '+0% this week';
     }
     
-    // Stock value analytics
-    $stats['turnover_rate'] = $stats['stock_turnover'];
-    
-    // Average stock age
+    // Expiring trend
     $stmt = $pdo->prepare("
-        SELECT AVG(DATEDIFF(CURDATE(), DATE(created_at))) as avg_age
+        SELECT COUNT(*) as last_week_expiring 
         FROM ingredients 
-        WHERE branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-        AND created_at IS NOT NULL
+        WHERE branch_id = ? 
+        AND expiry_date IS NOT NULL 
+        AND expiry_date BETWEEN ? AND DATE_ADD(?, INTERVAL 30 DAY)
     ");
-    $stmt->execute([$stockman_id]);
-    $age_data = $stmt->fetch();
-    $stats['average_age'] = round($age_data['avg_age'] ?? 0);
+    $stmt->execute([$branch_id, date('Y-m-d', strtotime('-7 days')), date('Y-m-d', strtotime('-7 days'))]);
+    $last_week_expiring = $stmt->fetchColumn();
     
-    // Reorder recommendations
+    $expiring_change = $last_week_expiring > 0 ? $expiring_items - $last_week_expiring : 0;
+    $expiring_trend = $expiring_change == 0 ? 'No change' : ($expiring_change > 0 ? '+' . $expiring_change : $expiring_change) . ' this week';
+    
+    // Turnover trend
+    if ($stmt->query("SHOW TABLES LIKE 'stock_movements'")->rowCount() > 0) {
+        $last_month_start = date('Y-m-01', strtotime('-1 month'));
     $stmt = $pdo->prepare("
         SELECT 
-            i.ingredient_name,
-            i.current_stock,
-            i.minimum_stock,
-            i.maximum_stock,
-            CASE 
-                WHEN i.current_stock = 0 THEN 'danger'
-                WHEN i.current_stock <= i.minimum_stock THEN 'warning'
-                WHEN i.current_stock <= (i.minimum_stock + i.maximum_stock) / 2 THEN 'info'
-                ELSE 'success'
-            END as priority,
-            CASE 
-                WHEN i.current_stock = 0 THEN 'Out of stock - immediate reorder required'
-                WHEN i.current_stock <= i.minimum_stock THEN 'Below minimum stock level'
-                WHEN i.current_stock <= (i.minimum_stock + i.maximum_stock) / 2 THEN 'Approaching minimum stock'
-                ELSE 'Stock level adequate'
-            END as reason,
-            COALESCE(i.maximum_stock - i.current_stock, i.minimum_stock * 2) as recommended_quantity
-        FROM ingredients i
-        WHERE i.branch_id = (SELECT branch_id FROM pos_user WHERE user_id = ?)
-        AND (i.current_stock = 0 OR i.current_stock <= i.minimum_stock)
-        ORDER BY 
-            CASE 
-                WHEN i.current_stock = 0 THEN 1
-                WHEN i.current_stock <= i.minimum_stock THEN 2
-                ELSE 3
-            END,
-            i.ingredient_name
-        LIMIT 10
-    ");
-    $stmt->execute([$stockman_id]);
-    $stats['reorder_recommendations'] = $stmt->fetchAll();
-    
-    // Critical alerts
-    $critical_alerts = [];
-    
-    // Out of stock alert
-    if ($stats['out_of_stock'] > 0) {
-        $critical_alerts[] = [
-            'severity' => 'danger',
-            'title' => 'Out of Stock Items',
-            'description' => $stats['out_of_stock'] . ' items are completely out of stock. Immediate action required.'
-        ];
+                COALESCE(SUM(CASE WHEN movement_type = 'out' THEN quantity ELSE 0 END), 0) as last_month_out
+            FROM stock_movements 
+            WHERE branch_id = ? 
+            AND DATE(movement_date) >= ? AND DATE(movement_date) < ?
+        ");
+        $stmt->execute([$branch_id, $last_month_start, $month_start]);
+        $last_month_out = $stmt->fetchColumn();
+        
+        $last_month_turnover = $total_items > 0 ? round(($last_month_out / $total_items) * 100, 1) : 0;
+        $turnover_change = $last_month_turnover > 0 ? round((($stock_turnover - $last_month_turnover) / $last_month_turnover) * 100) : 0;
+        $turnover_trend = ($turnover_change >= 0 ? '+' : '') . $turnover_change . '% this month';
+    } else {
+        $turnover_trend = '+0% this month';
     }
     
-    // Low stock alert
-    if ($stats['low_stock_items'] > 5) {
-        $critical_alerts[] = [
-            'severity' => 'warning',
-            'title' => 'Multiple Low Stock Items',
-            'description' => $stats['low_stock_items'] . ' items are running low on stock. Consider reordering.'
-        ];
+    // Get branch name from pos_branch table
+    $stmt = $pdo->prepare("SELECT branch_name FROM pos_branch WHERE branch_id = ?");
+    $stmt->execute([$branch_id]);
+    $branch_name = $stmt->fetchColumn();
+    
+    // Fallback if branch name not found
+    if (!$branch_name) {
+        $branch_name = "Branch #$branch_id";
     }
     
-    // Expiring items alert
-    if ($stats['expiring_soon'] > 0) {
-        $critical_alerts[] = [
-            'severity' => 'info',
-            'title' => 'Items Expiring Soon',
-            'description' => $stats['expiring_soon'] . ' items will expire within 7 days. Check expiry dates.'
-        ];
-    }
+    // Prepare response
+    $response = [
+        'branch_id' => $branch_id,
+        'branch_name' => $branch_name,
+        'total_items' => $total_items,
+        'available_ingredients' => $available_ingredients,
+        'low_stock_items' => $low_stock_items,
+        'stock_movements' => $stock_movements,
+        'expiring_items' => $expiring_items,
+        'stock_turnover' => $stock_turnover,
+        'adequate_stock' => $adequate_stock,
+        'low_stock' => $low_stock_items,
+        'out_of_stock' => $out_of_stock,
+        'weekly_movements' => $weekly_movements,
+        'fastest_moving' => $fastest_moving,
+        'slowest_moving' => $slowest_moving,
+        'expiring_soon' => $expiring_soon,
+        'total_stock_value' => '₱' . number_format($total_stock_value, 2),
+        'turnover_rate' => $stock_turnover,
+        'average_age' => $average_age,
+        'category_labels' => $category_labels,
+        'category_data' => $category_counts,
+        'high_turnover' => $high_turnover,
+        'medium_turnover' => $medium_turnover,
+        'low_turnover' => $low_turnover,
+        'critical_alerts' => $critical_alerts,
+        'reorder_recommendations' => $reorder_recommendations,
+        'category_cards' => $category_cards,
+        'total_items_trend' => $total_items_trend,
+        'available_ingredients_trend' => $available_ingredients_trend,
+        'low_stock_trend' => $low_stock_trend,
+        'movements_trend' => $movements_trend,
+        'expiring_trend' => $expiring_trend,
+        'turnover_trend' => $turnover_trend
+    ];
     
-    // No recent activity alert
-    if ($stats['stock_movements'] == 0) {
-        $critical_alerts[] = [
-            'severity' => 'secondary',
-            'title' => 'No Recent Activity',
-            'description' => 'No stock movements recorded in the past week. Consider updating inventory.'
-        ];
-    }
+    echo json_encode($response);
     
-    // Low turnover alert
-    if ($stats['stock_turnover'] < 20) {
-        $critical_alerts[] = [
-            'severity' => 'warning',
-            'title' => 'Low Stock Turnover',
-            'description' => 'Stock turnover rate is ' . $stats['stock_turnover'] . '%. Consider reviewing slow-moving items.'
-        ];
-    }
-    
-    $stats['critical_alerts'] = $critical_alerts;
-    
-    // Return the complete analytics data
-    header('Content-Type: application/json');
-    echo json_encode($stats);
-    
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
 } catch (Exception $e) {
+    error_log("Error in get_stockman_analytics: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Server error: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Internal server error']);
 }
 ?>

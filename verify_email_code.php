@@ -19,11 +19,14 @@ try {
         throw new Exception("Verification code must be a 6-digit number");
     }
 
+    // Set timezone to Asia/Manila for accurate time comparison
+    date_default_timezone_set('Asia/Manila');
+    
     // Check if verification code exists and is not expired
     $stmt = $pdo->prepare("
         SELECT id, attempt_count, is_verified 
         FROM pos_email_verification 
-        WHERE email = ? AND verification_code = ? AND expires_at > NOW()
+        WHERE email = ? AND verification_code = ? AND expires_at > CONVERT_TZ(NOW(), @@session.time_zone, '+08:00')
     ");
     $stmt->execute([$email, $verification_code]);
     $verification = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -33,7 +36,7 @@ try {
         $stmt = $pdo->prepare("
             UPDATE pos_email_verification 
             SET attempt_count = attempt_count + 1 
-            WHERE email = ? AND expires_at > NOW()
+            WHERE email = ? AND expires_at > CONVERT_TZ(NOW(), @@session.time_zone, '+08:00')
         ");
         $stmt->execute([$email]);
         

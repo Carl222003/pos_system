@@ -14,7 +14,7 @@
  */
 function renderVerificationEmail(string $verificationCode, string $userName = 'User', array $brand = []): string
 {
-    $appName      = $brand['appName'] ?? 'MoreBites POS System';
+    $appName      = $brand['appName'] ?? 'MoreBites';
     $primaryColor = $brand['primaryColor'] ?? '#8B4513';
     $accentColor  = $brand['accentColor'] ?? '#A0522D';
     $footerNote   = $brand['footerNote'] ?? ("This is an automated security email – please do not reply.");
@@ -36,6 +36,7 @@ function renderVerificationEmail(string $verificationCode, string $userName = 'U
         body { margin: 0; padding: 0; background: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif; color: #2d3436; }
         .container { width: 100%; max-width: 640px; margin: 20px auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
         .header { background: linear-gradient(135deg, {$primaryColor}, {$accentColor}); color: #fff; padding: 28px 28px; text-align: left; }
+
         .header h1 { margin: 0 0 6px 0; font-size: 24px; line-height: 1.2; }
         .header p { margin: 0; opacity: .9; font-size: 14px; }
         .content { padding: 32px 28px; }
@@ -63,7 +64,7 @@ function renderVerificationEmail(string $verificationCode, string $userName = 'U
     </head>
     <body>
       <div class='container'>
-        <div class='header'>
+                <div class='header'>
           <h1>{$safeApp}</h1>
           <p>Email Verification</p>
         </div>

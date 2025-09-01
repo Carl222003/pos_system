@@ -135,18 +135,7 @@ include('header.php');
             </div>
         </div>
 
-        <!-- Inventory Categories -->
-        <div class="inventory-categories-section">
-            <div class="categories-header">
-                <h3 class="categories-title">
-                    <i class="fas fa-tags me-2"></i>
-                    Inventory by Category
-                </h3>
-            </div>
-            <div class="categories-grid" id="categoriesGrid">
-                <!-- Category cards will be loaded here -->
-            </div>
-        </div>
+
 
         <!-- Quick Actions Panel -->
         <div class="quick-actions-section">

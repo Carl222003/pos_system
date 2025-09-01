@@ -2,6 +2,9 @@
 require_once 'db_connect.php';
 
 try {
+    // Set timezone to Asia/Manila
+    date_default_timezone_set('Asia/Manila');
+    
     // Create email verification table
     $sql = "
     CREATE TABLE IF NOT EXISTS pos_email_verification (
@@ -33,6 +36,17 @@ try {
         foreach ($columns as $column) {
             echo "  - {$column['Field']}: {$column['Type']}\n";
         }
+        
+        // Test timezone functionality
+        echo "\n🌍 Timezone Test:\n";
+        echo "  - Current PHP timezone: " . date_default_timezone_get() . "\n";
+        echo "  - Current Manila time: " . date('Y-m-d H:i:s T') . "\n";
+        echo "  - UTC time: " . gmdate('Y-m-d H:i:s') . " UTC\n";
+        
+        // Test expiration time calculation
+        $test_expires = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+        echo "  - Test expiration (10 min from now): " . $test_expires . "\n";
+        
     } else {
         echo "❌ Table verification failed\n";
     }

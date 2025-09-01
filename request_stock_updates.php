@@ -181,64 +181,6 @@ $existing_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     letter-spacing: 0.5px;
 }
 
-.request-form-section {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    border: 1px solid #f0f0f0;
-}
-
-.form-header {
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.form-control, .form-select {
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25);
-    background-color: #fff;
-}
-
-.form-label {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.btn-primary {
-    background: var(--primary-color);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(139, 69, 67, 0.3);
-}
-
 .requests-table {
     background: white;
     border-radius: 12px;
@@ -410,8 +352,6 @@ $existing_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     padding: 0.5rem 0;
 }
 
-
-
 .info-icon {
     width: 32px;
     height: 32px;
@@ -455,58 +395,8 @@ $existing_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     color: #6c757d;
 }
 
-/* Enhanced form styling */
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-row {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.form-col {
-    flex: 1;
-}
-
-.quantity-input-group {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.quantity-input-group .form-control {
-    flex: 1;
-}
-
-.quantity-input-group .form-select {
-    width: auto;
-    min-width: 120px;
-}
-
-/* Animation for new requests */
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.new-request {
-    animation: slideInUp 0.5s ease-out;
-}
-
 /* Responsive design */
 @media (max-width: 768px) {
-    .form-row {
-        flex-direction: column;
-    }
-    
     .stats-cards {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
@@ -530,7 +420,7 @@ $existing_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="stock-updates-dashboard">
     <div class="container-fluid">
         <h1 class="dashboard-title">
-            🔄 Update Stock
+            🔄 Stock Updates Overview
         </h1>
         
         <!-- Branch Information -->
@@ -626,125 +516,6 @@ $existing_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
         
-
-        
-        <!-- Request Form Section -->
-        <div class="request-form-section">
-            <div class="form-header">
-                <i class="fas fa-plus-circle"></i>
-                Stock Update Request
-            </div>
-            
-            <form id="stockUpdateForm">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">Ingredient</label>
-                            <small class="form-text text-muted d-block mb-2">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Only ingredients from your assigned branch are shown
-                            </small>
-                            <select class="form-select" id="ingredient_id" name="ingredient_id" required>
-                                <option value="">Select an ingredient...</option>
-                                <?php if (empty($ingredients)): ?>
-                                    <option value="" disabled>No ingredients available for this branch</option>
-                                <?php else: ?>
-                                    <?php foreach ($ingredients as $ingredient): ?>
-                                        <option value="<?= $ingredient['ingredient_id'] ?>" 
-                                                data-current-stock="<?= $ingredient['ingredient_quantity'] ?>"
-                                                data-unit="<?= $ingredient['ingredient_unit'] ?>"
-                                                data-category="<?= htmlspecialchars($ingredient['category_name'] ?? 'Uncategorized') ?>"
-                                                <?= ($pre_selected_ingredient == $ingredient['ingredient_id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($ingredient['ingredient_name']) ?> 
-                                            (<?= htmlspecialchars($ingredient['category_name'] ?? 'Uncategorized') ?> - 
-                                            Current: <?= $ingredient['ingredient_quantity'] ?> <?= $ingredient['ingredient_unit'] ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">Update Type</label>
-                            <select class="form-select" id="update_type" name="update_type" required>
-                                <option value="">Select update type...</option>
-                                <option value="add">Add Stock</option>
-                                <option value="adjust">Adjust Stock</option>
-                                <option value="correct">Correct Stock Count</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">Quantity</label>
-                            <div class="quantity-input-group">
-                                <input type="number" class="form-control" id="quantity" name="quantity" 
-                                       step="0.01" min="0" required placeholder="Enter quantity">
-                                <select class="form-select" id="unit" name="unit" required>
-                                    <option value="">Unit</option>
-                                    <option value="pieces">Pieces</option>
-                                    <option value="kg">Kilograms</option>
-                                    <option value="grams">Grams</option>
-                                    <option value="liters">Liters</option>
-                                    <option value="ml">Milliliters</option>
-                                    <option value="gallons">Gallons</option>
-                                    <option value="tab">Tablets</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">Urgency Level</label>
-                            <select class="form-select" id="urgency_level" name="urgency_level" required>
-                                <option value="">Select urgency...</option>
-                                <option value="low">Low - Normal restocking</option>
-                                <option value="medium">Medium - Running low</option>
-                                <option value="high">High - Critical level</option>
-                                <option value="critical">Critical - Out of stock</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">Priority</label>
-                            <select class="form-select" id="priority" name="priority" required>
-                                <option value="">Select priority...</option>
-                                <option value="normal">Normal</option>
-                                <option value="high">High</option>
-                                <option value="urgent">Urgent</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Reason for Update</label>
-                    <textarea class="form-control" id="reason" name="reason" rows="3" 
-                              placeholder="Please provide a detailed reason for this stock update request..." required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Additional Notes</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="2" 
-                              placeholder="Any additional information or special instructions..."></textarea>
-                </div>
-                
-                <div class="text-end">
-                    <button type="button" class="btn btn-secondary me-2" onclick="resetForm()">
-                        <i class="fas fa-undo"></i> Reset
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Submit Request
-                    </button>
-                </div>
-            </form>
-        </div>
-        
         <!-- Stock Requests Updates Table -->
         <div class="requests-table">
             <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
@@ -757,46 +528,46 @@ $existing_requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </button>
             </div>
             
-                         <div class="table-responsive">
-                 <table class="table table-hover" id="requestsTable">
-                     <thead>
-                         <tr>
-                             <th>Date Requested</th>
-                             <th>Ingredients</th>
-                             <th>Status</th>
-                             <th>Delivery Status</th>
-                             <th>Delivery Notes</th>
-                             <th>Updated By</th>
-                             <th>Actions</th>
-                         </tr>
-                     </thead>
-                     <tbody>
-                         <tr>
-                             <td colspan="7" class="loading">
-                                 <div class="spinner-border text-primary" role="status">
-                                     <span class="visually-hidden">Loading...</span>
-                                 </div>
-                                 <p>Loading your requests...</p>
-                             </td>
-                         </tr>
-                     </tbody>
-                 </table>
-                 
-                 <!-- Pagination Controls -->
-                 <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                     <div class="text-muted">
-                         Showing <span id="startRecord">0</span> to <span id="endRecord">0</span> of <span id="totalRecords">0</span> entries
-                     </div>
-                     <div class="pagination-controls">
-                         <button class="btn btn-outline-secondary btn-sm" id="prevBtn" onclick="previousPage()" disabled>
-                             <i class="fas fa-chevron-left"></i> Previous
-                         </button>
-                         <button class="btn btn-outline-secondary btn-sm ms-2" id="nextBtn" onclick="nextPage()">
-                             Next <i class="fas fa-chevron-right"></i>
-                         </button>
-                     </div>
-                 </div>
-             </div>
+            <div class="table-responsive">
+                <table class="table table-hover" id="requestsTable">
+                    <thead>
+                        <tr>
+                            <th>Date Requested</th>
+                            <th>Ingredients</th>
+                            <th>Status</th>
+                            <th>Delivery Status</th>
+                            <th>Delivery Notes</th>
+                            <th>Updated By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7" class="loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p>Loading your requests...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Pagination Controls -->
+                <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                    <div class="text-muted">
+                        Showing <span id="startRecord">0</span> to <span id="endRecord">0</span> of <span id="totalRecords">0</span> entries
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-outline-secondary btn-sm" id="prevBtn" onclick="previousPage()" disabled>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm ms-2" id="nextBtn" onclick="nextPage()">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -854,7 +625,6 @@ const itemsPerPage = 5;
 document.addEventListener('DOMContentLoaded', function() {
     loadStats();
     loadRequests();
-    setupFormHandlers();
     setupDeliveryHandlers();
 });
 
@@ -964,66 +734,6 @@ function nextPage() {
         currentPage++;
         displayRequests();
     }
-}
-
-function setupFormHandlers() {
-    // Auto-fill unit when ingredient is selected
-    document.getElementById('ingredient_id').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const unit = selectedOption.getAttribute('data-unit');
-        if (unit) {
-            document.getElementById('unit').value = unit;
-        }
-    });
-    
-    // Form submission
-    document.getElementById('stockUpdateForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        submitRequest();
-    });
-}
-
-function submitRequest() {
-    const formData = new FormData(document.getElementById('stockUpdateForm'));
-    
-    fetch('submit_stock_update_request.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Request Submitted!',
-                text: 'Your stock update request has been submitted successfully and is pending admin approval.',
-                confirmButtonColor: '#8B4543'
-            });
-            resetForm();
-            loadStats();
-            loadRequests();
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Submission Failed',
-                text: data.error || 'An error occurred while submitting your request.',
-                confirmButtonColor: '#8B4543'
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error submitting request:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Submission Failed',
-            text: 'An error occurred while submitting your request.',
-            confirmButtonColor: '#8B4543'
-        });
-    });
-}
-
-function resetForm() {
-    document.getElementById('stockUpdateForm').reset();
 }
 
 function setupDeliveryHandlers() {
@@ -1148,10 +858,6 @@ function refreshRequests() {
         refreshBtn.disabled = false;
     }, 1000);
 }
-
-
 </script>
-
-
 
 <?php include('footer.php'); ?>

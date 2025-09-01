@@ -137,27 +137,34 @@ function getVerificationEmailTemplate($verification_code, $user_name) {
         <title>Email Verification - MoreBites POS</title>
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; }
-            .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-            .header { background: linear-gradient(135deg, #8B4513, #A0522D); color: white; padding: 40px 30px; text-align: center; }
-            .header h1 { font-size: 28px; margin-bottom: 10px; }
-            .header p { font-size: 16px; opacity: 0.9; }
-            .content { padding: 40px 30px; }
-            .greeting { font-size: 18px; margin-bottom: 20px; color: #2c3e50; }
-            .code-section { background: #f8f9fa; border: 3px dashed #8B4513; border-radius: 15px; padding: 30px; margin: 30px 0; text-align: center; }
-            .code-label { font-size: 16px; color: #666; margin-bottom: 15px; }
-            .verification-code { font-family: 'Courier New', monospace; font-size: 36px; font-weight: bold; color: #8B4513; letter-spacing: 8px; margin: 10px 0; }
-            .instructions { background: #e8f4fd; border-left: 5px solid #2196F3; padding: 20px; margin: 25px 0; border-radius: 5px; }
-            .instructions h3 { color: #1976D2; margin-bottom: 15px; }
-            .instructions ul { margin-left: 20px; }
-            .instructions li { margin: 8px 0; }
-            .warning { color: #e74c3c; font-weight: bold; }
-            .footer { background: #2c3e50; color: white; padding: 30px; text-align: center; }
-            .footer p { margin: 5px 0; opacity: 0.8; }
-            .divider { height: 2px; background: linear-gradient(90deg, #8B4513, #A0522D); margin: 30px 0; }
-            .steps { background: #fff3cd; border-radius: 10px; padding: 20px; margin: 20px 0; }
-            .steps h3 { color: #856404; margin-bottom: 15px; }
-            .step { margin: 10px 0; padding: 5px 0; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f8f9fa; }
+            .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.15); border: 3px solid #dc3545; }
+            .header { background: linear-gradient(135deg, #dc3545, #c82333); color: white; padding: 40px 30px; text-align: center; position: relative; }
+            .header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #28a745, #20c997); }
+            .header h1 { font-size: 32px; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+            .header p { font-size: 18px; opacity: 0.95; font-weight: 300; }
+            .content { padding: 40px 30px; background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); }
+            .greeting { font-size: 20px; margin-bottom: 25px; color: #dc3545; font-weight: 600; text-align: center; }
+            .code-section { background: linear-gradient(135deg, #f8f9fa, #e9ecef); border: 4px dashed #dc3545; border-radius: 20px; padding: 35px; margin: 35px 0; text-align: center; position: relative; }
+            .code-section::before { content: '🔐'; font-size: 24px; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: white; padding: 0 15px; }
+            .code-label { font-size: 18px; color: #495057; margin-bottom: 20px; font-weight: 500; }
+            .verification-code { font-family: 'Courier New', monospace; font-size: 42px; font-weight: bold; color: #dc3545; letter-spacing: 10px; margin: 15px 0; text-shadow: 2px 2px 4px rgba(220,53,69,0.2); background: white; padding: 20px; border-radius: 15px; border: 2px solid #dc3545; }
+            .instructions { background: linear-gradient(135deg, #d4edda, #c3e6cb); border-left: 6px solid #28a745; padding: 25px; margin: 30px 0; border-radius: 10px; border: 1px solid #c3e6cb; }
+            .instructions h3 { color: #155724; margin-bottom: 18px; font-size: 20px; }
+            .instructions ul { margin-left: 25px; }
+            .instructions li { margin: 12px 0; color: #155724; font-weight: 500; }
+            .warning { color: #dc3545; font-weight: bold; background: #f8d7da; padding: 3px 8px; border-radius: 5px; }
+            .footer { background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 35px; text-align: center; position: relative; }
+            .footer::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #dc3545, #c82333); }
+            .footer p { margin: 8px 0; opacity: 0.9; font-weight: 300; }
+            .divider { height: 3px; background: linear-gradient(90deg, #dc3545, #28a745); margin: 35px 0; border-radius: 2px; }
+            .steps { background: linear-gradient(135deg, #fff3cd, #ffeaa7); border-radius: 15px; padding: 25px; margin: 25px 0; border: 2px solid #ffc107; }
+            .steps h3 { color: #856404; margin-bottom: 18px; font-size: 20px; }
+            .step { margin: 12px 0; padding: 8px 0; color: #856404; font-weight: 500; }
+            .success-badge { background: #28a745; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 20px; }
+            .security-note { background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 10px; padding: 20px; margin: 25px 0; text-align: center; }
+            .security-note h4 { color: #721c24; margin-bottom: 10px; }
+            .security-note p { color: #721c24; font-size: 14px; }
         </style>
     </head>
     <body>
@@ -170,12 +177,14 @@ function getVerificationEmailTemplate($verification_code, $user_name) {
             <div class='content'>
                 <div class='greeting'>Hello <strong>$user_name</strong>! 👋</div>
                 
-                <p>Welcome to MoreBites POS System! We're excited to have you on board. To complete your account registration and ensure the security of your account, please verify your email address.</p>
+                <div class='success-badge'>✅ Account Verification Required</div>
+                
+                <p>Welcome to <strong>MoreBites POS System</strong>! We're excited to have you on board. To complete your account registration and ensure the security of your account, please verify your email address.</p>
                 
                 <div class='code-section'>
-                    <div class='code-label'>Your Verification Code:</div>
+                    <div class='code-label'>🔐 Your Verification Code:</div>
                     <div class='verification-code'>$verification_code</div>
-                    <p style='font-size: 14px; color: #666; margin-top: 10px;'>Copy this code exactly as shown</p>
+                    <p style='font-size: 14px; color: #495057; margin-top: 15px; font-weight: 500;'>Copy this code exactly as shown above</p>
                 </div>
                 
                 <div class='instructions'>
@@ -198,7 +207,12 @@ function getVerificationEmailTemplate($verification_code, $user_name) {
                     <div class='step'>4. Click 'Verify Email' to complete your registration</div>
                 </div>
                 
-                <p style='margin-top: 30px; color: #666; font-size: 14px;'>
+                <div class='security-note'>
+                    <h4>🔒 Security Notice</h4>
+                    <p>This verification code is for your account security. Never share it with anyone, including our support team.</p>
+                </div>
+                
+                <p style='margin-top: 30px; color: #495057; font-size: 14px; text-align: center;'>
                     If you're having trouble with the verification process, please contact your system administrator or IT support team.
                 </p>
             </div>
