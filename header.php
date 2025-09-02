@@ -1000,6 +1000,12 @@
                                     </a>
                                 </li>
                                 <li class="menu-item">
+                                    <a href="order.php" class="menu-link">
+                                        <i class="fa-solid fa-list-ul"></i>
+                                        <span>Orders</span>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
                                     <a href="sales.php" class="menu-link">
                                         <i class="fa-solid fa-cash-register"></i>
                                         <span>Sales</span>

@@ -88,6 +88,12 @@ function sendVerificationEmailPHPMailer($to_email, $verification_code, $user_nam
             $mail->setFrom($username, $fromName);
             $mail->addAddress($to_email, $user_name);
             $mail->addReplyTo($username, $fromName);
+            
+            // Add logo as embedded image
+            $logoPath = __DIR__ . '/asset/images/logo.png';
+            if (file_exists($logoPath)) {
+                $mail->addEmbeddedImage($logoPath, 'logo', 'logo.png');
+            }
 
             // Content
             $mail->isHTML(true);
@@ -165,46 +171,44 @@ function getVerificationEmailTemplate($verification_code, $user_name) {
             .security-note { background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 10px; padding: 20px; margin: 25px 0; text-align: center; }
             .security-note h4 { color: #721c24; margin-bottom: 10px; }
             .security-note p { color: #721c24; font-size: 14px; }
+            .important-box { background: linear-gradient(135deg, #fff3cd, #ffeaa7); border-left: 5px solid #ffc107; padding: 20px; margin: 25px 0; border-radius: 10px; }
+            .important-box h4 { color: #856404; margin-bottom: 15px; }
+            .important-box p { color: #856404; font-size: 14px; }
         </style>
     </head>
     <body>
         <div class='container'>
             <div class='header'>
-                <h1>🍽️ MoreBites POS System</h1>
-                <p>Email Verification Required</p>
+                <h1>🍽️ MoreBites</h1>
+                <p>Email Verification</p>
             </div>
             
             <div class='content'>
                 <div class='greeting'>Hello <strong>$user_name</strong>! 👋</div>
                 
-                <div class='success-badge'>✅ Account Verification Required</div>
-                
-                <p>Welcome to <strong>MoreBites POS System</strong>! We're excited to have you on board. To complete your account registration and ensure the security of your account, please verify your email address.</p>
+                <p style='text-align: center; color: #495057; font-size: 16px; margin-bottom: 30px; line-height: 1.6;'>
+                    To complete your registration, please verify your email by entering the 6-digit verification code below.
+                </p>
                 
                 <div class='code-section'>
-                    <div class='code-label'>🔐 Your Verification Code:</div>
+                    <div class='code-label'>Your verification code</div>
                     <div class='verification-code'>$verification_code</div>
-                    <p style='font-size: 14px; color: #495057; margin-top: 15px; font-weight: 500;'>Copy this code exactly as shown above</p>
+                    <p style='font-size: 14px; color: #6c757d; margin-top: 15px; font-weight: 500;'>Copy this code exactly as shown</p>
+                </div>
+                
+                <div class='important-box'>
+                    <h4>⚠️ Important:</h4>
+                    <p>This code expires in <strong style='color: #dc3545;'>10 minutes</strong>. Enter it exactly as shown. If you didn't request this, you can ignore this email.</p>
                 </div>
                 
                 <div class='instructions'>
-                    <h3>📋 Verification Instructions:</h3>
-                    <ul>
-                        <li>This verification code will expire in <span class='warning'>10 minutes</span></li>
-                        <li>Enter this code exactly as shown above</li>
-                        <li>Your account will be created only after successful verification</li>
-                        <li>If you didn't request this account creation, please ignore this email</li>
-                    </ul>
-                </div>
-                
-                <div class='divider'></div>
-                
-                <div class='steps'>
-                    <h3>🎯 Next Steps:</h3>
-                    <div class='step'>1. Copy the 6-digit verification code above</div>
-                    <div class='step'>2. Return to the MoreBites registration form</div>
-                    <div class='step'>3. Paste the code in the verification field</div>
-                    <div class='step'>4. Click 'Verify Email' to complete your registration</div>
+                    <h3>📋 Instructions:</h3>
+                    <ol style='margin-left: 20px;'>
+                        <li>Copy the code above</li>
+                        <li>Return to the registration form</li>
+                        <li>Paste the code into the verification field</li>
+                        <li>Click \"Verify Email\" to finish</li>
+                    </ol>
                 </div>
                 
                 <div class='security-note'>
@@ -212,13 +216,13 @@ function getVerificationEmailTemplate($verification_code, $user_name) {
                     <p>This verification code is for your account security. Never share it with anyone, including our support team.</p>
                 </div>
                 
-                <p style='margin-top: 30px; color: #495057; font-size: 14px; text-align: center;'>
-                    If you're having trouble with the verification process, please contact your system administrator or IT support team.
+                <p style='margin-top: 30px; color: #6c757d; font-size: 14px; text-align: center;'>
+                    If you're having trouble with the verification process, please contact your system administrator.
                 </p>
             </div>
             
             <div class='footer'>
-                <p><strong>📧 MoreBites POS System</strong></p>
+                <p><strong>📧 MoreBites System</strong></p>
                 <p>This is an automated security email - Please do not reply</p>
                 <p>&copy; " . date('Y') . " MoreBites. All rights reserved.</p>
             </div>
