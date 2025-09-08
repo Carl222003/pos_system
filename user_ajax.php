@@ -17,20 +17,20 @@ $order = isset($_GET['order'][0]['column']) ? $columns[$_GET['order'][0]['column
 $dir = isset($_GET['order'][0]['dir']) ? $_GET['order'][0]['dir'] : 'ASC';
 $searchValue = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
 
-// Get total records
-$totalRecordsStmt = $pdo->query("SELECT COUNT(*) FROM pos_user");
+// Get total records (exclude those in archive table)
+$totalRecordsStmt = $pdo->query("SELECT COUNT(*) FROM pos_user WHERE user_id NOT IN (SELECT original_id FROM archive_user)");
 $totalRecords = $totalRecordsStmt->fetchColumn();
 
-// Get total filtered records
-$filterQuery = "SELECT COUNT(*) FROM pos_user WHERE 1=1";
+// Get total filtered records (exclude those in archive table)
+$filterQuery = "SELECT COUNT(*) FROM pos_user WHERE user_id NOT IN (SELECT original_id FROM archive_user)";
 if (!empty($searchValue)) {
     $filterQuery .= " AND (user_name LIKE '%$searchValue%' OR user_email LIKE '%$searchValue%' OR user_type LIKE '%$searchValue%' OR user_status LIKE '%$searchValue%')";
 }
 $totalFilteredRecordsStmt = $pdo->query($filterQuery);
 $totalFilteredRecords = $totalFilteredRecordsStmt->fetchColumn();
 
-// Fetch data
-$dataQuery = "SELECT * FROM pos_user WHERE 1=1";
+// Fetch data (exclude those in archive table)
+$dataQuery = "SELECT * FROM pos_user WHERE user_id NOT IN (SELECT original_id FROM archive_user)";
 if (!empty($searchValue)) {
     $dataQuery .= " AND (user_name LIKE '%$searchValue%' OR user_email LIKE '%$searchValue%' OR user_type LIKE '%$searchValue%' OR user_status LIKE '%$searchValue%')";
 }

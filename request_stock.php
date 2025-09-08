@@ -31,8 +31,8 @@ if (!$branch_id) {
 // Get pre-selected ingredient if provided
 $pre_selected_ingredient = $_GET['ingredient_id'] ?? null;
 
-// Fetch ingredients that are in stock (quantity > 0) and not expired from ALL branches and categories
-// This allows stockmen to see only available ingredients and request any of them
+// Fetch ingredients that are in stock (quantity > 0) from main ingredients table
+// Show all available ingredients from main inventory (not branch-specific)
 $stmt = $pdo->prepare("
     SELECT 
         i.ingredient_id, 
@@ -42,22 +42,18 @@ $stmt = $pdo->prepare("
         i.ingredient_status, 
         i.category_id, 
         c.category_name,
-        CASE 
-            WHEN i.branch_id = ? THEN 'Current Branch'
-            WHEN i.branch_id IS NOT NULL THEN 'Other Branch'
-            ELSE 'Not Stocked'
-        END as availability_status,
-        COALESCE(b.branch_name, 'Not Assigned') as branch_name
+        'Main Inventory' as availability_status,
+        'Main Branch' as branch_name
     FROM ingredients i
     LEFT JOIN pos_category c ON i.category_id = c.category_id
-    LEFT JOIN pos_branch b ON i.branch_id = b.branch_id
     WHERE c.status = 'active' 
     AND i.ingredient_quantity > 0
+    AND i.ingredient_status = 'Available'
     AND (i.consume_before IS NULL OR i.consume_before > CURDATE())
     ORDER BY c.category_name, i.ingredient_name
 ");
 
-$stmt->execute([$branch_id]);
+$stmt->execute();
 $ingredients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Group ingredients by category for better organization
@@ -148,21 +144,6 @@ foreach ($ingredients as $ingredient) {
     margin-bottom: 0.7rem;
     opacity: 1;
     transition: opacity 0.2s;
-}
-.stockman-card .ingredient-row.unavailable {
-    opacity: 0.5;
-    pointer-events: none;
-}
-.stockman-card .ingredient-status {
-    font-size: 0.95em;
-    font-weight: 500;
-    margin-left: 0.5em;
-}
-.stockman-card .ingredient-status.available {
-    color: #4B7F52;
-}
-.stockman-card .ingredient-status.unavailable {
-    color: #dc3545;
 }
 
 /* SweetAlert Custom Styling */
@@ -266,55 +247,8 @@ foreach ($ingredients as $ingredient) {
     margin-bottom: 0 !important;
 }
 
-/* Availability badges */
-.availability-badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
 
-.availability-current-branch {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
 
-.availability-other-branch {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeaa7;
-}
-
-.availability-not-stocked {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-/* Stock status */
-.stock-status {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.stock-status.available {
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-.stock-status.unavailable {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
 
 
 
@@ -357,16 +291,18 @@ foreach ($ingredients as $ingredient) {
                 </select>
             </div>
             <div class="mb-3">
-                <label for="ingredients" class="form-label">Select Ingredients</label>
+                <div class="mb-2">
+                    <label for="ingredients" class="form-label mb-0">Select Ingredients</label>
+                </div>
                 <small class="form-text text-muted d-block mb-2">
                     <i class="fas fa-info-circle me-1"></i>
-                    All available ingredients from all categories are shown. You can request any ingredient regardless of current stock status.
+                    Select ingredients and enter desired quantities. The main branch will review and approve your request.
                 </small>
                 <div id="ingredient-list">
                     <?php if (empty($ingredients)): ?>
                         <div class="alert alert-info text-center">
                             <i class="fas fa-info-circle me-2"></i>
-                            No ingredients are currently available. Please contact the administrator.
+                            No ingredients are currently available in your branch. Please contact the administrator to add ingredients to your branch inventory.
                         </div>
                     <?php else: ?>
                         <?php foreach ($ingredients as $ingredient): ?>
@@ -380,26 +316,8 @@ foreach ($ingredients as $ingredient) {
                                         <small class="text-muted">Category: <?php echo htmlspecialchars($ingredient['category_name']); ?></small>
                                     </label>
                                 </div>
-                                <div class="col-md-3">
-                                    <span class="availability-badge availability-<?php echo strtolower(str_replace(' ', '-', $ingredient['availability_status'])); ?>">
-                                        <i class="fas fa-<?php echo ($ingredient['availability_status'] === 'Current Branch') ? 'check-circle' : (($ingredient['availability_status'] === 'Other Branch') ? 'building' : 'plus-circle'); ?> me-1"></i>
-                                        <?php echo htmlspecialchars($ingredient['availability_status']); ?>
-                                    </span>
-                                    <?php if ($ingredient['availability_status'] !== 'Not Stocked'): ?>
-                                        <br><small class="text-muted"><?php echo htmlspecialchars($ingredient['branch_name']); ?></small>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="col-md-2">
-                                    <span class="stock-status <?php echo ($ingredient['ingredient_status'] === 'Available') ? 'available' : 'unavailable'; ?>">
-                                        <?php if ($ingredient['ingredient_status'] === 'Available') {
-                                            echo 'Stock: <span class="stock-quantity">' . htmlspecialchars($ingredient['ingredient_quantity']) . '</span>';
-                                        } else {
-                                            echo 'No Stock';
-                                        } ?>
-                                    </span>
-                                </div>
-                                <div class="col-md-2">
-                                    <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" max="<?php echo $ingredient['ingredient_quantity']; ?>" placeholder="Qty" data-max-stock="<?php echo $ingredient['ingredient_quantity']; ?>">
+                                <div class="col-md-7">
+                                    <input type="number" class="form-control" name="quantity[<?php echo $ingredient['ingredient_id']; ?>]" min="1" placeholder="Qty">
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -421,18 +339,24 @@ foreach ($ingredients as $ingredient) {
 $(document).ready(function() {
     $('#ingredient-list input[type="checkbox"]').change(function() {
         const qtyInput = $(this).closest('.row').find('input[type="number"]');
-        qtyInput.prop('disabled', !this.checked);
-        if (!this.checked) qtyInput.val('');
+        // Always keep quantity inputs enabled to ensure they're included in form submission
+        // qtyInput.prop('disabled', !this.checked);
+        if (!this.checked) {
+            qtyInput.val('');
+            qtyInput.attr('readonly', true);
+        } else {
+            qtyInput.attr('readonly', false);
+            qtyInput.focus();
+        }
     });
 
-    // Real-time validation for quantity inputs
+    // Basic validation for quantity inputs (just ensure positive numbers)
     $('#ingredient-list input[type="number"]').on('input', function() {
-        const maxStock = parseInt($(this).attr('data-max-stock')) || 0;
         const currentValue = parseInt($(this).val()) || 0;
         
-        if (currentValue > maxStock) {
+        if (currentValue < 1) {
             $(this).addClass('is-invalid');
-            $(this).attr('title', `Maximum available stock is ${maxStock}`);
+            $(this).attr('title', 'Please enter a quantity of at least 1');
         } else {
             $(this).removeClass('is-invalid');
             $(this).removeAttr('title');
@@ -451,6 +375,9 @@ $(document).ready(function() {
             $('#ingredient-list .ingredient-cat-' + catId).show();
         }
     });
+
+
+    
 
     // Pre-select ingredient if provided in URL
     <?php if ($pre_selected_ingredient): ?>
@@ -483,6 +410,22 @@ $(document).ready(function() {
         // Validate form before submission
         const selectedIngredients = $('input[name="ingredients[]"]:checked');
         
+        // Check if there are any ingredients with stock available
+        const availableIngredients = $('.ingredient-row:not(.unavailable)');
+        if (availableIngredients.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Stock Available',
+                text: 'There are currently no ingredients with available stock. Please contact the administrator or try again later.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ffc107',
+                customClass: {
+                    confirmButton: 'swal2-confirm-warning'
+                }
+            });
+            return;
+        }
+        
         if (selectedIngredients.length === 0) {
             Swal.fire({
                 icon: 'warning',
@@ -497,27 +440,17 @@ $(document).ready(function() {
             return;
         }
         
-        // Check if quantities are entered for selected ingredients and validate against available stock
+        // Check if quantities are entered for selected ingredients
         let hasQuantities = false;
-        let invalidQuantities = [];
         
         selectedIngredients.each(function() {
             const ingredientId = $(this).val();
-            const quantity = parseInt($(`input[name="quantity[${ingredientId}]"]`).val()) || 0;
-            const availableStock = parseInt($(this).closest('.ingredient-row').find('.stock-quantity').text()) || 0;
-            const ingredientName = $(this).closest('.ingredient-row').find('.ingredient-name').text().trim();
+            const quantityInput = $(`input[name="quantity[${ingredientId}]"]`);
+            const quantityValue = quantityInput.val();
+            const quantity = parseInt(quantityValue) || 0;
             
             if (quantity > 0) {
                 hasQuantities = true;
-                
-                // Check if requested quantity exceeds available stock
-                if (quantity > availableStock) {
-                    invalidQuantities.push({
-                        name: ingredientName,
-                        requested: quantity,
-                        available: availableStock
-                    });
-                }
             }
         });
         
@@ -535,36 +468,17 @@ $(document).ready(function() {
             return;
         }
         
-        // Check for invalid quantities (exceeding available stock)
-        if (invalidQuantities.length > 0) {
-            let errorMessage = 'The following quantities exceed available stock:\n\n';
-            invalidQuantities.forEach(function(item) {
-                errorMessage += `• ${item.name}: Requested ${item.requested}, Available ${item.available}\n`;
-            });
-            errorMessage += '\nPlease adjust the quantities to match available stock.';
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Quantities',
-                text: errorMessage,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#dc3545',
-                customClass: {
-                    confirmButton: 'swal2-confirm-error'
-                }
-            });
-            return;
-        }
-        
         // Show loading state
         const submitBtn = $(this).find('button[type="submit"]');
         const originalText = submitBtn.html();
         submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Submitting...').prop('disabled', true);
         
+        const formData = $(this).serialize();
+        
         $.ajax({
             url: $(this).attr('action'),
             type: 'POST',
-            data: $(this).serialize(),
+            data: formData,
             dataType: 'json',
             success: function(response) {
                 if (response.success) {

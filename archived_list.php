@@ -955,5 +955,81 @@ $(document).on('click', '.restore-btn[data-type="request"]', function() {
         }
     });
 });
+
+// Restore button for archived users
+$(document).on('click', '.restore-btn[data-type="user"]', function() {
+    var archiveId = $(this).data('id');
+    var $row = $(this).closest('tr'); // Store reference to the row
+    Swal.fire({
+        title: 'Restore User?',
+        text: 'This will move the user back to the active user list.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#4A7C59',
+        cancelButtonColor: '#f8f9fa',
+        confirmButtonText: '<i class="fas fa-undo me-2"></i>Yes, restore it!',
+        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
+        customClass: {
+            confirmButton: 'btn btn-restore btn-lg',
+            cancelButton: 'btn btn-light btn-lg'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'archive_user.php',
+                type: 'POST',
+                data: { id: archiveId, restore: 1 },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'User has been restored successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#4A7C59',
+                            customClass: {
+                                confirmButton: 'swal2-confirm-green'
+                            }
+                        }).then(() => {
+                            // Remove the restored user row from the table
+                            $row.fadeOut(300, function() {
+                                $(this).remove();
+                                // Check if table is now empty
+                                refreshUserTable();
+                            });
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message || 'Failed to restore user.',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while restoring the user.',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
+    });
+});
+
+// Function to refresh the user table content without reloading the page
+function refreshUserTable() {
+    const userTableBody = document.querySelector('#user tbody');
+    if (userTableBody) {
+        // Check if there are any remaining data rows (excluding the "no data" message row)
+        const dataRows = userTableBody.querySelectorAll('tr:not(.text-center)');
+        if (dataRows.length === 0) {
+            // Show "No archived users found" message
+            userTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No archived users found.</td></tr>';
+        }
+    }
+}
 </script>
 <?php include('footer.php'); ?> 

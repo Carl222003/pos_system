@@ -27,24 +27,38 @@ try {
         exit();
     }
 
-    // Get all requests for this stockman's branch
+    // Get only pending delivery requests for this stockman's branch
+    // Exclude completed requests (delivered/partially_delivered)
     $query = "SELECT r.*, b.branch_name, u.user_name as updated_by_name
               FROM ingredient_requests r 
               LEFT JOIN pos_branch b ON r.branch_id = b.branch_id 
               LEFT JOIN pos_user u ON r.updated_by = u.user_id
-              WHERE r.branch_id = ?
-              ORDER BY r.request_date DESC";
+              WHERE r.branch_id = ? 
+              AND r.status = 'approved' 
+              AND (r.delivery_status IS NULL OR r.delivery_status = 'pending' OR r.delivery_status = 'on_delivery')
+              ORDER BY r.request_date ASC";
     
     $stmt = $pdo->prepare($query);
     $stmt->execute([$branch_id]);
     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Debug logging
+    error_log("Stockman pending requests query - Branch ID: " . $branch_id . ", Found: " . count($requests) . " requests");
     
     // Format data for display
     $data = array();
     foreach ($requests as $request) {
         // Parse ingredients JSON and get ingredient names
         $ingredients_list = [];
-        $ingredients_json = json_decode($request['ingredients'], true);
+        
+        // Check if this is an approved request with approved_ingredients
+        if ($request['status'] === 'approved' && !empty($request['approved_ingredients'])) {
+            // Use approved ingredients for approved requests
+            $ingredients_json = json_decode($request['approved_ingredients'], true);
+        } else {
+            // Use original ingredients for pending/rejected requests
+            $ingredients_json = json_decode($request['ingredients'], true);
+        }
         
         if ($ingredients_json && is_array($ingredients_json)) {
             foreach ($ingredients_json as $ingredient) {
@@ -59,6 +73,10 @@ try {
                     } else {
                         $ingredients_list[] = 'Unknown Ingredient (ID: ' . $ingredient['ingredient_id'] . ') - ' . $ingredient['quantity'];
                     }
+                } else if (isset($ingredient['ingredient_name']) && isset($ingredient['quantity'])) {
+                    // Handle ingredients without ID (from selective approval)
+                    $unit = isset($ingredient['unit']) ? $ingredient['unit'] : 'pieces';
+                    $ingredients_list[] = $ingredient['ingredient_name'] . ' (' . $ingredient['quantity'] . ' ' . $unit . ')';
                 }
             }
         }

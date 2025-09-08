@@ -12,26 +12,34 @@ if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true 
 header('Content-Type: application/json');
 
 try {
-    if (!isset($_POST['request_id']) || !isset($_POST['delivery_status'])) {
+    // Get JSON input from request body
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    // Debug logging
+    error_log("Delivery Update Debug - Input: " . json_encode($input));
+    
+    if (!$input || !isset($input['request_id']) || !isset($input['delivery_status'])) {
         throw new Exception('Missing required parameters');
     }
 
-    $requestId = $_POST['request_id'];
-    $deliveryStatus = $_POST['delivery_status'];
-    $deliveryDate = isset($_POST['delivery_date']) && !empty($_POST['delivery_date']) ? $_POST['delivery_date'] : null;
-    $deliveryNotes = isset($_POST['delivery_notes']) ? $_POST['delivery_notes'] : '';
+    $requestId = $input['request_id'];
+    $deliveryStatus = $input['delivery_status'];
+    $deliveryDate = isset($input['delivery_date']) && !empty($input['delivery_date']) ? $input['delivery_date'] : null;
+    $deliveryNotes = isset($input['delivery_notes']) ? $input['delivery_notes'] : '';
+    $itemChecklist = isset($input['item_checklist']) ? $input['item_checklist'] : [];
+    $returnItems = isset($input['return_items']) ? $input['return_items'] : [];
     $updatedBy = $_SESSION['user_id'];
     $updateDate = date('Y-m-d H:i:s');
     $branchId = $_SESSION['branch_id'];
 
     // Validate delivery status (include all statuses for complete functionality)
-    $validStatuses = ['pending', 'on_delivery', 'delivered', 'returned', 'cancelled'];
+    $validStatuses = ['pending', 'on_delivery', 'delivered', 'partially_delivered', 'returned', 'cancelled'];
     if (!in_array($deliveryStatus, $validStatuses)) {
         throw new Exception('Invalid delivery status');
     }
 
-    // If status is delivered and no delivery date provided, use current date
-    if ($deliveryStatus === 'delivered' && empty($deliveryDate)) {
+    // If status is delivered or partially delivered and no delivery date provided, use current date
+    if (($deliveryStatus === 'delivered' || $deliveryStatus === 'partially_delivered') && empty($deliveryDate)) {
         $deliveryDate = date('Y-m-d H:i:s');
     }
 
@@ -47,7 +55,7 @@ try {
     if ($check_columns->rowCount() == 0) {
         // Add the missing columns
         $pdo->exec("ALTER TABLE ingredient_requests 
-                   ADD COLUMN delivery_status ENUM('pending', 'on_delivery', 'delivered', 'returned', 'cancelled') DEFAULT 'pending' 
+                   ADD COLUMN delivery_status ENUM('pending', 'on_delivery', 'delivered', 'partially_delivered', 'returned', 'cancelled') DEFAULT 'pending' 
                    AFTER status");
         $pdo->exec("ALTER TABLE ingredient_requests 
                    ADD COLUMN delivery_date TIMESTAMP NULL 
@@ -62,7 +70,7 @@ try {
     if ($check_branch_columns->rowCount() == 0) {
         // Add delivery status columns to branch_ingredient table
         $pdo->exec("ALTER TABLE branch_ingredient 
-                   ADD COLUMN delivery_status ENUM('pending', 'on_delivery', 'delivered', 'returned', 'cancelled') DEFAULT NULL 
+                   ADD COLUMN delivery_status ENUM('pending', 'on_delivery', 'delivered', 'partially_delivered', 'returned', 'cancelled') DEFAULT NULL 
                    AFTER status");
         $pdo->exec("ALTER TABLE branch_ingredient 
                    ADD COLUMN delivery_date TIMESTAMP NULL 
@@ -91,101 +99,182 @@ try {
     $stmt->bindParam(':branch_id', $branchId);
 
     if ($stmt->execute()) {
-        // Get request details for synchronization
-        $request_info = $pdo->prepare("SELECT branch_id, ingredients FROM ingredient_requests WHERE request_id = ?");
+        // Get request details for processing
+        $request_info = $pdo->prepare("SELECT branch_id, ingredients, approved_ingredients FROM ingredient_requests WHERE request_id = ?");
         $request_info->execute([$requestId]);
         $request_data = $request_info->fetch(PDO::FETCH_ASSOC);
         
         if ($request_data) {
             $branch_name = $pdo->query("SELECT branch_name FROM pos_branch WHERE branch_id = " . $request_data['branch_id'])->fetchColumn();
             
-            // Synchronize delivery status with ingredient/branch delivery status
-            $ingredients_json = json_decode($request_data['ingredients'], true);
-            if ($ingredients_json && is_array($ingredients_json)) {
-                foreach ($ingredients_json as $ingredient) {
-                    if (isset($ingredient['ingredient_id']) && isset($ingredient['quantity'])) {
-                        $ingredient_id = $ingredient['ingredient_id'];
-                        $requested_quantity = floatval($ingredient['quantity']);
-                        
-                        // Update ingredient delivery status in branch_ingredient table
-                        // First, check if the ingredient exists in branch_ingredient
-                        $check_branch_ingredient = $pdo->prepare("SELECT branch_ingredient_id FROM branch_ingredient WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'");
-                        $check_branch_ingredient->execute([$ingredient_id, $request_data['branch_id']]);
-                        
-                        if ($check_branch_ingredient->fetch()) {
-                            // Update existing branch ingredient delivery status
-                            $update_branch_ingredient = $pdo->prepare("
-                                UPDATE branch_ingredient 
-                                SET delivery_status = ?, 
-                                    delivery_date = ?, 
-                                    delivery_notes = ?
-                                WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'
-                            ");
-                            $update_branch_ingredient->execute([
-                                $deliveryStatus,
-                                $deliveryDate,
-                                $deliveryNotes,
-                                $ingredient_id,
-                                $request_data['branch_id']
-                            ]);
-                        } else {
-                            // Create new branch ingredient entry with delivery status
-                            $insert_branch_ingredient = $pdo->prepare("
-                                INSERT INTO branch_ingredient (
-                                    branch_id, 
-                                    ingredient_id, 
-                                    quantity, 
-                                    minimum_stock, 
-                                    status, 
-                                    delivery_status, 
-                                    delivery_date, 
-                                    delivery_notes
-                                ) VALUES (?, ?, ?, 5, 'active', ?, ?, ?)
-                            ");
-                            $insert_branch_ingredient->execute([
-                                $request_data['branch_id'],
-                                $ingredient_id,
-                                $requested_quantity,
-                                $deliveryStatus,
-                                $deliveryDate,
-                                $deliveryNotes
-                            ]);
-                        }
-                        
-                        // Log the synchronized delivery status update
-                        $ingredient_name_stmt = $pdo->prepare("SELECT ingredient_name FROM ingredients WHERE ingredient_id = ?");
-                        $ingredient_name_stmt->execute([$ingredient_id]);
-                        $ingredient_name = $ingredient_name_stmt->fetchColumn() ?: "Unknown ingredient";
-                        
-                        // Log stock movement for delivery status change
-                        $movement_stmt = $pdo->prepare("
-                            INSERT INTO stock_movements (
-                                ingredient_id, 
-                                branch_id, 
-                                movement_type, 
-                                quantity, 
-                                reason, 
-                                reference_id, 
-                                reference_type, 
-                                movement_date, 
-                                performed_by
-                            ) VALUES (?, ?, 'adjustment', ?, ?, ?, 'delivery_status_update', NOW(), ?)
-                        ");
-                        
-                        $movement_reason = "Delivery status synchronized: $deliveryStatus - $ingredient_name";
-                        $movement_stmt->execute([
-                            $ingredient_id,
-                            $request_data['branch_id'],
-                            $requested_quantity,
-                            $movement_reason,
-                            $requestId,
-                            $updatedBy ?: null
-                        ]);
+            // Process only checked items from the item checklist
+            $processed_ingredients = [];
+            $total_received_quantity = 0;
+            
+            // First, collect return quantities for each ingredient
+            $return_quantities = [];
+            if (!empty($returnItems) && is_array($returnItems)) {
+                foreach ($returnItems as $returnItem) {
+                    if (isset($returnItem['item_name']) && isset($returnItem['return_quantity'])) {
+                        $return_quantities[$returnItem['item_name']] = floatval($returnItem['return_quantity']);
                     }
                 }
             }
             
-            $action_message = "Updated delivery status for ingredient request and synchronized with branch ingredients";
+            if (!empty($itemChecklist) && is_array($itemChecklist)) {
+                error_log("Processing item checklist: " . json_encode($itemChecklist));
+                foreach ($itemChecklist as $item) {
+                    error_log("Processing item: " . json_encode($item));
+                    if (isset($item['received']) && $item['received'] && isset($item['quantity']) && $item['quantity'] > 0) {
+                        $ingredient_name = $item['name'];
+                        $received_quantity = floatval($item['quantity']);
+                        
+                        // Subtract return quantity from received quantity
+                        $return_quantity = isset($return_quantities[$ingredient_name]) ? $return_quantities[$ingredient_name] : 0;
+                        $actual_received_quantity = $received_quantity - $return_quantity;
+                        
+                        error_log("Stock Update Debug - $ingredient_name: Received=$received_quantity, Return=$return_quantity, Net=$actual_received_quantity");
+                        
+                        // Only process if there's a positive quantity to add
+                        if ($actual_received_quantity > 0) {
+                            // Find the ingredient ID by name
+                            $ingredient_stmt = $pdo->prepare("SELECT ingredient_id FROM ingredients WHERE ingredient_name = ?");
+                            $ingredient_stmt->execute([$ingredient_name]);
+                            $ingredient_id = $ingredient_stmt->fetchColumn();
+                            
+                            if ($ingredient_id) {
+                                // Check if the ingredient exists in branch_ingredient
+                                $check_branch_ingredient = $pdo->prepare("SELECT branch_ingredient_id, quantity FROM branch_ingredient WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'");
+                                $check_branch_ingredient->execute([$ingredient_id, $request_data['branch_id']]);
+                                $branch_ingredient = $check_branch_ingredient->fetch(PDO::FETCH_ASSOC);
+                                
+                                if ($branch_ingredient) {
+                                    // Update existing branch ingredient - ADD the actual received quantity to current stock
+                                    $current_stock = floatval($branch_ingredient['quantity']);
+                                    $new_quantity = $current_stock + $actual_received_quantity;
+                                    
+                                    error_log("Stock Update Debug - $ingredient_name: Current Stock=$current_stock, Adding=$actual_received_quantity, New Stock=$new_quantity");
+                                    
+                                    $update_branch_ingredient = $pdo->prepare("
+                                        UPDATE branch_ingredient 
+                                        SET quantity = ?, 
+                                            delivery_status = ?, 
+                                            delivery_date = ?, 
+                                            delivery_notes = ?
+                                        WHERE ingredient_id = ? AND branch_id = ? AND status = 'active'
+                                    ");
+                                    $update_branch_ingredient->execute([
+                                        $new_quantity,
+                                        $deliveryStatus,
+                                        $deliveryDate,
+                                        $deliveryNotes,
+                                        $ingredient_id,
+                                        $request_data['branch_id']
+                                    ]);
+                                } else {
+                                    // Create new branch ingredient entry with actual received quantity
+                                    $insert_branch_ingredient = $pdo->prepare("
+                                        INSERT INTO branch_ingredient (
+                                            branch_id, 
+                                            ingredient_id, 
+                                            quantity, 
+                                            minimum_stock, 
+                                            status, 
+                                            delivery_status, 
+                                            delivery_date, 
+                                            delivery_notes
+                                        ) VALUES (?, ?, ?, 5, 'active', ?, ?, ?)
+                                    ");
+                                    $insert_branch_ingredient->execute([
+                                        $request_data['branch_id'],
+                                        $ingredient_id,
+                                        $actual_received_quantity,
+                                        $deliveryStatus,
+                                        $deliveryDate,
+                                        $deliveryNotes
+                                    ]);
+                                }
+                                
+                                // Log stock movement for received items
+                                $movement_stmt = $pdo->prepare("
+                                    INSERT INTO stock_movements (
+                                        ingredient_id, 
+                                        branch_id, 
+                                        movement_type, 
+                                        quantity, 
+                                        reason, 
+                                        reference_id, 
+                                        reference_type, 
+                                        movement_date, 
+                                        performed_by
+                                    ) VALUES (?, ?, 'addition', ?, ?, ?, 'delivery_received', NOW(), ?)
+                                ");
+                                
+                                $movement_reason = "Item received from delivery: $ingredient_name - Requested: $received_quantity, Returned: $return_quantity, Actual Received: $actual_received_quantity";
+                                $movement_stmt->execute([
+                                    $ingredient_id,
+                                    $request_data['branch_id'],
+                                    $actual_received_quantity,
+                                    $movement_reason,
+                                    $requestId,
+                                    $updatedBy ?: null
+                                ]);
+                                
+                                $processed_ingredients[] = $ingredient_name . " (" . $actual_received_quantity . " " . $item['unit'] . ")";
+                                $total_received_quantity += $actual_received_quantity;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Process return items if any (for logging purposes only)
+            if (!empty($returnItems) && is_array($returnItems)) {
+                foreach ($returnItems as $returnItem) {
+                    if (isset($returnItem['return_quantity']) && $returnItem['return_quantity'] > 0) {
+                        $ingredient_name = $returnItem['item_name'];
+                        $return_quantity = floatval($returnItem['return_quantity']);
+                        $reasons = isset($returnItem['reasons']) ? implode(', ', $returnItem['reasons']) : 'Not specified';
+                        
+                        // Find the ingredient ID by name
+                        $ingredient_stmt = $pdo->prepare("SELECT ingredient_id FROM ingredients WHERE ingredient_name = ?");
+                        $ingredient_stmt->execute([$ingredient_name]);
+                        $ingredient_id = $ingredient_stmt->fetchColumn();
+                        
+                        if ($ingredient_id) {
+                            // Log return movement
+                            $movement_stmt = $pdo->prepare("
+                                INSERT INTO stock_movements (
+                                    ingredient_id, 
+                                    branch_id, 
+                                    movement_type, 
+                                    quantity, 
+                                    reason, 
+                                    reference_id, 
+                                    reference_type, 
+                                    movement_date, 
+                                    performed_by
+                                ) VALUES (?, ?, 'return', ?, ?, ?, 'delivery_return', NOW(), ?)
+                            ");
+                            
+                            $movement_reason = "Item returned from delivery: $ingredient_name - Quantity: $return_quantity - Reasons: $reasons";
+                            $movement_stmt->execute([
+                                $ingredient_id,
+                                $request_data['branch_id'],
+                                $return_quantity,
+                                $movement_reason,
+                                $requestId,
+                                $updatedBy ?: null
+                            ]);
+                        }
+                    }
+                }
+            }
+            
+            $action_message = "Updated delivery status and processed received items";
+            if (!empty($processed_ingredients)) {
+                $action_message .= ": " . implode(", ", $processed_ingredients);
+            }
             
             // Check if logActivity function exists before calling it
             if (function_exists('logActivity')) {
@@ -193,7 +282,7 @@ try {
             }
         }
         
-        $message = 'Delivery status updated successfully and synchronized with branch ingredients';
+        $message = 'Delivery status updated successfully. Only checked items were received and added to branch stock.';
         
         echo json_encode([
             'success' => true,

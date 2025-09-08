@@ -21,85 +21,7 @@ include('header.php');
 
 <div class="available-ingredients-bg">
     <div class="container-fluid px-4">
-        <!-- Page Header -->
-        <div class="page-header-enhanced">
-            <div class="header-left-content">
-                <div class="page-icon-container">
-                    <div class="page-icon">
-                        <i class="fas fa-mortar-pestle"></i>
-                    </div>
-                    <div class="icon-pulse-effect"></div>
-                </div>
-                <div class="header-text-content">
-                    <h1 class="page-title">Ingredient Inventory</h1>
-                    <p class="page-subtitle">
-                        <i class="fas fa-building me-1"></i>
-                        <?php echo htmlspecialchars($branch_name); ?>
-                    </p>
-                    <div class="branch-status-info">
-                        <span class="branch-status-badge">
-                            <i class="fas fa-list me-1"></i>
-                            Branch-specific ingredients
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div class="header-actions-enhanced">
-                <button class="action-btn refresh-btn" onclick="refreshIngredients()">
-                    <i class="fas fa-sync-alt me-2"></i>
-                    Refresh
-                </button>
-                <button class="action-btn filter-btn" data-bs-toggle="modal" data-bs-target="#filterModal">
-                    <i class="fas fa-filter me-2"></i>
-                    Filter
-                </button>
-            </div>
-        </div>
 
-        <!-- Stats Overview -->
-        <div class="stats-overview-section">
-            <div class="stats-grid">
-                <div class="stat-card available-stat">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="availableCount">0</div>
-                        <div class="stat-label">Available Items</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card low-stock-stat">
-                    <div class="stat-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="lowStockCount">0</div>
-                        <div class="stat-label">Low Stock Items</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card expiring-stat">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-times"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="expiringCount">0</div>
-                        <div class="stat-label">Expiring Soon</div>
-                    </div>
-                </div>
-                
-                <div class="stat-card total-stat">
-                    <div class="stat-icon">
-                        <i class="fas fa-cubes"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="totalCount">0</div>
-                        <div class="stat-label">Total Ingredients</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Ingredients Table -->
         <div class="ingredients-table-section">
@@ -163,192 +85,8 @@ include('header.php');
     padding: 2rem 0;
 }
 
-.page-header-enhanced {
-    background: linear-gradient(135deg, #8B4543 0%, #A65D5D 50%, #8B4543 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 20px;
-    margin-bottom: 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 30px rgba(139, 69, 67, 0.2);
-}
 
-.page-header-enhanced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%);
-    pointer-events: none;
-}
 
-.header-left-content {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    position: relative;
-    z-index: 2;
-}
-
-.page-icon-container {
-    position: relative;
-}
-
-.page-icon {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: white;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.icon-pulse-effect {
-    position: absolute;
-    width: 70px;
-    height: 70px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.1);
-    animation: pagePulse 3s ease-in-out infinite;
-}
-
-@keyframes pagePulse {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.15); opacity: 0.2; }
-}
-
-.page-title {
-    font-size: 2.2rem;
-    font-weight: 800;
-    margin: 0;
-    color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.page-subtitle {
-    font-size: 1.1rem;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-}
-
-.header-actions-enhanced {
-    display: flex;
-    gap: 1rem;
-    position: relative;
-    z-index: 2;
-}
-
-.action-btn {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-}
-
-.action-btn:hover {
-    background: rgba(255, 255, 255, 0.35);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.stats-overview-section {
-    margin-bottom: 2rem;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.stat-card {
-    background: white;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 6px 25px rgba(139, 69, 67, 0.08);
-    border: 1px solid rgba(139, 69, 67, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(139, 69, 67, 0.15);
-}
-
-.stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: white;
-    flex-shrink: 0;
-}
-
-.available-stat .stat-icon {
-    background: linear-gradient(135deg, #28a745, #20c997);
-}
-
-.low-stock-stat .stat-icon {
-    background: linear-gradient(135deg, #ffc107, #ffb300);
-}
-
-.expiring-stat .stat-icon {
-    background: linear-gradient(135deg, #fd7e14, #e55353);
-}
-
-.total-stat .stat-icon {
-    background: linear-gradient(135deg, #8B4543, #A65D5D);
-}
-
-.stat-content {
-    flex: 1;
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #2c3e50;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-}
-
-.stat-label {
-    color: #6c757d;
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
 
 .ingredients-table-section {
     margin-bottom: 2rem;
@@ -749,30 +487,25 @@ include('header.php');
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .page-header-enhanced {
-        flex-direction: column;
-        gap: 1.5rem;
-        text-align: center;
-    }
-    
-    .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-    }
-    
     .ingredients-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .header-actions-enhanced {
-        width: 100%;
-        justify-content: center;
     }
     
     .card-actions {
         flex-direction: column;
 
     }
+}
+
+/* Hide spinner arrows for number inputs */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.no-spinner[type=number] {
+    -moz-appearance: textfield;
 }
 </style>
 
@@ -796,7 +529,6 @@ function loadAvailableIngredients() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                updateStats(data.stats);
                 displayIngredients(data.ingredients);
                 
                 // Update page title with branch info
@@ -822,12 +554,6 @@ function loadAvailableIngredients() {
         });
 }
 
-function updateStats(stats) {
-    document.getElementById('availableCount').textContent = stats.available || 0;
-    document.getElementById('lowStockCount').textContent = stats.low_stock || 0;
-    document.getElementById('expiringCount').textContent = stats.expiring || 0;
-    document.getElementById('totalCount').textContent = stats.total || 0;
-}
 
 function displayIngredients(ingredients) {
     const cardView = document.getElementById('ingredientsGrid');
@@ -965,20 +691,6 @@ function switchView(viewType) {
     }
 }
 
-function refreshIngredients() {
-    const btn = document.querySelector('.refresh-btn');
-    const originalText = btn.innerHTML;
-    
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Refreshing...';
-    btn.disabled = true;
-    
-    loadAvailableIngredients();
-    
-    setTimeout(() => {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }, 2000);
-}
 
 // Adjust Quantity Function
 function adjustQuantity(ingredientId, ingredientName, currentQuantity, unit) {
@@ -1002,7 +714,7 @@ function submitQuantityAdjustment() {
     const notes = document.getElementById('adjustNotes').value;
     
     // Validate inputs
-    if (!newQuantity || newQuantity < 0) {
+    if (newQuantity === '' || newQuantity === null || newQuantity < 0) {
         Swal.fire({
             icon: 'error',
             title: 'Invalid Quantity',
@@ -1112,7 +824,9 @@ function submitQuantityAdjustment() {
                         <div class="mb-3">
                             <label for="adjustNewQuantity" class="form-label fw-bold">New Quantity <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="number" class="form-control" id="adjustNewQuantity" min="0" step="0.01" required>
+                                <input type="number" class="form-control no-spinner" id="adjustNewQuantity" min="0" step="1" required
+                                       oninput="this.value = Math.round(this.value)"
+                                       onpaste="setTimeout(() => this.value = Math.round(parseFloat(this.value) || 0), 0)">
                                 <span class="input-group-text" id="adjustUnit"></span>
                             </div>
                         </div>

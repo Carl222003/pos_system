@@ -28,10 +28,16 @@ try {
     // Validate required fields
     $required_fields = ['ingredient_id', 'new_quantity', 'reason'];
     foreach ($required_fields as $field) {
-        if (!isset($input[$field]) || empty($input[$field])) {
+        if (!isset($input[$field]) || ($field !== 'new_quantity' && empty($input[$field]))) {
             echo json_encode(['success' => false, 'message' => "Missing required field: $field"]);
             exit();
         }
+    }
+    
+    // Special validation for new_quantity (allow 0)
+    if (!isset($input['new_quantity']) || $input['new_quantity'] === '' || $input['new_quantity'] === null) {
+        echo json_encode(['success' => false, 'message' => "Missing required field: new_quantity"]);
+        exit();
     }
     
     $user_id = $_SESSION['user_id'];
@@ -95,21 +101,18 @@ try {
         $stmt->execute([$user_id, 'quantity_adjustment', $log_message, $_SERVER['REMOTE_ADDR']]);
         
         // Create stock movement log entry
-        $movement_type = $quantity_change > 0 ? 'adjustment_increase' : ($quantity_change < 0 ? 'adjustment_decrease' : 'adjustment_no_change');
+        $movement_type = 'adjustment';
         $movement_quantity = abs($quantity_change);
         
         if ($movement_quantity > 0) {
-            $stmt = $pdo->prepare("INSERT INTO stock_movements (ingredient_id, movement_type, quantity_before, quantity_after, quantity_moved, reason, notes, user_id, branch_id, movement_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+            $stmt = $pdo->prepare("INSERT INTO stock_movements (ingredient_id, branch_id, movement_type, quantity, reason, performed_by, movement_date) VALUES (?, ?, ?, ?, ?, ?, NOW())");
             $stmt->execute([
                 $ingredient_id,
+                $branch_id,
                 $movement_type,
-                $old_quantity,
-                $new_quantity,
                 $movement_quantity,
-                $reason,
-                $notes,
-                $user_id,
-                $branch_id
+                $reason . ($notes ? " - Notes: " . $notes : ""),
+                $user_id
             ]);
         }
         

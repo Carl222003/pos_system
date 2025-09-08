@@ -28,9 +28,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$id]);
             $archived = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($archived) {
-                $update = $pdo->prepare("UPDATE pos_category SET status = 'active' WHERE category_id = ?");
-                $update->execute([$archived['original_id']]);
-                debug_log('Restored pos_category.status to active for category_id=' . $archived['original_id']);
+                // Check if the original category still exists
+                $checkOriginal = $pdo->prepare("SELECT category_id FROM pos_category WHERE category_id = ?");
+                $checkOriginal->execute([$archived['original_id']]);
+                
+                if ($checkOriginal->fetch()) {
+                    // Original category exists, just update its status
+                    $update = $pdo->prepare("UPDATE pos_category SET status = 'active' WHERE category_id = ?");
+                    $update->execute([$archived['original_id']]);
+                    debug_log('Restored pos_category.status to active for category_id=' . $archived['original_id']);
+                } else {
+                    // Original category doesn't exist, recreate it
+                    $recreate = $pdo->prepare("INSERT INTO pos_category (category_id, category_name, description, status) VALUES (?, ?, ?, 'active')");
+                    $recreate->execute([$archived['original_id'], $archived['category_name'], $archived['description']]);
+                    debug_log('Recreated pos_category for category_id=' . $archived['original_id']);
+                }
+                
                 $pdo->prepare('DELETE FROM archive_category WHERE archive_id = ?')->execute([$id]);
                 debug_log('Deleted from archive_category where archive_id=' . $id);
                 if ($admin_id) {
@@ -64,7 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $admin_id
                 ]);
                 debug_log('Inserted into archive_category: ' . json_encode([$category['category_id'], $category['category_name'], $desc, 'archived', $admin_id]));
-                $pdo->prepare('UPDATE pos_category SET status = ? WHERE category_id = ?')->execute(['archived', $id]);
+                // Update the status to 'inactive' instead of 'archived' since the table might not have 'archived' as ENUM value
+                $pdo->prepare('UPDATE pos_category SET status = ? WHERE category_id = ?')->execute(['inactive', $id]);
                 debug_log('Updated pos_category.status to archived for category_id=' . $id);
                 if ($admin_id) {
                     logActivity($pdo, $admin_id, 'Archived Category', 'Category: ' . $category['category_name'] . ' (ID: ' . $category['category_id'] . ')');

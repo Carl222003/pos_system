@@ -52,37 +52,43 @@ include('header.php');
 .table {
     margin-bottom: 0;
     border-collapse: separate;
-    border-spacing: 0 8px;
+    border-spacing: 0;
 }
 
 .table thead th {
-    background-color: var(--hover-color);
-    border: none;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: var(--text-dark);
     font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-    color: var(--primary-color);
-    padding: 1rem;
-    white-space: nowrap;
+    border: none;
+    padding: 1rem 0.75rem;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .table tbody tr {
-    background: white;
-    box-shadow: 0 2px 4px rgba(139, 69, 67, 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .table tbody tr:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(139, 69, 67, 0.1);
     background: var(--hover-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.1);
 }
 
-.table tbody td {
-    padding: 1rem;
+.table tbody tr td {
     border: none;
-    background: transparent;
+    border-bottom: 1px solid rgba(139, 69, 67, 0.1);
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+}
+
+.table tbody tr:first-child td {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+.table tbody tr:last-child td {
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
 }
 
 .table tbody tr td:first-child {
@@ -95,47 +101,55 @@ include('header.php');
     border-bottom-right-radius: 0.5rem;
 }
 
+/* Table Section Styles */
+.table-section {
+    margin-bottom: 2rem;
+}
+
+.table-section h5 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.table-section h5 i {
+    margin-right: 0.5rem;
+}
+
+.completed-section h5 {
+    color: #28a745;
+    border-bottom-color: #28a745;
+}
+
 /* Filter Chips Styles */
 .filter-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.375rem 0.75rem;
-    background: white;
-    color: #8B4543;
-    border: 1.5px solid #8B4543;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.filter-chip:hover {
-    background: #8B4543;
+    background: var(--primary-color);
     color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.2);
+    border-radius: 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0.25rem;
+    box-shadow: 0 2px 4px rgba(139, 69, 67, 0.2);
 }
 
 .filter-chip .remove-filter {
-    background: none;
+    background: rgba(255, 255, 255, 0.2);
     border: none;
-    color: inherit;
-    font-size: 0.8rem;
-    cursor: pointer;
-    padding: 0;
-    width: 16px;
-    height: 16px;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    font-size: 0.75rem;
+    cursor: pointer;
     transition: all 0.2s ease;
-}
-
-.filter-chip:hover .remove-filter {
-    background: rgba(255, 255, 255, 0.2);
 }
 
 .filter-chip .remove-filter:hover {
@@ -143,9 +157,285 @@ include('header.php');
     transform: scale(1.1);
 }
 
-/* Animation for filter chips */
-.filter-chip {
+/* Enhanced Filter Panel */
+.enhanced-filter-panel {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(139, 69, 67, 0.1);
+}
+
+.filter-section {
+    margin-bottom: 1.5rem;
+}
+
+.filter-section:last-child {
+    margin-bottom: 0;
+}
+
+.filter-section h6 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.filter-section h6 i {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+.form-control, .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 69, 67, 0.3);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #5a2e2c 100%);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+}
+
+/* Badge Styles */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%) !important;
+}
+
+.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
+}
+
+.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%) !important;
+}
+
+.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+}
+
+/* Action Button Styles */
+.action-menu-btn {
+    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
+    border: none;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.3);
+}
+
+.action-menu-btn:hover {
+    background: linear-gradient(135deg, #723937 0%, #5a2e2c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 69, 67, 0.4);
+    color: white;
+}
+
+/* Enhanced Manage Modal */
+.enhanced-manage-modal {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 20px 60px rgba(139, 69, 67, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.manage-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.enhanced-manage-modal .btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.enhanced-manage-modal .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+}
+
+.enhanced-manage-modal .btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.enhanced-manage-modal .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    background: linear-gradient(135deg, #e83e8c 0%, #6f42c1 100%);
+}
+
+/* Force modal visibility */
+#manageRequestModal.show {
+    display: block !important;
+}
+#manageRequestModal.modal.show {
+    display: block !important;
+}
+
+/* Enhanced Modal Styling - Matching Design System */
+.request-details-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.08);
+}
+
+
+/* Ingredient item styling */
+.ingredient-item {
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+    background: #ffffff;
+}
+
+.ingredient-item:hover {
+    border-color: #8B4543;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.1);
+}
+
+.ingredient-item.selected {
+    border-color: #8B4543;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.15);
+}
+
+.ingredient-info {
+    flex: 1;
+}
+
+.ingredient-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+/* Ensure proper spacing for stock badge */
+.ingredient-item .ms-3 {
+    margin-left: 1rem !important;
+}
+
+/* Stock input field styling */
+.stock-input {
+    min-width: 150px !important;
+    text-align: center !important;
+    font-weight: 600 !important;
+    cursor: default !important;
+}
+
+.stock-input:focus {
+    box-shadow: none !important;
+    border-color: inherit !important;
+}
+
+
+.detail-item {
+    margin-bottom: 1rem;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #8B4543;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.detail-value {
+    color: #495057;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.action-selection-section {
+    background: #ffffff;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.08);
+}
+
+.rejection-notes-section {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid #feb2b2;
     animation: slideIn 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
 }
 
 @keyframes slideIn {
@@ -159,780 +449,283 @@ include('header.php');
     }
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .filter-chip {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-    }
-    
-    #activeFiltersContainer {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
+#rejectionNotes {
+    border: 2px solid #dc3545;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    background: #ffffff;
 }
 
-/* Enhanced Status Update Modal Styles */
-.enhanced-status-modal {
+#rejectionNotes:focus {
+    border-color: #8B4543;
+    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25);
+}
+
+.form-text {
+    color: #8B4543;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    opacity: 0.8;
+}
+
+/* Enhanced Button Styling to Match Design System */
+.approve-request-modal {
+    background: linear-gradient(135deg, #28a745, #20c997);
     border: none;
+    border-radius: 0.5rem;
+    padding: 12px 24px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    transition: all 0.2s ease;
+}
+
+.approve-request-modal:hover {
+    background: linear-gradient(135deg, #218838, #1ea085);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.reject-request-modal {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 12px 24px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    transition: all 0.2s ease;
+}
+
+.reject-request-modal:hover {
+    background: linear-gradient(135deg, #c82333, #a71e2a);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+#confirmRejectBtn {
+    background: linear-gradient(135deg,rgb(247, 0, 25), #c82333);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 10px 20px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    transition: all 0.2s ease;
+}
+
+#confirmRejectBtn:hover {
+    background: linear-gradient(135deg, #c82333, #a71e2a);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+#cancelRejectBtn {
+    background: linear-gradient(135deg, #6c757d, #8B4543);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 10px 20px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    transition: all 0.2s ease;
+}
+
+#cancelRejectBtn:hover {
+    background: linear-gradient(135deg, #5a6268, #7a3d3b);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+/* Section Title Styling */
+.text-primary {
+    color: #8B4543 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Ingredient Checklist Styles */
+.ingredient-checklist {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+}
+
+.ingredient-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.ingredient-item:hover {
+    border-color: #8B4543;
+    box-shadow: 0 2px 8px rgba(139, 69, 67, 0.1);
+}
+
+.ingredient-item:last-child {
+    margin-bottom: 0;
+}
+
+.ingredient-checkbox {
+    margin-right: 1rem;
+    transform: scale(1.2);
+}
+
+.ingredient-checkbox:checked + .ingredient-info {
+    color: #8B4543;
+    font-weight: 600;
+}
+
+.ingredient-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ingredient-name {
+    font-weight: 500;
+    color: #495057;
+}
+
+.ingredient-quantity {
+    background: #8B4543;
+    color: white;
+    padding: 0.25rem 0.75rem;
     border-radius: 1rem;
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
+    font-size: 0.875rem;
+    font-weight: 600;
 }
 
-.enhanced-status-modal .modal-header {
-    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
-    border: none;
-    padding: 2rem;
+.ingredient-item.selected {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-color: #8B4543;
+}
+
+.ingredient-item.selected .ingredient-name {
+    color: #8B4543;
+    font-weight: 600;
+}
+
+/* Select All/Deselect All Buttons */
+#selectAllIngredients, #deselectAllIngredients {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+#selectAllIngredients:hover {
+    background: #8B4543;
+    border-color: #8B4543;
     color: white;
 }
 
-.enhanced-status-modal .modal-header .status-icon {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    backdrop-filter: blur(10px);
+#deselectAllIngredients:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
 }
 
-.enhanced-status-modal .modal-title {
-    font-weight: 700;
-    font-size: 1.4rem;
+/* Modal Header Enhancement */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #8B4543, #a05252) !important;
 }
 
-.enhanced-status-modal .modal-body {
-    padding: 2rem;
-}
-
-.enhanced-status-modal .modal-footer {
-    border-top: 1px solid #e9ecef;
-    padding: 1.5rem 2rem;
-    background: #f8f9fa;
-}
-
-/* Section Headers */
-.section-header {
-    display: flex;
-    align-items: center;
+.bg-gradient-primary .modal-title {
+    color: white !important;
     font-weight: 600;
-    color: #495057;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e9ecef;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.section-header i {
-    color: #8B4543;
-    font-size: 1.1rem;
+.bg-gradient-primary .text-white-50 {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
 }
 
-/* Status Options */
-.status-options {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.status-option {
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 1rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.status-option:hover {
-    border-color: #8B4543;
-    background: #f8f9fa;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 69, 67, 0.1);
-}
-
-.status-option.selected {
-    border-color: #8B4543;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    box-shadow: 0 4px 12px rgba(139, 69, 67, 0.15);
-}
-
-.status-radio {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.status-input {
-    display: none;
-}
-
-.status-label {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    width: 100%;
-    margin: 0;
-}
-
-.status-icon-approved,
-.status-icon-rejected {
+.manage-icon {
     width: 40px;
     height: 40px;
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: white;
     font-size: 1.2rem;
-    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.status-icon-approved {
-    background: linear-gradient(135deg, #4A7C59 0%, #5a9c62 100%);
-}
-
-
-
-.status-icon-rejected {
-    background: linear-gradient(135deg, #B33A3A 0%, #dc3545 100%);
-}
-
-.status-content {
-    flex: 1;
-}
-
-.status-title {
-    font-weight: 600;
-    color: #495057;
-    font-size: 1.1rem;
-    margin-bottom: 0.25rem;
-}
-
-.status-description {
-    color: #6c757d;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-/* Notes Section */
-.notes-section {
-    margin-top: 2rem;
-}
-
-.enhanced-textarea {
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 1rem;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    resize: vertical;
-}
-
-.enhanced-textarea:focus {
-    border-color: #8B4543;
-    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25);
-    outline: none;
-}
-
-.enhanced-textarea.text-warning {
-    border-color: #ffc107;
-    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
-}
-
-.enhanced-textarea.text-danger {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-}
-
-.textarea-counter {
-    text-align: right;
-    color: #6c757d;
-    font-size: 0.8rem;
-    margin-top: 0.5rem;
-}
-
-/* Buttons */
-.btn-update-status {
-    background: linear-gradient(135deg, #8B4543 0%, #723937 100%);
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-update-status:hover:not(:disabled) {
-    background: linear-gradient(135deg, #723937 0%, #5a2e2c 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(139, 69, 67, 0.3);
-}
-
-.btn-update-status:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-outline-secondary {
-    border: 2px solid #6c757d;
-    color: #6c757d;
-    background: transparent;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-secondary:hover {
-    background: #6c757d;
-    color: white;
-    transform: translateY(-1px);
-}
-
-/* Animation for status selection */
-.status-option {
-    position: relative;
-    overflow: hidden;
-}
-
-.status-option::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(139, 69, 67, 0.1), transparent);
-    transition: left 0.5s ease;
-}
-
-.status-option:hover::before {
-    left: 100%;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .enhanced-status-modal .modal-body {
-        padding: 1.5rem;
-    }
-    
-    .enhanced-status-modal .modal-footer {
-        padding: 1rem 1.5rem;
-    }
-    
-    .status-options {
-        gap: 0.75rem;
-    }
-    
-    .status-option {
-        padding: 0.75rem;
-    }
-}
-
-/* Search and Length Menu */
-.dataTables_wrapper {
-    padding: 1.5rem;
-}
-
-/* Hide the "Show" dropdown */
+/* Hide the "Show" dropdown and search */
 .dataTables_length {
     display: none !important;
 }
 
-.dataTables_length select {
-    padding: 0.5rem 2.5rem 0.5rem 1rem;
-    font-size: 0.875rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    background-color: white;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238B4543' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 1rem;
-    transition: all 0.2s ease;
-}
-
-.dataTables_length select:hover {
-    border-color: var(--primary-color);
-}
-
 .dataTables_filter {
-    text-align: left !important;
-    margin-bottom: 0.5rem;
-    margin-top: 0.5rem;
-    padding-left: 0;
+    display: none !important;
 }
 
-.dataTables_filter label {
-    display: inline-block;
-    margin-right: 0.5rem;
-    vertical-align: middle;
-    font-weight: 500;
-    color: var(--text-dark);
-}
-
-.dataTables_filter input {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    background-color: white;
-    min-width: 280px;
-    max-width: 320px;
-    transition: all 0.2s ease;
-}
-
-.dataTables_filter input:focus {
-    border-color: var(--primary-color);
-    outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25);
-}
-
-/* Pagination */
-.dataTables_paginate {
-    margin-top: 1.5rem;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.dataTables_paginate .paginate_button {
-    min-width: 36px;
-    height: 36px;
-    padding: 0;
-    margin: 0 1px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.35rem;
-    border: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-dark) !important;
-    background-color: white;
-    transition: all 0.2s ease;
-}
-
-.dataTables_paginate .paginate_button:hover {
-    color: var(--primary-color) !important;
-    background: var(--hover-color);
-    border: none;
-}
-
-.dataTables_paginate .paginate_button.current {
-    background: var(--primary-color);
-    color: white !important;
-    border: none;
-    font-weight: 600;
-}
-
-.dataTables_paginate .paginate_button.disabled {
-    color: var(--border-color) !important;
-    border-color: var(--border-color);
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-/* Ensure pagination buttons are clickable when enabled */
-.dataTables_paginate .paginate_button:not(.disabled) {
-    cursor: pointer;
-    opacity: 1;
-}
-
-.dataTables_paginate .paginate_button:not(.disabled):hover {
-    color: var(--primary-color) !important;
-    background: var(--hover-color);
-    border-color: var(--primary-color);
-    transform: translateY(-1px);
-}
-
-/* Buttons */
-.btn-success {
-    background: var(--success-color);
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    font-weight: 500;
-    color: white;
-    transition: all 0.2s ease;
-}
-
-.btn-success:hover {
-    background: darken(var(--success-color), 10%);
-    transform: translateY(-1px);
-    box-shadow: 0 0.15rem 1.75rem 0 rgba(74, 124, 89, 0.15);
-}
-
-/* Status Badges */
-.badge {
-    padding: 0.5rem 1rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 0.35rem;
-}
-
-.badge.bg-success {
-    background: var(--success-color) !important;
-    color: white;
-}
-
-.badge.bg-danger {
-    background: var(--danger-color) !important;
-    color: white;
-}
-
-.badge.bg-warning {
-    background: var(--warning-color) !important;
-    color: white;
-}
-
-/* Action Buttons */
-.btn-group .btn, .btn {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-    border-radius: 0.35rem;
-    margin: 0 0.125rem;
-    border: none;
-    transition: all 0.2s ease;
-}
-
-.btn-warning {
-    background: var(--warning-color);
-    color: white;
-}
-
-.btn-warning:hover {
-    background: darken(var(--warning-color), 10%);
-    transform: translateY(-1px);
-    box-shadow: 0 0.15rem 1.75rem 0 rgba(196, 128, 77, 0.15);
-}
-
-.btn-danger {
-    background: var(--danger-color);
-    color: white;
-}
-
-.btn-danger:hover {
-    background: darken(var(--danger-color), 10%);
-    transform: translateY(-1px);
-    box-shadow: 0 0.15rem 1.75rem 0 rgba(179, 58, 58, 0.15);
-}
-
-.btn-primary {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--primary-dark);
-    border-color: var(--primary-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 0.15rem 1.75rem 0 rgba(139, 69, 67, 0.15);
-}
-
-/* Form Controls */
-.form-select, .form-control {
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-}
-
-.form-select:focus, .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25);
-}
-
-/* Modal Styling */
-.modal-content {
-    border: none;
-    border-radius: 0.75rem;
-    box-shadow: 0 0.15rem 1.75rem 0 rgba(139, 69, 67, 0.15);
-}
-
-.modal-header {
-    background: var(--primary-color);
-    color: var(--text-light);
-    border: none;
-    padding: 1.5rem;
-    border-radius: 0.75rem 0.75rem 0 0;
-}
-
-.modal-header .btn-close {
-    color: var(--text-light);
-    opacity: 0.8;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.modal-footer {
-    background-color: var(--hover-color);
-    border-top: 1px solid var(--border-color);
-    padding: 1.25rem;
-    border-radius: 0 0 0.75rem 0.75rem;
-}
-
-/* Info Text */
-.dataTables_info {
-    color: var(--text-dark);
-    font-size: 0.875rem;
-    padding-top: 1.5rem;
-}
-
-/* Breadcrumb */
-.breadcrumb {
-    padding: 0.75rem 1rem;
-    background: var(--hover-color);
-    border-radius: 0.35rem;
-    margin-bottom: 1.5rem;
-}
-
-.breadcrumb-item a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.breadcrumb-item.active {
-    color: var(--text-dark);
-}
-
-/* Page Title */
-h1 {
-    color: var(--text-dark);
-    font-weight: 400;
-    margin-bottom: 1.5rem;
-}
-
-/* Filter Controls */
-.form-select-sm {
-    padding: 0.4rem 2rem 0.4rem 0.75rem;
-    font-size: 0.875rem;
-}
-
-.gap-2 {
-    gap: 0.5rem !important;
-}
-
-.big-section-title {
-    color: #8B4543;
-    font-size: 2.5rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 0.5rem;
-    margin-top: 0.5rem;
-    letter-spacing: 0.5px;
-}
-.big-section-icon {
-    font-size: 2.5rem;
-    color: #8B4543;
-    display: flex;
-    align-items: center;
-}
-.big-section-underline {
-    border: none;
-    border-top: 5px solid #e5d6d6;
-    margin-top: -10px;
-    margin-bottom: 20px;
-    width: 100%;
-}
-
-/* Enhanced Filter Panel Styles */
-#ingredientFilterPanel {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    border: 1px solid #e0e0e0;
-    background: #fff;
-    z-index: 1050;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-/* Ensure filter panel is always visible */
+/* Responsive Design */
 @media (max-width: 768px) {
-    #ingredientFilterPanel {
-        position: fixed !important;
-        left: 50% !important;
-        top: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 90vw !important;
-        max-width: 400px !important;
-        max-height: 80vh !important;
-        overflow-y: auto !important;
+    .card-header {
+        padding: 1rem;
     }
-}
-
-#ingredientFilterPanel .form-label {
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-}
-
-#ingredientFilterPanel .form-select,
-#ingredientFilterPanel .form-control {
-    font-size: 0.875rem;
-    border-radius: 0.5rem;
-    border: 1px solid #d1d5db;
-}
-
-#ingredientFilterPanel .form-select:focus,
-#ingredientFilterPanel .form-control:focus {
-    border-color: #8B4543;
-    box-shadow: 0 0 0 0.2rem rgba(139, 69, 67, 0.25);
-}
-
-#customDateRange {
-    background: #f8f9fa;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid #e9ecef;
-}
-
-#ingredientFilterBtn {
-    transition: all 0.2s ease;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    background: white !important;
-    color: #8B4543 !important;
-}
-
-#ingredientFilterBtn span {
-    color: #8B4543 !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    line-height: 1 !important;
-}
-
-#ingredientFilterBtn:hover {
-    background: #8B4543 !important;
-    color: white !important;
-    transform: translateY(-1px);
-}
-
-#ingredientFilterBtn:hover span {
-    color: white !important;
+    
+    .table thead th,
+    .table tbody tr td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .enhanced-filter-panel {
+        padding: 1rem;
+    }
 }
 </style>
 
 <div class="container-fluid px-4">
-    <div class="big-section-title">
-      <span class="big-section-icon"><i class="fas fa-list"></i></span>
-      List of Request Ingredients
-    </div>
-    <hr class="big-section-underline">
     <div class="row">
         <div class="col-12">
-            <div class="card mb-4">
+            <div class="card">
                 <div class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h5 class="mb-0">
-                                <i class="fas fa-clipboard-list me-1"></i>
-                                Branch Ingredient Requests
-                            </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock me-3"></i>
+                            <h5 class="mb-0">Pending Requests</h5>
                         </div>
-                        <div class="col-auto">
-                            <div class="d-flex align-items-center gap-2" style="position: relative;">
-                                <button id="ingredientFilterBtn" class="btn btn-outline-secondary d-flex align-items-center gap-2" style="border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(139,69,67,0.08); border: 1.5px solid #8B4543; color: #8B4543; font-weight: 600; transition: background 0.18s, color 0.18s; min-width: 120px; justify-content: center;" title="Show Filters">
-                                    <i class="fas fa-filter" style="color: #8B4543;"></i>
-                                    <span style="font-size: 14px; font-weight: 600;">Filter</span>
-                                </button>
-                                <div id="activeFiltersContainer" class="d-flex align-items-center gap-2 ms-2" style="display: none;">
-                                    <!-- Individual filter chips will be displayed here -->
-                                </div>
-                                <div id="ingredientFilterPanel" class="card shadow-sm p-3" style="display: none; position: absolute; left: 0; top: 100%; min-width: 400px; z-index: 1050; border-radius: 1rem; border: 1px solid #e0e0e0; background: #fff; margin-top: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="mb-0" style="color: #8B4543; font-weight: 600;">Filter Options</h6>
-                                        <button type="button" class="btn-close" id="closeFilterPanel" style="font-size: 0.8rem;"></button>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label for="filterBranchSelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Branch</label>
-                                        <select id="filterBranchSelect" class="form-select">
-                                            <option value="">All Branches</option>
-                                            <!-- Branch options will be loaded dynamically -->
-                                        </select>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label for="filterDateSelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Date</label>
-                                        <select id="filterDateSelect" class="form-select">
-                                            <option value="">All Dates</option>
-                                            <option value="today">Today</option>
-                                            <option value="yesterday">Yesterday</option>
-                                            <option value="this_week">This Week</option>
-                                            <option value="this_month">This Month</option>
-                                            <option value="custom">Custom Range</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-2" id="customDateRange" style="display: none;">
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <label for="filterDateFrom" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">From</label>
-                                                <input type="date" id="filterDateFrom" class="form-control">
-                                            </div>
-                                            <div class="col-6">
-                                                <label for="filterDateTo" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">To</label>
-                                                <input type="date" id="filterDateTo" class="form-control">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label for="filterIngredientSelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Ingredient</label>
-                                        <select id="filterIngredientSelect" class="form-select">
-                                            <option value="">All Ingredients</option>
-                                            <!-- Ingredient options will be loaded dynamically -->
-                                        </select>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label for="filterStatusSelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Request Status</label>
-                                        <select id="filterStatusSelect" class="form-select">
-                                            <option value="">All Request Status</option>
-                                            <option value="pending">Pending</option>
-                                            <option value="approved">Approved</option>
-                                            <option value="rejected">Rejected</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label for="filterDeliveryStatusSelect" class="form-label mb-1" style="color: #8B4543; font-weight: 500;">Delivery Status</label>
-                                                                <select id="filterDeliveryStatusSelect" class="form-select">
-                            <option value="">All Delivery Status</option>
-                            <option value="received">Received</option>
-                        </select>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        <button id="applyIngredientFilter" class="btn btn-primary flex-fill" style="background: #8B4543; border: none; border-radius: 0.7rem; font-weight: 600;">Apply Filter</button>
-                                        <button id="resetIngredientFilter" class="btn btn-outline-secondary" style="border: 1.5px solid #6c757d; border-radius: 0.7rem; font-weight: 600;">Reset</button>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <button id="ingredientFilterBtn" class="btn btn-outline-secondary d-flex align-items-center gap-2" style="border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(139,69,67,0.08); border: 1.5px solid #8B4543; color: #8B4543; font-weight: 600; transition: background 0.18s, color 0.18s; min-width: 120px; justify-content: center;" title="Show Filters">
+                                <i class="fas fa-filter" style="color: #8B4543;"></i>
+                                <span style="font-size: 14px; font-weight: 600;">Filter</span>
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="requestsTable" class="table table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Branch</th>
-                                    <th>Date Requested</th>
-                                    <th>Ingredients</th>
-                                    <th>Request Status</th>
-                                    <th>Delivery Status</th>
-                                    <th>Notes</th>
-                                    <th>Updated By</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                        </table>
+                                         <!-- Pending Requests Table -->
+                     <div class="table-section completed-section">
+                        <div class="table-responsive">
+                            <table id="completedRequestsTable" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Branch</th>
+                                        <th>Date Requested</th>
+                                        <th>Ingredients</th>
+                                        <th>Request Status</th>
+                                        <th>Delivery Status</th>
+                                        <th>Notes</th>
+                                        <th>Updated By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -940,134 +733,226 @@ h1 {
     </div>
 </div>
 
-<!-- Enhanced Status Update Modal -->
-<div class="modal fade" id="statusModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content enhanced-status-modal">
+<!-- Enhanced Filter Panel -->
+<div class="enhanced-filter-panel" id="ingredientFilterPanel" style="display: none;">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="filter-section">
+                <h6><i class="fas fa-building"></i>Branch</h6>
+                <select class="form-select" id="filterBranchSelect">
+                    <option value="">All Branches</option>
+                    <?php
+                    $branchStmt = $pdo->query("SELECT branch_id, branch_name FROM pos_branch WHERE status = 'active' ORDER BY branch_name");
+                    while ($branch = $branchStmt->fetch(PDO::FETCH_ASSOC)) {
+                        echo "<option value='{$branch['branch_id']}'>{$branch['branch_name']}</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="filter-section">
+                <h6><i class="fas fa-tasks"></i>Request Status</h6>
+                <select class="form-select" id="filterStatusSelect">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="filter-section">
+                <h6><i class="fas fa-carrot"></i>Ingredient</h6>
+                <select class="form-select" id="filterIngredientSelect">
+                    <option value="">All Ingredients</option>
+                    <?php
+                    $ingredientStmt = $pdo->query("SELECT ingredient_id, ingredient_name FROM ingredients WHERE ingredient_status = 'active' ORDER BY ingredient_name");
+                    while ($ingredient = $ingredientStmt->fetch(PDO::FETCH_ASSOC)) {
+                        echo "<option value='{$ingredient['ingredient_id']}'>{$ingredient['ingredient_name']}</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="filter-section">
+                <h6><i class="fas fa-truck"></i>Delivery Status</h6>
+                <select class="form-select" id="filterDeliveryStatusSelect">
+                    <option value="">All Delivery Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="on_delivery">On Delivery</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="returned">Returned</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="filter-section">
+                <h6><i class="fas fa-calendar"></i>Date Range</h6>
+                <select class="form-select" id="filterDateSelect">
+                    <option value="">All Dates</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="this_week">This Week</option>
+                    <option value="this_month">This Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+                <div id="customDateRange" style="display: none; margin-top: 1rem;">
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">From:</label>
+                            <input type="date" class="form-control" id="filterDateFrom">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">To:</label>
+                            <input type="date" class="form-control" id="filterDateTo">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-secondary" id="clearFiltersBtn">
+            <i class="fas fa-times me-2"></i>Clear All
+        </button>
+        <button class="btn btn-primary" id="applyFiltersBtn">
+            <i class="fas fa-check me-2"></i>Apply Filters
+        </button>
+    </div>
+</div>
+
+<!-- Active Filters Display -->
+<div id="activeFiltersContainer" class="mb-3" style="display: none;">
+    <h6 class="mb-2">Active Filters:</h6>
+    <div id="activeFilters"></div>
+</div>
+
+<!-- Enhanced Manage Request Modal -->
+<div class="modal fade" id="manageRequestModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content enhanced-manage-modal">
             <div class="modal-header bg-gradient-primary">
                 <div class="d-flex align-items-center">
-                    <div class="status-icon me-3">
-                        <i class="fas fa-clipboard-check"></i>
+                    <div class="manage-icon me-3">
+                        <i class="fas fa-clipboard-list"></i>
                     </div>
                     <div>
-                        <h5 class="modal-title mb-0">Update Request Status</h5>
-                        <small class="text-light opacity-75">Review and update ingredient request status</small>
+                        <h5 class="modal-title mb-0">Manage Request</h5>
+                        <small class="text-white-50">Choose an action for this ingredient request</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="statusForm">
-                    <input type="hidden" id="requestId">
-                    
-                    <!-- Status Selection Section -->
-                    <div class="status-section mb-4">
-                        <div class="section-header">
-                            <i class="fas fa-flag me-2"></i>
-                            <span>Request Status</span>
-                        </div>
-                        <div class="status-options">
-                            <div class="status-option" data-status="approved">
-                                <div class="status-radio">
-                                    <input type="radio" name="requestStatus" id="statusApproved" value="approved" class="status-input">
-                                    <label for="statusApproved" class="status-label">
-                                        <div class="status-icon-approved">
-                                            <i class="fas fa-check-circle"></i>
-                                        </div>
-                                        <div class="status-content">
-                                            <div class="status-title">Approve</div>
-                                            <div class="status-description">Grant approval for this request</div>
-                                        </div>
-                                    </label>
-                                </div>
+                <!-- Request Details Section -->
+                <div class="request-details-section mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-info-circle me-2"></i>Request Information
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <label class="detail-label">Branch:</label>
+                                <span class="detail-value" id="modalBranchName">-</span>
                             </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <label class="detail-label">Date Requested:</label>
+                                <span class="detail-value" id="modalRequestDate">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <label class="detail-label">Ingredients:</label>
+                                <div class="detail-value" id="modalIngredients">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="status-option" data-status="rejected">
-                                <div class="status-radio">
-                                    <input type="radio" name="requestStatus" id="statusRejected" value="rejected" class="status-input">
-                                    <label for="statusRejected" class="status-label">
-                                        <div class="status-icon-rejected">
-                                            <i class="fas fa-times-circle"></i>
-                                        </div>
-                                        <div class="status-content">
-                                            <div class="status-title">Reject</div>
-                                            <div class="status-description">Decline this request</div>
-                                        </div>
-                                    </label>
-                                </div>
+                <!-- Ingredient Selection Section -->
+                <div class="ingredient-selection-section mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-list-check me-2"></i>Select Ingredients to Approve
+                    </h6>
+                    <div class="mb-3">
+                        <p class="mb-3">Choose which ingredients to approve from this request:</p>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">Select ingredients to approve</small>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllIngredients">
+                                    <i class="fas fa-check-double me-1"></i>Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllIngredients">
+                                    <i class="fas fa-times me-1"></i>Deselect All
+                                </button>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Notes Section -->
-                    <div class="notes-section">
-                        <div class="section-header">
-                            <i class="fas fa-comment-alt me-2"></i>
-                            <span>Additional Notes</span>
-                        </div>
-                        <div class="form-group">
-                            <textarea 
-                                class="form-control enhanced-textarea" 
-                                id="statusNotes" 
-                                rows="4" 
-                                placeholder="Enter any additional notes, reasons for approval/rejection, or special instructions..."
-                            ></textarea>
-                            <div class="textarea-counter">
-                                <span id="notesCounter">0</span>/500 characters
-                            </div>
-                        </div>
+                    <div id="ingredientChecklist" class="ingredient-checklist">
+                        <!-- Ingredient checkboxes will be populated here -->
                     </div>
-                </form>
+                </div>
+
+                <!-- Action Selection Section -->
+                <div class="action-selection-section mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-cogs me-2"></i>Choose Action
+                    </h6>
+                <div class="text-center mb-3">
+                    <p class="mb-3">What would you like to do with the selected ingredients?</p>
+                </div>
+                <div class="mb-3">
+                    <label for="adminNotes" class="form-label">
+                        <i class="fas fa-sticky-note me-2"></i>Admin Notes <span id="notesRequiredIndicator" class="text-muted">(Optional)</span>
+                    </label>
+                    <textarea class="form-control" id="adminNotes" rows="3" placeholder="Add any specific reasons or comments for this request..."></textarea>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Use this field to explain your approval decisions or provide additional context.
+                    </small>
+                </div>
+                    <div class="d-grid gap-3">
+                        <button type="button" class="btn btn-success btn-lg approve-request-modal" id="approveRequestBtn" disabled>
+                            <i class="fas fa-check me-2"></i>Approve Selected Ingredients
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg reject-request-modal" id="rejectRequestBtn">
+                            <i class="fas fa-times me-2"></i>Reject Entire Request
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rejection Notes Section (Hidden by default) -->
+                <div class="rejection-notes-section" id="rejectionNotesSection" style="display: none;">
+                    <h6 class="text-danger mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Rejection Reason
+                    </h6>
+                    <div class="mb-3">
+                        <label for="rejectionNotes" class="form-label">Please provide a reason for rejection:</label>
+                        <textarea class="form-control" id="rejectionNotes" rows="3" placeholder="Enter the reason for rejecting this request..."></textarea>
+                        <div class="form-text">This note will be visible to the branch manager.</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-danger" id="confirmRejectBtn">
+                            <i class="fas fa-times me-2"></i>Confirm Rejection
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancelRejectBtn">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Actions
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>Cancel
-                </button>
-                <button type="button" class="btn btn-primary btn-update-status" id="updateStatus" disabled>
-                    <i class="fas fa-save me-1"></i>Update Status
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delivery Status Update Modal -->
-<div class="modal fade" id="deliveryModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-truck me-1"></i>
-                    Update Delivery Status
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="deliveryForm">
-                    <input type="hidden" id="deliveryRequestId">
-                    <div class="mb-3">
-                        <label class="form-label">Delivery Status</label>
-                        <select class="form-select" id="deliveryStatus">
-                            <option value="delivered">Delivered</option>
-                            <option value="returned">Returned</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Delivery Date</label>
-                        <input type="datetime-local" class="form-control" id="deliveryDate">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Delivery Notes</label>
-                        <textarea class="form-control" id="deliveryNotes" rows="3" placeholder="Enter delivery notes, return reasons, or cancellation details..."></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-info" id="updateDelivery">
-                    <i class="fas fa-save me-1"></i>
-                    Update Delivery
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
                 </button>
             </div>
         </div>
@@ -1076,95 +961,8 @@ h1 {
 
 <script>
 $(document).ready(function() {
-    // Load branches dynamically
-    function loadBranches() {
-        $.ajax({
-            url: 'get_branches.php',
-            method: 'GET',
-            success: function(response) {
-                if (response.success) {
-                    const branchFilter = $('#filterBranchSelect');
-                    // Keep the "All Branches" option
-                    branchFilter.find('option:not([value=""])').remove();
-                    
-                    // Add branch options
-                    response.data.forEach(function(branch) {
-                        branchFilter.append(`<option value="${branch.branch_id}">${branch.branch_name} (${branch.branch_code})</option>`);
-                    });
-                } else {
-                    console.error('Failed to load branches:', response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading branches:', error);
-            }
-        });
-    }
-    
-    // Load ingredients dynamically
-    function loadIngredients() {
-        console.log('🔄 Loading ingredients...');
-        $.ajax({
-            url: 'get_all_ingredients.php',
-            method: 'GET',
-            success: function(response) {
-                console.log('📦 Ingredients response:', response);
-                if (response.success && response.data) {
-                    const ingredientFilter = $('#filterIngredientSelect');
-                    // Keep the "All Ingredients" option
-                    ingredientFilter.find('option:not([value=""])').remove();
-                    
-                    console.log(`✅ Found ${response.data.length} ingredients`);
-                    
-                    // Add ingredient options
-                    response.data.forEach(function(ingredient) {
-                        ingredientFilter.append(`<option value="${ingredient.ingredient_id}">${ingredient.ingredient_name}</option>`);
-                    });
-                    
-                    // Filter button text remains as "Filter"
-                    // No need to show ingredient count
-                } else {
-                    console.error('❌ Failed to load ingredients:', response.message || 'Unknown error');
-                    // Show error in the filter
-                    const ingredientFilter = $('#filterIngredientSelect');
-                    ingredientFilter.find('option:not([value=""])').remove();
-                    ingredientFilter.append('<option value="" disabled>Error loading ingredients</option>');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('❌ Error loading ingredients:', error);
-                console.error('Response:', xhr.responseText);
-                
-                // Show error in the filter
-                const ingredientFilter = $('#filterIngredientSelect');
-                ingredientFilter.find('option:not([value=""])').remove();
-                ingredientFilter.append('<option value="" disabled>Error loading ingredients</option>');
-            }
-        });
-    }
-    
-    // Load branches and ingredients when page loads
-    loadBranches();
-    loadIngredients();
-    
-    // Add change event listeners to update filter chips
-    $('#filterBranchSelect, #filterDateSelect, #filterIngredientSelect, #filterStatusSelect, #filterDeliveryStatusSelect').on('change', function() {
-        updateActiveFilterIndicator();
-    });
-    
-    // Special handling for custom date inputs
-    $('#filterDateFrom, #filterDateTo').on('change', function() {
-        updateActiveFilterIndicator();
-    });
-    
-    // Event delegation for remove filter buttons
-    $(document).on('click', '.remove-filter', function() {
-        const filterType = $(this).data('filter-type');
-        removeFilter(filterType);
-    });
-    
-    // Initialize DataTable
-    const table = $('#requestsTable').DataTable({
+    // Initialize Completed Requests DataTable
+    const completedTable = $('#completedRequestsTable').DataTable({
         processing: true,
         serverSide: false, // Client-side processing
         pageLength: 5, // Show only 5 records per page to force pagination
@@ -1177,23 +975,25 @@ $(document).ready(function() {
             type: 'POST',
             data: function(d) {
                 d.branch = $('#filterBranchSelect').val();
-                d.status = $('#filterStatusSelect').val();
+                d.status = 'pending'; // Show only pending requests that need action
                 d.ingredient = $('#filterIngredientSelect').val();
                 d.delivery_status = $('#filterDeliveryStatusSelect').val();
                 d.date_filter = $('#filterDateSelect').val();
                 d.date_from = $('#filterDateFrom').val();
                 d.date_to = $('#filterDateTo').val();
-                console.log('DataTable AJAX request:', d);
+                d.table_type = 'completed'; // Add table type identifier
+                console.log('Completed DataTable AJAX request:', d);
             },
             dataSrc: function(json) {
-                console.log('DataTable AJAX response:', json);
+                console.log('Completed DataTable AJAX response:', json);
                 console.log('Total records:', json.recordsTotal);
                 console.log('Filtered records:', json.recordsFiltered);
-                console.log('Data length:', json.data.length);
+                console.log('Data length:', json.data ? json.data.length : 0);
+                console.log('Sample data:', json.data ? json.data[0] : 'No data');
                 return json.data || [];
             },
             error: function(xhr, error, thrown) {
-                console.error('DataTable AJAX error:', error, thrown);
+                console.error('Completed DataTable AJAX error:', error, thrown);
                 console.error('Response:', xhr.responseText);
             }
         },
@@ -1260,20 +1060,20 @@ $(document).ready(function() {
             {
                 data: null,
                 render: function(data) {
+                    console.log('Rendering action buttons for request:', data);
                     let buttons = '';
+                    // For completed requests, show manage button for pending status
                     if (data.status === 'pending') {
-                        buttons += `<button class="btn btn-primary btn-sm update-status me-1" data-id="${data.request_id}" title="Update Status">
+                        buttons += `<button class="btn btn-secondary btn-sm action-menu-btn manage-request-btn" data-id="${data.request_id}" title="Manage Request">
                             <i class="fas fa-edit"></i>
                         </button>`;
-                    } else if (data.status === 'approved') {
-                        buttons += `<button class="btn btn-primary btn-sm update-status me-1" data-id="${data.request_id}" title="Update Status">
-                            <i class="fas fa-edit"></i>
+                    } else {
+                        // For approved/rejected, show view button
+                        buttons += `<button class="btn btn-info btn-sm view-request me-1" data-id="${data.request_id}" title="View Details">
+                            <i class="fas fa-eye"></i>
                         </button>`;
                     }
-                    // Add archive button for all requests
-                    buttons += `<button class="btn btn-secondary btn-sm archive-request" data-id="${data.request_id}" title="Archive">
-                        <i class="fas fa-box-archive"></i>
-                    </button>`;
+                    console.log('Generated button HTML:', buttons);
                     return buttons;
                 }
             }
@@ -1285,242 +1085,147 @@ $(document).ready(function() {
     (function() {
         var filterBtn = document.getElementById('ingredientFilterBtn');
         var filterPanel = document.getElementById('ingredientFilterPanel');
-        var applyBtn = document.getElementById('applyIngredientFilter');
-        var resetBtn = document.getElementById('resetIngredientFilter');
-        var closeBtn = document.getElementById('closeFilterPanel');
+        var applyBtn = document.getElementById('applyFiltersBtn');
+        var clearBtn = document.getElementById('clearFiltersBtn');
         var dateSelect = document.getElementById('filterDateSelect');
         var customDateRange = document.getElementById('customDateRange');
 
-        if (filterBtn && filterPanel && applyBtn && dateSelect && customDateRange) {
-            // Toggle filter panel
-            filterBtn.addEventListener('click', function(e) {
-                filterPanel.style.display = filterPanel.style.display === 'none' ? 'block' : 'none';
-                if (filterPanel.style.display === 'block') {
-                    // Ensure panel is visible
-                    adjustFilterPanelPosition();
-                    dateSelect.focus();
-                }
-                e.stopPropagation();
-            });
-
-            // Close filter panel
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    filterPanel.style.display = 'none';
-                });
-            }
-
-            // Handle date filter change
-            dateSelect.addEventListener('change', function() {
-                if (this.value === 'custom') {
-                    customDateRange.style.display = 'block';
-                } else {
-                    customDateRange.style.display = 'none';
-                }
-            });
-
-            // Apply filter
-            applyBtn.addEventListener('click', function() {
-                // Reload the DataTable with new filter values
-                $('#requestsTable').DataTable().ajax.reload();
+        // Toggle filter panel
+        filterBtn.addEventListener('click', function() {
+            if (filterPanel.style.display === 'none' || filterPanel.style.display === '') {
+                filterPanel.style.display = 'block';
+            } else {
                 filterPanel.style.display = 'none';
-                
-                // Show active filter indicator
-                updateActiveFilterIndicator();
-                
-                // Show success message
-                showFilterMessage('Filters applied successfully!', 'success');
-            });
-
-            // Reset filter
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    // Reset all filter values
-                    $('#filterBranchSelect').val('');
-                    $('#filterDateSelect').val('');
-                    $('#filterIngredientSelect').val('');
-                    $('#filterStatusSelect').val('');
-                    $('#filterDeliveryStatusSelect').val('');
-                    $('#filterDateFrom').val('');
-                    $('#filterDateTo').val('');
-                    $('#customDateRange').hide();
-                    
-                    // Reload the DataTable to show all data
-                    $('#requestsTable').DataTable().ajax.reload();
-                    
-                    // Close the filter panel
-                    filterPanel.style.display = 'none';
-                    
-                    // Update active filter indicator (this will hide it)
-                    updateActiveFilterIndicator();
-                    
-                    // Show reset message
-                    showFilterMessage('Filters reset successfully!', 'success');
-                });
             }
+        });
 
-            // Function to adjust filter panel position
-            function adjustFilterPanelPosition() {
-                var rect = filterBtn.getBoundingClientRect();
-                var panel = filterPanel;
-                
-                // Check if panel would go off-screen to the right
-                if (rect.left + 400 > window.innerWidth) {
-                    panel.style.left = 'auto';
-                    panel.style.right = '0';
-                } else {
-                    panel.style.left = '0';
-                    panel.style.right = 'auto';
-                }
-                
-                // Check if panel would go off-screen to the bottom
-                if (rect.bottom + 400 > window.innerHeight) {
-                    panel.style.top = 'auto';
-                    panel.style.bottom = '100%';
-                    panel.style.marginTop = '0';
-                    panel.style.marginBottom = '10px';
-                } else {
-                    panel.style.top = '100%';
-                    panel.style.bottom = 'auto';
-                    panel.style.marginTop = '10px';
-                    panel.style.marginBottom = '0';
-                }
+        // Close filter panel when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!filterBtn.contains(event.target) && !filterPanel.contains(event.target)) {
+                filterPanel.style.display = 'none';
             }
+        });
 
-            // Hide panel when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!filterPanel.contains(e.target) && e.target !== filterBtn) {
-                    filterPanel.style.display = 'none';
-                }
-            });
+        // Show/hide custom date range
+        dateSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customDateRange.style.display = 'block';
+            } else {
+                customDateRange.style.display = 'none';
+            }
+        });
 
-            // Prevent click inside panel from closing it
-            filterPanel.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
+        // Apply filter
+        applyBtn.addEventListener('click', function() {
+            // Reload the DataTable with new filter values
+            $('#completedRequestsTable').DataTable().ajax.reload();
+            filterPanel.style.display = 'none';
+            
+            // Show active filter indicator
+            updateActiveFilterIndicator();
+        });
 
-            // Adjust position on window resize
-            window.addEventListener('resize', function() {
-                if (filterPanel.style.display === 'block') {
-                    adjustFilterPanelPosition();
-                }
-            });
-        }
+        // Clear filters
+        clearBtn.addEventListener('click', function() {
+            // Reset all filter values
+            $('#filterBranchSelect').val('');
+            $('#filterIngredientSelect').val('');
+            $('#filterDeliveryStatusSelect').val('');
+            $('#filterDateSelect').val('');
+            $('#filterDateFrom').val('');
+            $('#filterDateTo').val('');
+            $('#customDateRange').hide();
+            
+            // Reload the DataTable to show all data
+            $('#completedRequestsTable').DataTable().ajax.reload();
+            
+            // Close the filter panel
+            filterPanel.style.display = 'none';
+            
+            // Update active filter indicator (this will hide it)
+            updateActiveFilterIndicator();
+        });
     })();
 
-    // Filter message function
-    function showFilterMessage(message, type = 'success') {
-        Swal.fire({
-            icon: type,
-            title: 'Filter Update',
-            text: message,
-            confirmButtonColor: '#8B4543',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-        });
-    }
-
-    // Update active filter indicator with individual chips
+    // Active filter indicator functions
     function updateActiveFilterIndicator() {
-        const container = $('#activeFiltersContainer');
-        container.empty();
+        const activeFilters = [];
         
-        let hasActiveFilters = false;
+        // Check each filter
+        const branch = $('#filterBranchSelect').val();
+        const ingredient = $('#filterIngredientSelect').val();
+        const deliveryStatus = $('#filterDeliveryStatusSelect').val();
+        const dateFilter = $('#filterDateSelect').val();
+        const dateFrom = $('#filterDateFrom').val();
+        const dateTo = $('#filterDateTo').val();
         
-        // Check Branch filter
-        const branchValue = $('#filterBranchSelect').val();
-        if (branchValue) {
-            const branchText = $('#filterBranchSelect option:selected').text();
-            container.append(createFilterChip('branch', branchText, branchValue));
-            hasActiveFilters = true;
+        if (branch) {
+            const branchName = $('#filterBranchSelect option:selected').text();
+            activeFilters.push({ type: 'branch', value: branch, text: branchName });
         }
         
-        // Check Date filter
-        const dateValue = $('#filterDateSelect').val();
-        if (dateValue) {
-            let dateText = $('#filterDateSelect option:selected').text();
-            if (dateValue === 'custom') {
-                const fromDate = $('#filterDateFrom').val();
-                const toDate = $('#filterDateTo').val();
-                if (fromDate || toDate) {
-                    dateText = `Custom: ${fromDate || 'Start'} - ${toDate || 'End'}`;
-                    container.append(createFilterChip('date', dateText, 'custom'));
-                    hasActiveFilters = true;
-                }
-            } else {
-                container.append(createFilterChip('date', dateText, dateValue));
-                hasActiveFilters = true;
+        if (ingredient) {
+            const ingredientName = $('#filterIngredientSelect option:selected').text();
+            activeFilters.push({ type: 'ingredient', value: ingredient, text: ingredientName });
+        }
+        
+        if (deliveryStatus) {
+            const deliveryStatusText = $('#filterDeliveryStatusSelect option:selected').text();
+            activeFilters.push({ type: 'delivery_status', value: deliveryStatus, text: deliveryStatusText });
+        }
+        
+        if (dateFilter) {
+            if (dateFilter === 'custom' && dateFrom && dateTo) {
+                activeFilters.push({ type: 'date', value: 'custom', text: `${dateFrom} to ${dateTo}` });
+            } else if (dateFilter !== 'custom') {
+                const dateText = $('#filterDateSelect option:selected').text();
+                activeFilters.push({ type: 'date', value: dateFilter, text: dateText });
             }
         }
         
-        // Check Ingredient filter
-        const ingredientValue = $('#filterIngredientSelect').val();
-        if (ingredientValue) {
-            const ingredientText = $('#filterIngredientSelect option:selected').text();
-            container.append(createFilterChip('ingredient', ingredientText, ingredientValue));
-            hasActiveFilters = true;
-        }
+        // Update display
+        const container = $('#activeFiltersContainer');
+        const filtersDiv = $('#activeFilters');
         
-        // Check Request Status filter
-        const statusValue = $('#filterStatusSelect').val();
-        if (statusValue) {
-            const statusText = $('#filterStatusSelect option:selected').text();
-            container.append(createFilterChip('request_status', statusText, statusValue));
-            hasActiveFilters = true;
-        }
-        
-        // Check Delivery Status filter
-        const deliveryStatusValue = $('#filterDeliveryStatusSelect').val();
-        if (deliveryStatusValue) {
-            const deliveryStatusText = $('#filterDeliveryStatusSelect option:selected').text();
-            container.append(createFilterChip('delivery_status', deliveryStatusText, deliveryStatusValue));
-            hasActiveFilters = true;
-        }
-        
-        // Show/hide container
-        if (hasActiveFilters) {
+        if (activeFilters.length > 0) {
+            filtersDiv.empty();
+            activeFilters.forEach(filter => {
+                const chip = $(`
+                    <span class="filter-chip">
+                        ${filter.text}
+                        <button class="remove-filter" data-filter-type="${filter.type}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                `);
+                filtersDiv.append(chip);
+            });
             container.show();
         } else {
             container.hide();
         }
     }
-    
-    // Create individual filter chip
-    function createFilterChip(type, text, value) {
-        return $(`
-            <div class="filter-chip" data-filter-type="${type}" data-filter-value="${value}">
-                <span>${text}</span>
-                <button class="remove-filter" data-filter-type="${type}" title="Remove ${text} filter">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `);
-    }
-    
+
     // Remove individual filter
     function removeFilter(filterType) {
-        console.log('🗑️ Removing filter:', filterType);
-        
         switch(filterType) {
             case 'branch':
-                $('#filterBranchSelect').val('').trigger('change');
+                $('#filterBranchSelect').val('');
+                break;
+            case 'status':
+                $('#filterStatusSelect').val('');
+                break;
+            case 'ingredient':
+                $('#filterIngredientSelect').val('');
+                break;
+            case 'delivery_status':
+                $('#filterDeliveryStatusSelect').val('');
                 break;
             case 'date':
-                $('#filterDateSelect').val('').trigger('change');
+                $('#filterDateSelect').val('');
                 $('#filterDateFrom').val('');
                 $('#filterDateTo').val('');
                 $('#customDateRange').hide();
-                break;
-            case 'ingredient':
-                $('#filterIngredientSelect').val('').trigger('change');
-                break;
-            case 'request_status':
-                $('#filterStatusSelect').val('').trigger('change');
-                break;
-            case 'delivery_status':
-                $('#filterDeliveryStatusSelect').val('').trigger('change');
                 break;
         }
         
@@ -1528,443 +1233,707 @@ $(document).ready(function() {
         updateActiveFilterIndicator();
         
         // Use the DataTable API to reload
-        if ($.fn.DataTable.isDataTable('#requestsTable')) {
-            $('#requestsTable').DataTable().ajax.reload();
+        if ($.fn.DataTable.isDataTable('#completedRequestsTable')) {
+            $('#completedRequestsTable').DataTable().ajax.reload();
         }
         
         console.log('✅ Filter removed and table refreshed');
     }
 
+    // Event delegation for remove filter buttons
+    $(document).on('click', '.remove-filter', function() {
+        const filterType = $(this).data('filter-type');
+        removeFilter(filterType);
+    });
+
     // Auto-refresh every 30 seconds to show new requests
     setInterval(function() {
-        table.ajax.reload(null, false); // false = stay on current page
+        completedTable.ajax.reload(null, false); // false = stay on current page
     }, 30000);
 
     // Manual refresh on page focus (when user comes back to tab)
     $(window).focus(function() {
-        table.ajax.reload(null, false);
+        completedTable.ajax.reload(null, false);
     });
 
-    // Add functionality to DataTable pagination buttons using proper event binding
-    function showPaginationMessage(message, type = 'info') {
-        Swal.fire({
-            icon: type,
-            title: 'Navigation',
-            text: message,
-            confirmButtonColor: '#8B4543',
-            timer: 2000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-        });
-    }
-
-    // Bind pagination events after table is drawn
-    table.on('draw.dt', function() {
-        // Remove existing event handlers to prevent duplicates
-        $('.paginate_button.previous').off('click');
-        $('.paginate_button.next').off('click');
-        
-        // Add event handlers for previous button
-        $('.paginate_button.previous').on('click', function(e) {
-            e.preventDefault();
-            if (!$(this).hasClass('disabled')) {
-                table.page('previous').draw('page');
-                showPaginationMessage('Previous page loaded');
-            } else {
-                showPaginationMessage('Already on first page', 'warning');
-            }
-        });
-        
-        // Add event handlers for next button
-        $('.paginate_button.next').on('click', function(e) {
-            e.preventDefault();
-            if (!$(this).hasClass('disabled')) {
-                table.page('next').draw('page');
-                showPaginationMessage('Next page loaded');
-            } else {
-                showPaginationMessage('Already on last page', 'warning');
-            }
-        });
-    });
-
-    // Force table redraw to ensure pagination is properly initialized
-    setTimeout(function() {
-        table.draw();
-        console.log('Table redrawn with pagination. Page info:', table.page.info());
-    }, 1000);
-
-    // Status update handler
-    $(document).on('click', '.update-status', function() {
+    // Manage request button handler
+    $(document).on('click', '.manage-request-btn', function() {
         const requestId = $(this).data('id');
-        $('#requestId').val(requestId);
-        $('#statusModal').modal('show');
-    });
-
-    // Archive request handler
-    $(document).on('click', '.archive-request', function() {
-        const requestId = $(this).data('id');
+        console.log('Manage request button clicked, request ID:', requestId);
         
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "This request will be archived and moved to the archive list.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#8B4543',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: '<i class="fas fa-box-archive me-2"></i>Yes, archive it!',
-            cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: 'archive_ingredient_request.php',
-                    method: 'POST',
-                    data: { request_id: requestId },
-                    success: function(response) {
-                        if (response.success) {
-                            table.ajax.reload();
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Archived!',
-                                text: 'Request has been archived successfully.',
-                                confirmButtonColor: '#8B4543'
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: response.message || 'Failed to archive request.',
-                                confirmButtonColor: '#8B4543'
-                            });
-                        }
-                    },
-                    error: function() {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'Failed to archive request. Please try again.',
-                            confirmButtonColor: '#8B4543'
-                        });
-                    }
-                });
+        // Get the row data
+        const row = completedTable.row($(this).closest('tr')).data();
+        console.log('Row data:', row);
+        
+        // Check if modal exists
+        const modal = $('#manageRequestModal');
+        console.log('Modal element found:', modal.length > 0);
+        
+        if (modal.length > 0) {
+            modal.data('request-id', requestId);
+            
+            // Populate modal with request details
+            $('#modalBranchName').text(row.branch_name || 'N/A');
+            $('#modalRequestDate').text(new Date(row.request_date).toLocaleString());
+            $('#modalIngredients').html(row.ingredients || 'N/A');
+            
+            // Clear the notes field
+            $('#adminNotes').val('');
+            
+            // Populate ingredient checklist
+            populateIngredientChecklist(row);
+            
+            // Reset modal state
+            $('#rejectionNotesSection').hide();
+            $('#rejectionNotes').val('');
+            $('.action-selection-section').show();
+            $('.ingredient-selection-section').show();
+            
+            // Try different ways to show the modal
+            try {
+                modal.modal('show');
+                console.log('Modal should be showing now');
+            } catch (error) {
+                console.error('Error showing modal:', error);
+                // Fallback: show alert
+                alert('Request ID: ' + requestId + '\nModal functionality needs to be fixed.');
             }
-        });
-    });
-
-    // Enhanced status modal functionality
-    $('.status-option').click(function() {
-        const status = $(this).data('status');
-        const radioId = 'status' + status.charAt(0).toUpperCase() + status.slice(1);
-        
-        // Update radio button selection
-        $('#' + radioId).prop('checked', true);
-        
-        // Update visual selection
-        $('.status-option').removeClass('selected');
-        $(this).addClass('selected');
-        
-        // Enable update button
-        $('#updateStatus').prop('disabled', false);
-    });
-    
-    // Character counter for notes
-    $('#statusNotes').on('input', function() {
-        const maxLength = 500;
-        const currentLength = $(this).val().length;
-        const remaining = maxLength - currentLength;
-        
-        $('#notesCounter').text(currentLength);
-        
-        if (currentLength > maxLength * 0.8) {
-            $(this).addClass('text-warning');
         } else {
-            $(this).removeClass('text-warning');
-        }
-        
-        if (currentLength > maxLength) {
-            $(this).addClass('text-danger');
-        } else {
-            $(this).removeClass('text-danger');
+            console.error('Modal element not found!');
+            alert('Modal element not found!');
         }
     });
-    
-    // Reset modal when opened
-    $('#statusModal').on('show.bs.modal', function() {
-        // Reset form
-        $('#statusForm')[0].reset();
+
+    // Function to populate ingredient checklist with stock information
+    function populateIngredientChecklist(row) {
+        const checklist = $('#ingredientChecklist');
+        checklist.empty();
         
-        // Reset visual selection
-        $('.status-option').removeClass('selected');
+        // Show loading state
+        checklist.html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin me-2"></i>Loading ingredient stock information...</div>');
         
-        // Reset character counter
-        $('#notesCounter').text('0');
-        
-        // Disable update button until status is selected
-        $('#updateStatus').prop('disabled', true);
-        
-        // Remove warning/error classes
-        $('#statusNotes').removeClass('text-warning text-danger');
-    });
-    
-    // Enhanced approval confirmation with inventory preview
-    function confirmApproval(requestId, ingredientsData) {
-        // Parse ingredients data
+        // Parse ingredients from the row data
         let ingredients = [];
         try {
-            ingredients = JSON.parse(ingredientsData);
-        } catch (e) {
-            console.error('Error parsing ingredients:', e);
-            return false;
-        }
-        
-        const title = 'Confirm Ingredient Request Approval';
-        const icon = 'warning';
-        const confirmButtonText = '<i class="fas fa-check me-2"></i>Approve Request';
-        const confirmButtonColor = '#28a745';
-        const actionDescription = 'You are about to approve this request. This will:';
-        const actionList = [
-            '<strong>Deduct</strong> the requested quantities from current inventory',
-            'Update ingredient statuses (Available/Low Stock/Out of Stock)',
-            'Log all stock movements for audit purposes'
-        ];
-        const noteText = '<strong>Note:</strong> This action cannot be undone. Please ensure you have sufficient stock before approving.';
-        
-        // Build confirmation message
-        let message = '<div class="text-start">';
-        message += `<h6 class="mb-3"><i class="fas fa-exclamation-triangle text-warning me-2"></i>${title}</h6>`;
-        message += `<p class="mb-3">${actionDescription}</p>`;
-        message += '<ul class="mb-3">';
-        actionList.forEach(item => {
-            message += `<li>${item}</li>`;
-        });
-        message += '</ul>';
-        
-        message += '<div class="alert alert-info">';
-        message += '<h6 class="mb-2"><i class="fas fa-list me-2"></i>Ingredients:</h6>';
-        message += '<div class="table-responsive">';
-        message += '<table class="table table-sm table-bordered mb-0">';
-        message += '<thead><tr><th>Ingredient</th><th>Quantity</th><th>Current Stock</th><th>After Action</th></tr></thead><tbody>';
-        
-        // Fetch current stock levels for each ingredient
-        ingredients.forEach(function(ingredient) {
-            const quantityClass = 'text-danger';
-            const quantityPrefix = '-';
-            const afterActionText = '[New Stock]';
-            
-            message += `<tr>
-                <td>${ingredient.ingredient_name || 'Ingredient ID: ' + ingredient.ingredient_id}</td>
-                <td class="${quantityClass}">${quantityPrefix}${ingredient.quantity}</td>
-                <td class="text-primary">[Current Stock]</td>
-                <td class="text-success">${afterActionText}</td>
-            </tr>`;
-        });
-        
-        message += '</tbody></table></div>';
-        message += '</div>';
-        
-        message += `<p class="text-danger mb-0">${noteText}</p>`;
-        message += '</div>';
-        
-        // Show confirmation dialog
-        return Swal.fire({
-            title: title,
-            html: message,
-            icon: icon,
-            showCancelButton: true,
-            confirmButtonColor: confirmButtonColor,
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: confirmButtonText,
-            cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
-            width: '600px',
-            customClass: {
-                popup: 'rounded-4'
-            }
-        });
-    }
-
-    // Enhanced approval function
-    function processRequestAction(requestId, ingredientsData) {
-        const actionText = 'Approval';
-        const loadingText = 'Processing Approval...';
-        const loadingDescription = 'Updating inventory and processing request...';
-        
-        confirmApproval(requestId, ingredientsData).then((result) => {
-            if (result.isConfirmed) {
-                // Show loading state
-                Swal.fire({
-                    title: loadingText,
-                    html: `<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary mb-3"></i><p>${loadingDescription}</p></div>`,
-                    allowOutsideClick: false,
-                    showConfirmButton: false
-                });
+            // Try to get ingredients from ingredients_raw if available
+            if (row.ingredients_raw) {
+                ingredients = JSON.parse(row.ingredients_raw);
+            } else if (row.ingredients) {
+                // Parse from ingredients string format
+                const ingredientText = row.ingredients;
+                console.log('Parsing ingredient text:', ingredientText);
                 
-                // Get notes if any
-                let notes = '';
-                const notesInput = document.querySelector(`#notes-${requestId}`);
-                if (notesInput) {
-                    notes = notesInput.value;
+                // Try multiple parsing patterns
+                let matches = [];
+                
+                // Pattern 1: "Ingredient Name (quantity unit)" format
+                matches = ingredientText.match(/([^(]+)\s*\((\d+)\s*(\w+)\)/g);
+                if (matches && matches.length > 0) {
+                    ingredients = matches.map(match => {
+                        const parts = match.match(/([^(]+)\s*\((\d+)\s*(\w+)\)/);
+                        return {
+                            ingredient_id: null, // Will be handled by backend
+                            ingredient_name: parts[1].trim().replace(/^,\s*/, ''), // Remove leading comma and spaces
+                            quantity: parts[2],
+                            unit: parts[3]
+                        };
+                    });
+                } else {
+                    // Pattern 2: "Unknown Ingredient (ID: X) - Y" format
+                    matches = ingredientText.match(/Unknown Ingredient \(ID: (\d+)\) - (\d+)/g);
+                    if (matches && matches.length > 0) {
+                        ingredients = matches.map(match => {
+                            const parts = match.match(/Unknown Ingredient \(ID: (\d+)\) - (\d+)/);
+                            return {
+                                ingredient_id: parts[1],
+                                ingredient_name: `Unknown Ingredient (ID: ${parts[1]})`.replace(/^,\s*/, ''), // Remove leading comma
+                                quantity: parts[2],
+                                unit: 'pieces'
+                            };
+                        });
+                    } else {
+                        // Pattern 3: Simple comma-separated format
+                        const simpleMatches = ingredientText.split(',').map(item => {
+                            const trimmed = item.trim().replace(/^,\s*/, ''); // Remove leading comma and spaces
+                            if (trimmed) {
+                                return {
+                                    ingredient_id: null,
+                                    ingredient_name: trimmed,
+                                    quantity: '1',
+                                    unit: 'pieces'
+                                };
+                            }
+                            return null;
+                        }).filter(item => item !== null);
+                        
+                        if (simpleMatches.length > 0) {
+                            ingredients = simpleMatches;
+                        }
+                    }
                 }
                 
-                // Process action
-                $.ajax({
-                    url: 'update_ingredient_request.php',
-                    type: 'POST',
-                    data: {
-                        request_id: requestId,
-                        status: actionType,
-                        notes: notes
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            const successIcon = 'success';
-                            const successTitle = 'Request Approved!';
-                            const successColor = '#28a745';
-                            
-                            Swal.fire({
-                                icon: successIcon,
-                                title: successTitle,
-                                text: response.message,
-                                confirmButtonColor: successColor,
-                                timer: 3000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                // Refresh the table
-                                $('#requestsTable').DataTable().ajax.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: `${actionText} Failed`,
-                                text: response.message,
-                                confirmButtonColor: '#dc3545'
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'System Error',
-                            text: `An error occurred while processing the ${actionText.toLowerCase()}. Please try again.`,
-                            confirmButtonColor: '#dc3545'
-                        });
-                    }
-                });
+                // Clean up ingredient names (remove any remaining commas and extra spaces)
+                ingredients = ingredients.map(ingredient => ({
+                    ...ingredient,
+                    ingredient_name: ingredient.ingredient_name.replace(/^,\s*/, '').replace(/,\s*$/, '').trim()
+                }));
+                
+                console.log('Parsed ingredients:', ingredients);
+            }
+        } catch (e) {
+            console.error('Error parsing ingredients:', e);
+        }
+        
+        if (ingredients.length === 0) {
+            checklist.html('<div class="text-center text-muted py-3">No ingredients found</div>');
+            return;
+        }
+        
+        // Fetch current stock information for all ingredients
+        fetchIngredientStock(ingredients, checklist);
+    }
+    
+    // Function to fetch stock information for ingredients
+    function fetchIngredientStock(ingredients, checklist) {
+        $.ajax({
+            url: 'get_current_stock.php',
+            type: 'GET',
+            dataType: 'json',
+            timeout: 10000,
+            success: function(response) {
+                console.log('Stock response:', response);
+                
+                if (response.success && response.ingredients) {
+                    // Create a map of ingredient stock data
+                    const stockMap = {};
+                    response.ingredients.forEach(stockItem => {
+                        stockMap[stockItem.ingredient_name] = {
+                            quantity: stockItem.ingredient_quantity,
+                            unit: stockItem.ingredient_unit,
+                            status: stockItem.ingredient_status
+                        };
+                    });
+                    
+                    // Debug logging
+                    console.log('Stock data received:', response.ingredients);
+                    console.log('Stock map created:', stockMap);
+                    console.log('Requested ingredients:', ingredients);
+                    
+                    // Create checklist items with stock information
+                    createChecklistItems(ingredients, stockMap, checklist);
+                } else {
+                    console.log('No stock data received or API failed');
+                    // Fallback: create checklist without stock info
+                    createChecklistItems(ingredients, {}, checklist);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching stock:', error);
+                // Fallback: create checklist without stock info
+                createChecklistItems(ingredients, {}, checklist);
             }
         });
     }
+    
+    // Function to create checklist items with stock information
+    function createChecklistItems(ingredients, stockMap, checklist) {
+        checklist.empty();
+        
+        ingredients.forEach((ingredient, index) => {
+            const stockInfo = stockMap[ingredient.ingredient_name] || { quantity: 0, unit: ingredient.unit || 'pieces', status: 'Unknown' };
+            const availableStock = stockInfo.quantity || 0;
+            const stockStatus = availableStock > 0 ? 'available' : 'unavailable';
+            const stockColor = availableStock > 0 ? 'success' : 'danger';
+            
+            // Debug logging for each ingredient
+            console.log(`Ingredient: ${ingredient.ingredient_name}, Stock found: ${stockInfo.quantity}, Status: ${stockInfo.status}`);
+            
+            const item = $(`
+                <div class="ingredient-item d-flex align-items-center">
+                    <input type="checkbox" class="ingredient-checkbox me-3" id="ingredient_${index}" 
+                           data-ingredient-id="${ingredient.ingredient_id || ''}" 
+                           data-ingredient-name="${ingredient.ingredient_name}"
+                           data-quantity="${ingredient.quantity}" 
+                           data-unit="${ingredient.unit || 'pieces'}">
+                    <div class="ingredient-info flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="ingredient-name">${ingredient.ingredient_name}</span>
+                                <br>
+                                <small class="text-muted">Requested: ${ingredient.quantity} ${ingredient.unit || 'pieces'}</small>
+                            </div>
+                            <div class="ms-3">
+                                <input type="text" class="form-control stock-input" 
+                                       value="Available: ${availableStock} ${stockInfo.unit}" 
+                                       readonly 
+                                       style="background-color: ${availableStock > 0 ? '#d1ecf1' : '#f8d7da'}; 
+                                              color: ${availableStock > 0 ? '#0c5460' : '#721c24'}; 
+                                              border-color: ${availableStock > 0 ? '#bee5eb' : '#f5c6cb'};
+                                              text-align: center;
+                                              font-weight: 600;
+                                              min-width: 150px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+            checklist.append(item);
+        });
+        
+        // Update approve button state
+        updateApproveButtonState();
+    }
+    
+    // Function to update approve button state
+    function updateApproveButtonState() {
+        const checkedIngredients = $('.ingredient-checkbox:checked').length;
+        const approveBtn = $('#approveRequestBtn');
+        
+        if (checkedIngredients > 0) {
+            approveBtn.prop('disabled', false);
+            approveBtn.html(`<i class="fas fa-check me-2"></i>Approve Selected Ingredients (${checkedIngredients})`);
+        } else {
+            approveBtn.prop('disabled', true);
+            approveBtn.html('<i class="fas fa-check me-2"></i>Approve Selected Ingredients');
+        }
+    }
+    
+    // Handle ingredient checkbox changes
+    $(document).on('change', '.ingredient-checkbox', function() {
+        const item = $(this).closest('.ingredient-item');
+        if ($(this).is(':checked')) {
+            item.addClass('selected');
+        } else {
+            item.removeClass('selected');
+        }
+        updateApproveButtonState();
+        updateNotesRequirement();
+    });
+    
+    // Function to update notes requirement based on ingredient selection
+    function updateNotesRequirement() {
+        const selectedCount = $('.ingredient-checkbox:checked').length;
+        const totalCount = $('.ingredient-checkbox').length;
+        const allSelected = selectedCount === totalCount;
+        
+        const notesIndicator = $('#notesRequiredIndicator');
+        const adminNotesField = $('#adminNotes');
+        
+        if (allSelected) {
+            // All ingredients selected - notes are optional
+            notesIndicator.text('(Optional)').removeClass('text-danger').addClass('text-muted');
+            // Clear auto-generated notes if all are selected
+            if (adminNotesField.val().includes('Not approved:')) {
+                adminNotesField.val('');
+            }
+        } else if (selectedCount > 0) {
+            // Some ingredients selected - notes are required
+            notesIndicator.text('(Required)').removeClass('text-muted').addClass('text-danger');
+            
+            // Auto-generate notes about unselected ingredients
+            const unselectedIngredients = [];
+            $('.ingredient-checkbox:not(:checked)').each(function() {
+                const ingredientName = $(this).data('ingredient-name');
+                const quantity = $(this).data('quantity');
+                const unit = $(this).data('unit');
+                unselectedIngredients.push(`${ingredientName} (${quantity} ${unit})`);
+            });
+            
+            if (unselectedIngredients.length > 0) {
+                const autoNotes = `Not approved: ${unselectedIngredients.join(', ')}. `;
+                const currentNotes = adminNotesField.val();
+                
+                // Only auto-populate if the field is empty or doesn't already contain auto-generated content
+                if (!currentNotes || !currentNotes.includes('Not approved:')) {
+                    adminNotesField.val(autoNotes);
+                }
+            }
+        } else {
+            // No ingredients selected - reset to optional
+            notesIndicator.text('(Optional)').removeClass('text-danger').addClass('text-muted');
+        }
+    }
+    
+    // Select all ingredients
+    $(document).on('click', '#selectAllIngredients', function() {
+        $('.ingredient-checkbox').prop('checked', true).trigger('change');
+        updateNotesRequirement();
+    });
+    
+    // Deselect all ingredients
+    $(document).on('click', '#deselectAllIngredients', function() {
+        $('.ingredient-checkbox').prop('checked', false).trigger('change');
+        updateNotesRequirement();
+    });
 
-    // Update status submission
-    $('#updateStatus').click(function() {
-        const requestId = $('#requestId').val();
-        const status = $('input[name="requestStatus"]:checked').val();
-        const notes = $('#statusNotes').val();
+    // Approve request handler
+    $(document).on('click', '.approve-request-modal', function() {
+        const requestId = $('#manageRequestModal').data('request-id');
+        console.log('Approve request clicked for ID:', requestId);
+        
+        if (!requestId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No request ID found',
+                confirmButtonColor: '#8B4543'
+            });
+            return;
+        }
 
-        if (status === 'approved') {
-            // Get ingredients data from the table row
-            const row = table.row(`[data-id="${requestId}"]`).data();
-            if (row && row.ingredients_raw) {
-                processRequestAction(requestId, row.ingredients_raw);
+        // Close the modal first
+        $('#manageRequestModal').modal('hide');
+        
+        // Show loading
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Approving request...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Get selected ingredients
+        const selectedIngredients = [];
+        $('.ingredient-checkbox:checked').each(function() {
+            selectedIngredients.push({
+                ingredient_id: $(this).data('ingredient-id') || null,
+                ingredient_name: $(this).data('ingredient-name'),
+                quantity: $(this).data('quantity'),
+                unit: $(this).data('unit')
+            });
+        });
+        
+        if (selectedIngredients.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Ingredients Selected',
+                text: 'Please select at least one ingredient to approve.',
+                confirmButtonColor: '#8B4543'
+            });
+            return;
+        }
+
+        // Check if all ingredients are selected
+        const totalIngredients = $('.ingredient-checkbox').length;
+        const allSelected = selectedIngredients.length === totalIngredients;
+        
+        // If not all ingredients are selected, require admin notes
+        if (!allSelected) {
+            const adminNotes = $('#adminNotes').val().trim();
+            if (!adminNotes) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Admin Notes Required',
+                    text: 'Since you are not approving all ingredients, please provide notes explaining why only selected ingredients are being approved.',
+                    confirmButtonColor: '#8B4543'
+                });
+                $('#adminNotes').focus();
                 return;
             }
         }
 
-        // For other statuses, proceed with normal update
+        // Send approval request with selected ingredients
+        // Get admin notes
+        const adminNotes = $('#adminNotes').val().trim();
+        
         $.ajax({
             url: 'update_ingredient_request.php',
-            method: 'POST',
+            type: 'POST',
             data: {
                 request_id: requestId,
-                status: status,
-                notes: notes
+                status: 'approved',
+                notes: adminNotes || 'Request approved',
+                selected_ingredients: JSON.stringify(selectedIngredients)
             },
             success: function(response) {
-                console.log(response);
+                console.log('Approval response:', response);
                 if (response.success) {
-                    $('#statusModal').modal('hide');
-                    table.ajax.reload();
-                    // Show success message using SweetAlert
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success!',
-                        text: 'Request status updated successfully',
-                        confirmButtonColor: '#8B4543'
+                        title: 'Request Approved!',
+                        text: response.message,
+                        confirmButtonColor: '#8B4543',
+                        timer: 3000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Refresh the table
+                        $('#completedRequestsTable').DataTable().ajax.reload();
                     });
                 } else {
-                    // Show error message using SweetAlert
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error!',
-                        text: response.message || 'Error updating status',
+                        title: 'Approval Failed',
+                        text: response.message,
                         confirmButtonColor: '#8B4543'
                     });
                 }
             },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', xhr.responseText);
-                // Show error message using SweetAlert
+            error: function() {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error!',
-                    text: 'Failed to update status. Please try again.',
+                    title: 'Error',
+                    text: 'Failed to approve request',
                     confirmButtonColor: '#8B4543'
                 });
             }
         });
     });
 
-    // Update delivery submission
-    $('#updateDelivery').click(function() {
-        const requestId = $('#deliveryRequestId').val();
-        const deliveryStatus = $('#deliveryStatus').val();
-        const deliveryDate = $('#deliveryDate').val();
-        const deliveryNotes = $('#deliveryNotes').val();
+    // Reject request handler - show notes section
+    $(document).on('click', '.reject-request-modal', function() {
+        // Hide action selection and show rejection notes section
+        $('.action-selection-section').hide();
+        $('#rejectionNotesSection').show();
+        $('#rejectionNotes').focus();
+    });
 
+    // Cancel reject handler - go back to actions
+    $(document).on('click', '#cancelRejectBtn', function() {
+        $('#rejectionNotesSection').hide();
+        $('.action-selection-section').show();
+        $('#rejectionNotes').val('');
+    });
+
+    // Confirm reject handler
+    $(document).on('click', '#confirmRejectBtn', function() {
+        const requestId = $('#manageRequestModal').data('request-id');
+        const rejectionNotes = $('#rejectionNotes').val().trim();
+        
+        console.log('Confirm reject clicked for ID:', requestId);
+        console.log('Rejection notes:', rejectionNotes);
+        
+        if (!requestId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No request ID found',
+                confirmButtonColor: '#8B4543'
+            });
+            return;
+        }
+
+        if (!rejectionNotes) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Notes Required',
+                text: 'Please provide a reason for rejecting this request.',
+                confirmButtonColor: '#8B4543'
+            });
+            $('#rejectionNotes').focus();
+            return;
+        }
+
+        // Close the modal first
+        $('#manageRequestModal').modal('hide');
+        
+        // Show loading
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Rejecting request...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Get admin notes from the main notes field
+        const adminNotes = $('#adminNotes').val().trim();
+        
+        // Combine rejection notes with admin notes
+        let combinedNotes = rejectionNotes;
+        if (adminNotes) {
+            combinedNotes = `REJECTION REASON: ${rejectionNotes}\n\nADMIN NOTES: ${adminNotes}`;
+        }
+        
+        // Send rejection request with notes
         $.ajax({
-            url: 'update_delivery_status.php',
-            method: 'POST',
+            url: 'update_ingredient_request.php',
+            type: 'POST',
             data: {
                 request_id: requestId,
-                delivery_status: deliveryStatus,
-                delivery_date: deliveryDate,
-                delivery_notes: deliveryNotes
+                status: 'rejected',
+                notes: combinedNotes
             },
             success: function(response) {
-                console.log(response);
+                console.log('Rejection response:', response);
                 if (response.success) {
-                    $('#deliveryModal').modal('hide');
-                    table.ajax.reload();
-                    // Show success message using SweetAlert
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success!',
-                        text: 'Delivery status updated successfully',
-                        confirmButtonColor: '#8B4543'
+                        title: 'Request Rejected!',
+                        text: response.message,
+                        confirmButtonColor: '#8B4543',
+                        timer: 3000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Refresh the table
+                        $('#completedRequestsTable').DataTable().ajax.reload();
                     });
                 } else {
-                    // Show error message using SweetAlert
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error!',
-                        text: response.message || 'Error updating delivery status',
+                        title: 'Rejection Failed',
+                        text: response.message,
                         confirmButtonColor: '#8B4543'
                     });
                 }
             },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', xhr.responseText);
-                // Show error message using SweetAlert
+            error: function() {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error!',
-                    text: 'Failed to update delivery status. Please try again.',
+                    title: 'Error',
+                    text: 'Failed to reject request',
                     confirmButtonColor: '#8B4543'
                 });
             }
         });
     });
+
+    // View request handler
+    $(document).on('click', '.view-request', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const requestId = $(this).data('id');
+        console.log('View request clicked:', requestId);
+        
+        // Fetch request details and show modal
+        fetch('get_ingredient_request_details.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ request_id: requestId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showViewRequestModal(data.request);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to load request details',
+                    confirmButtonColor: '#8B4543'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching request details:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load request details',
+                confirmButtonColor: '#8B4543'
+            });
+        });
+    });
+
+    // Function to show view request modal
+    function showViewRequestModal(request) {
+        const modalHtml = `
+            <div class="modal fade" id="viewRequestModal" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-eye me-2"></i>Request Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-building me-2"></i>Branch</h6>
+                                    <p class="text-muted">${request.branch_name || 'N/A'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-calendar me-2"></i>Request Date</h6>
+                                    <p class="text-muted">${new Date(request.request_date).toLocaleString()}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-tasks me-2"></i>Request Status</h6>
+                                    <span class="badge ${request.status === 'approved' ? 'bg-success' : request.status === 'rejected' ? 'bg-danger' : 'bg-warning'}">${request.status.toUpperCase()}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-truck me-2"></i>Delivery Status</h6>
+                                    <span class="badge ${request.delivery_status === 'delivered' ? 'bg-success' : request.delivery_status === 'cancelled' ? 'bg-danger' : request.delivery_status === 'returned' ? 'bg-warning' : 'bg-info'}">${request.delivery_status.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-user me-2"></i>Updated By</h6>
+                                    <p class="text-muted">${request.updated_by || 'N/A'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-clock me-2"></i>Last Updated</h6>
+                                    <p class="text-muted">${request.updated_at ? new Date(request.updated_at).toLocaleString() : 'N/A'}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6><i class="fas fa-carrot me-2"></i>Requested Ingredients</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Ingredient</th>
+                                                    <th>Quantity</th>
+                                                    <th>Unit</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${request.ingredients ? request.ingredients.map(ingredient => `
+                                                    <tr>
+                                                        <td>${ingredient.ingredient_name || 'Unknown Ingredient'}</td>
+                                                        <td>${ingredient.quantity || 'N/A'}</td>
+                                                        <td>${ingredient.unit || 'N/A'}</td>
+                                                    </tr>
+                                                `).join('') : '<tr><td colspan="3" class="text-center text-muted">No ingredients found</td></tr>'}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            ${request.delivery_notes ? `
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6><i class="fas fa-sticky-note me-2"></i>Delivery Notes</h6>
+                                    <p class="text-muted">${request.delivery_notes}</p>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        $('#viewRequestModal').remove();
+        
+        // Add modal to body
+        $('body').append(modalHtml);
+        
+        // Show modal
+        $('#viewRequestModal').modal('show');
+        
+        // Remove modal from DOM when hidden
+        $('#viewRequestModal').on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    }
 });
 </script>
 
-<?php include('footer.php'); ?> 
+<?php include('footer.php'); ?>

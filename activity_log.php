@@ -8,49 +8,130 @@ if ($_SESSION['user_type'] !== 'Admin') {
     exit();
 }
 
-// Fetch activity logs
-$sql = "SELECT l.*, u.user_name FROM pos_activity_log l JOIN pos_user u ON l.user_id = u.user_id ORDER BY l.created_at DESC LIMIT 200";
-$stmt = $pdo->prepare($sql);
-$stmt->execute();
-$logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Pagination parameters
+$itemsPerPage = 5;
+$currentTab = isset($_GET['tab']) ? $_GET['tab'] : 'users';
+$currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($currentPage - 1) * $itemsPerPage;
+
+// Function to get logs for specific category with pagination
+function getLogsForCategory($pdo, $category, $itemsPerPage, $offset) {
+    $sql = "SELECT l.*, u.user_name FROM pos_activity_log l JOIN pos_user u ON l.user_id = u.user_id ORDER BY l.created_at DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $allLogs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Filter logs by category
+    $filteredLogs = [];
+    foreach ($allLogs as $log) {
+        $action = strtolower($log['action'] . ' ' . $log['details']);
+        $belongsToCategory = false;
+        
+        switch ($category) {
+            case 'users':
+                $belongsToCategory = (
+                    strpos($action, 'user') !== false ||
+                    strpos($action, 'added cashier') !== false ||
+                    strpos($action, 'added stockman') !== false ||
+                    strpos($action, 'login') !== false ||
+                    strpos($action, 'logout') !== false
+                );
+                break;
+            case 'products':
+                $belongsToCategory = (
+                    strpos($action, 'product') !== false &&
+                    strpos($action, 'ingredient') === false
+                );
+                break;
+            case 'categories':
+                $belongsToCategory = strpos($action, 'category') !== false;
+                break;
+            case 'branches':
+                $belongsToCategory = (
+                    (strpos($action, 'assigned branch') !== false) ||
+                    (strpos($action, 'archived branch') !== false) ||
+                    (strpos($action, 'restored branch') !== false) ||
+                    (strpos($action, 'created branch') !== false) ||
+                    (strpos($action, 'updated branch') !== false) ||
+                    (strpos($action, 'deleted branch') !== false) ||
+                    (strpos($action, 'branch management') !== false) ||
+                    (strpos($action, 'branch settings') !== false) ||
+                    (strpos($action, 'branch configuration') !== false)
+                );
+                break;
+            case 'ingredients':
+                $belongsToCategory = (
+                    strpos($action, 'ingredient') !== false ||
+                    strpos($action, 'request') !== false ||
+                    strpos($action, 'stock') !== false ||
+                    strpos($action, 'delivery') !== false ||
+                    strpos($action, 'approved') !== false ||
+                    strpos($action, 'rejected') !== false
+                );
+                break;
+            case 'others':
+                $belongsToCategory = !(
+                    strpos($action, 'user') !== false ||
+                    strpos($action, 'added cashier') !== false ||
+                    strpos($action, 'added stockman') !== false ||
+                    strpos($action, 'login') !== false ||
+                    strpos($action, 'logout') !== false ||
+                    strpos($action, 'product') !== false ||
+                    strpos($action, 'category') !== false ||
+                    strpos($action, 'assigned branch') !== false ||
+                    strpos($action, 'archived branch') !== false ||
+                    strpos($action, 'restored branch') !== false ||
+                    strpos($action, 'created branch') !== false ||
+                    strpos($action, 'updated branch') !== false ||
+                    strpos($action, 'deleted branch') !== false ||
+                    strpos($action, 'branch management') !== false ||
+                    strpos($action, 'branch settings') !== false ||
+                    strpos($action, 'branch configuration') !== false ||
+                    strpos($action, 'ingredient') !== false ||
+                    strpos($action, 'request') !== false ||
+                    strpos($action, 'stock') !== false ||
+                    strpos($action, 'delivery') !== false ||
+                    strpos($action, 'approved') !== false ||
+                    strpos($action, 'rejected') !== false
+                );
+                break;
+        }
+        
+        if ($belongsToCategory) {
+            $filteredLogs[] = $log;
+        }
+    }
+    
+    $totalLogs = count($filteredLogs);
+    $totalPages = ceil($totalLogs / $itemsPerPage);
+    $paginatedLogs = array_slice($filteredLogs, $offset, $itemsPerPage);
+    
+    return [
+        'logs' => $paginatedLogs,
+        'totalLogs' => $totalLogs,
+        'totalPages' => $totalPages
+    ];
+}
+
+// Get logs for current tab
+$tabData = getLogsForCategory($pdo, $currentTab, $itemsPerPage, $offset);
+$logs = $tabData['logs'];
+$totalLogs = $tabData['totalLogs'];
+$totalPages = $tabData['totalPages'];
 
 // Fetch categories for the filter
 $categoryStmt = $pdo->query("SELECT category_name FROM pos_category WHERE status = 'active' ORDER BY category_name");
 $categories = $categoryStmt->fetchAll(PDO::FETCH_COLUMN);
 
-// Helper to group logs by entity
-function groupLogsByTable($logs) {
-    $groups = [
-        'Users' => [],
-        'Products' => [],
-        'Categories' => [],
-        'Branches' => [],
-        'Ingredients' => [],
-        'Others' => []
-    ];
-    foreach ($logs as $log) {
-        $action = strtolower($log['action'] . ' ' . $log['details']);
-        if (
-            strpos($action, 'user') !== false ||
-            strpos($action, 'added cashier') !== false ||
-            strpos($action, 'added stockman') !== false
-        ) {
-            $groups['Users'][] = $log;
-        } elseif (strpos($action, 'product') !== false) {
-            $groups['Products'][] = $log;
-        } elseif (strpos($action, 'category') !== false) {
-            $groups['Categories'][] = $log;
-        } elseif (strpos($action, 'branch') !== false) {
-            $groups['Branches'][] = $log;
-        } elseif (strpos($action, 'ingredient') !== false) {
-            $groups['Ingredients'][] = $log;
-        } else {
-            $groups['Others'][] = $log;
-        }
-    }
-    return $groups;
-}
-$groupedLogs = groupLogsByTable($logs);
+// Define tab categories
+$tabCategories = [
+    'users' => 'Users',
+    'products' => 'Products', 
+    'categories' => 'Categories',
+    'branches' => 'Branches',
+    'ingredients' => 'Ingredients',
+    'others' => 'Others'
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -216,6 +297,90 @@ $groupedLogs = groupLogsByTable($logs);
             padding: 0 4px;
         }
     }
+    
+    /* Scrollable table container */
+    .table-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #e0e0e0;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .table-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .table-container::-webkit-scrollbar-thumb {
+        background: #8B4543;
+        border-radius: 4px;
+    }
+    
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #6b3432;
+    }
+    
+    /* Pagination styles */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 1rem;
+        gap: 0.5rem;
+    }
+    
+    .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        gap: 0.25rem;
+    }
+    
+    .pagination .page-item {
+        margin: 0;
+    }
+    
+    .pagination .page-link {
+        color: #8B4543;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        padding: 0.5rem 0.75rem;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+    
+    .pagination .page-link:hover {
+        color: #fff;
+        background-color: #8B4543;
+        border-color: #8B4543;
+    }
+    
+    .pagination .page-item.active .page-link {
+        color: #fff;
+        background-color: #8B4543;
+        border-color: #8B4543;
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #e0e0e0;
+        cursor: not-allowed;
+    }
+    
+    .pagination-info {
+        color: #8B4543;
+        font-weight: 500;
+        margin: 0 1rem;
+    }
     </style>
 </head>
 <body>
@@ -224,38 +389,38 @@ $groupedLogs = groupLogsByTable($logs);
     <h2 class="activity-log-title"><span class="log-icon"><i class="fas fa-clipboard-list"></i></span>Activity Log</h2>
     <div class="activity-log-card">
         <ul class="nav nav-tabs mb-3" id="logTabs" role="tablist">
+            <?php foreach ($tabCategories as $tabKey => $tabName): ?>
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab"><i class="fas fa-user activity-icon"></i>Users</button>
+                <a class="nav-link <?= $currentTab === $tabKey ? 'active' : '' ?>" href="?tab=<?= $tabKey ?>&page=1" role="tab">
+                    <?php
+                    $icons = [
+                        'users' => 'fas fa-user',
+                        'products' => 'fas fa-box-open',
+                        'categories' => 'fas fa-list-alt',
+                        'branches' => 'fas fa-store-alt',
+                        'ingredients' => 'fas fa-carrot',
+                        'others' => 'fas fa-ellipsis-h'
+                    ];
+                    ?>
+                    <i class="<?= $icons[$tabKey] ?> activity-icon"></i><?= $tabName ?>
+                </a>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab"><i class="fas fa-box-open activity-icon"></i>Products</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab"><i class="fas fa-list-alt activity-icon"></i>Categories</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="branches-tab" data-bs-toggle="tab" data-bs-target="#branches" type="button" role="tab"><i class="fas fa-store-alt activity-icon"></i>Branches</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="ingredients-tab" data-bs-toggle="tab" data-bs-target="#ingredients" type="button" role="tab"><i class="fas fa-carrot activity-icon"></i>Ingredients</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="others-tab" data-bs-toggle="tab" data-bs-target="#others" type="button" role="tab"><i class="fas fa-ellipsis-h activity-icon"></i>Others</button>
-            </li>
+            <?php endforeach; ?>
         </ul>
         <div class="tab-content" id="logTabsContent">
-            <?php foreach ($groupedLogs as $tab => $tabLogs): ?>
-            <div class="tab-pane fade<?= $tab === 'Users' ? ' show active' : '' ?>" id="<?= strtolower($tab) ?>" role="tabpanel">
+            <div class="tab-pane fade show active" id="<?= $currentTab ?>" role="tabpanel">
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center" style="color: #8B4543;">
-                        <div><i class="fas fa-clipboard-list me-1"></i> <?= htmlspecialchars($tab) ?> Activity Log</div>
+                        <div><i class="fas fa-clipboard-list me-1"></i> <?= htmlspecialchars($tabCategories[$currentTab]) ?> Activity Log</div>
                     </div>
                     <div class="card-body">
-                        <?php if ($tab === 'Products'): ?>
+                        <?php if ($currentTab === 'products'): ?>
                             <?php
+                            // Get all products logs for filter options
+                            $allProductsData = getLogsForCategory($pdo, 'products', 1000, 0);
                             $actions = [];
                             $details = [];
-                            foreach ($tabLogs as $log) {
+                            foreach ($allProductsData['logs'] as $log) {
                                 $actions[] = $log['action'];
                                 $details[] = $log['details'];
                             }
@@ -301,37 +466,108 @@ $groupedLogs = groupLogsByTable($logs);
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <input type="text" class="form-control mb-3 activity-log-search" placeholder="Search <?= htmlspecialchars($tab) ?> logs..." data-table="<?= strtolower($tab) ?>">
-                        <table class="table table-bordered table-hover activity-log-table" id="table-<?= strtolower($tab) ?>">
-                            <thead>
-                                <tr>
-                                    <th>Date/Time</th>
-                                    <th>User</th>
-                                    <th>Action</th>
-                                    <th>Details</th>
-                                    <th>IP Address</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <?php if (count($tabLogs) === 0): ?>
-                                <tr class="no-logs-row"><td colspan="5" class="text-center">No logs found.</td></tr>
-                            <?php else: ?>
-                                <?php foreach ($tabLogs as $log): ?>
+                        <input type="text" class="form-control mb-3 activity-log-search" placeholder="Search <?= htmlspecialchars($tabCategories[$currentTab]) ?> logs..." data-table="<?= $currentTab ?>">
+                        <div class="table-container">
+                            <table class="table table-bordered table-hover activity-log-table" id="table-<?= $currentTab ?>">
+                                <thead>
                                     <tr>
-                                        <td><?= htmlspecialchars($log['created_at']) ?></td>
-                                        <td><?= htmlspecialchars($log['user_name']) ?></td>
-                                        <td><?= htmlspecialchars($log['action']) ?></td>
-                                        <td><?= nl2br(htmlspecialchars($log['details'])) ?></td>
-                                        <td><?= htmlspecialchars($log['ip_address']) ?></td>
+                                        <th>Date/Time</th>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Details</th>
+                                        <th>IP Address</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                <?php if (count($logs) === 0): ?>
+                                    <tr class="no-logs-row"><td colspan="5" class="text-center">No logs found.</td></tr>
+                                <?php else: ?>
+                                    <?php foreach ($logs as $log): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($log['created_at']) ?></td>
+                                            <td><?= htmlspecialchars($log['user_name']) ?></td>
+                                            <td><?= htmlspecialchars($log['action']) ?></td>
+                                            <td><?= nl2br(htmlspecialchars($log['details'])) ?></td>
+                                            <td><?= htmlspecialchars($log['ip_address']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <?php if ($totalPages > 1): ?>
+                        <div class="pagination-container">
+                            <div class="pagination-info">
+                                Showing <?= $offset + 1 ?> to <?= min($offset + $itemsPerPage, $totalLogs) ?> of <?= $totalLogs ?> entries
+                            </div>
+                            <ul class="pagination">
+                                <?php if ($currentPage > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=<?= $currentTab ?>&page=<?= $currentPage - 1 ?>" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </span>
+                                    </li>
+                                <?php endif; ?>
+                                
+                                <?php
+                                $startPage = max(1, $currentPage - 2);
+                                $endPage = min($totalPages, $currentPage + 2);
+                                
+                                if ($startPage > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=<?= $currentTab ?>&page=1">1</a>
+                                    </li>
+                                    <?php if ($startPage > 2): ?>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                
+                                <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                                    <li class="page-item <?= $i == $currentPage ? 'active' : '' ?>">
+                                        <a class="page-link" href="?tab=<?= $currentTab ?>&page=<?= $i ?>"><?= $i ?></a>
+                                    </li>
+                                <?php endfor; ?>
+                                
+                                <?php if ($endPage < $totalPages): ?>
+                                    <?php if ($endPage < $totalPages - 1): ?>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    <?php endif; ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=<?= $currentTab ?>&page=<?= $totalPages ?>"><?= $totalPages ?></a>
+                                    </li>
+                                <?php endif; ?>
+                                
+                                <?php if ($currentPage < $totalPages): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=<?= $currentTab ?>&page=<?= $currentPage + 1 ?>" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </span>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
-            <?php endforeach; ?>
         </div>
     </div>
 </div>
@@ -372,15 +608,42 @@ document.querySelectorAll('.activity-log-search').forEach(function(input) {
             var tableElem = document.getElementById(tableId);
             var filter = input.value.toLowerCase();
             var rows = tableElem.querySelectorAll('tbody tr');
+            var visibleCount = 0;
+            
             rows.forEach(function(row) {
                 var text = row.textContent.toLowerCase();
                 if (text.indexOf(filter) > -1 || row.classList.contains('no-logs-row')) {
                     row.style.display = '';
+                    if (!row.classList.contains('no-logs-row')) {
+                        visibleCount++;
+                    }
                 } else {
                     row.style.display = 'none';
                 }
             });
+            
+            // Update pagination info for filtered results
+            updatePaginationInfo(table, visibleCount, filter);
         }
+    });
+});
+
+function updatePaginationInfo(table, visibleCount, filter) {
+    var paginationInfo = document.querySelector('.pagination-info');
+    if (paginationInfo && filter) {
+        paginationInfo.textContent = 'Showing ' + visibleCount + ' filtered results';
+    }
+}
+
+// Handle tab navigation
+document.querySelectorAll('.nav-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        // Remove active class from all tabs
+        document.querySelectorAll('.nav-link').forEach(function(navLink) {
+            navLink.classList.remove('active');
+        });
+        // Add active class to clicked tab
+        this.classList.add('active');
     });
 });
 document.querySelectorAll('.activity-log-action-filter, .activity-log-user-filter').forEach(function(select) {

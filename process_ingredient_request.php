@@ -48,6 +48,7 @@ $ingredients = $_POST['ingredients'] ?? [];
 $quantities = $_POST['quantity'] ?? [];
 $notes = $_POST['notes'] ?? '';
 
+
 // Validate that ingredients are provided
 if (empty($ingredients) || !is_array($ingredients)) {
     echo json_encode(['success' => false, 'message' => 'No ingredients selected.']);
@@ -57,8 +58,11 @@ if (empty($ingredients) || !is_array($ingredients)) {
 // Build a string or JSON of requested ingredients and quantities
 $ingredient_list = [];
 foreach ($ingredients as $ingredient_id) {
-    $qty = isset($quantities[$ingredient_id]) ? intval($quantities[$ingredient_id]) : 0;
-    if ($qty > 0) {
+    $qty_raw = isset($quantities[$ingredient_id]) ? $quantities[$ingredient_id] : '';
+    $qty = intval($qty_raw);
+    
+    // Allow quantities greater than 0 (changed from > 0 to >= 1 for clarity)
+    if ($qty >= 1) {
         $ingredient_list[] = [
             'ingredient_id' => $ingredient_id,
             'quantity' => $qty
@@ -68,8 +72,9 @@ foreach ($ingredients as $ingredient_id) {
 
 
 
+
 if (empty($ingredient_list)) {
-    echo json_encode(['success' => false, 'message' => 'No valid ingredient quantities provided.']);
+    echo json_encode(['success' => false, 'message' => 'Please select ingredients and enter valid quantities (minimum 1) for each selected ingredient.']);
     exit();
 }
 

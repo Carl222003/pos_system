@@ -1063,9 +1063,9 @@
                                             </a>
                                         </li>
                                         <li class="menu-item">
-                                            <a href="stockman_activity_log.php" class="menu-link">
-                                                <i class="fa-solid fa-clipboard-list"></i>
-                                                <span>Activity Log</span>
+                                            <a href="completed_requests.php" class="menu-link">
+                                                <i class="fa-solid fa-check-circle"></i>
+                                                <span>Completed Request</span>
                                             </a>
                                         </li>
                                     <?php endif; ?>
@@ -1097,9 +1097,15 @@
                                             </a>
                                         </li>
                                         <li class="menu-item">
+                                            <a href="completed_requests.php" class="menu-link">
+                                                <i class="fa-solid fa-check-circle"></i>
+                                                <span>Completed Request</span>
+                                            </a>
+                                        </li>
+                                        <li class="menu-item">
                                             <a href="ingredient_requests.php" class="menu-link">
-                                                <i class="fa-solid fa-clipboard-list"></i>
-                                                <span>List of Request</span>
+                                                <i class="fa-solid fa-clock"></i>
+                                                <span>Pending Request</span>
                                             </a>
                                         </li>
                                         <!-- Stock Update Requests menu item removed -->

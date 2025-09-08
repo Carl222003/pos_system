@@ -317,3 +317,43 @@
 2025-08-03 10:16:50 Restore requested for archive_id=45
 2025-08-03 10:16:50 Restored pos_category.status to active for category_id=24
 2025-08-03 10:16:50 Deleted from archive_category where archive_id=45
+2025-09-08 14:44:07 POST received. id=22, restore=0
+2025-09-08 14:44:07 Archive requested for category_id=22
+2025-09-08 14:44:07 Inserted into archive_category: [22,"Pizza","Pizza is a savory dish made with a round, flat crust topped with tomato sauce, melted cheese, and various toppings like meats, vegetables, and herbs. Baked until golden and bubbly, it\u2019s a widely loved meal enjoyed around the world.","archived",46]
+2025-09-08 14:44:07 Updated pos_category.status to archived for category_id=22
+2025-09-08 14:44:16 POST received. id=46, restore=1
+2025-09-08 14:44:16 Restore requested for archive_id=46
+2025-09-08 14:44:16 Restored pos_category.status to active for category_id=22
+2025-09-08 14:44:16 Deleted from archive_category where archive_id=46
+2025-09-08 14:44:25 POST received. id=23, restore=0
+2025-09-08 14:44:25 Archive requested for category_id=23
+2025-09-08 14:44:25 Inserted into archive_category: [23,"Halo-Halo","Halo-halo is a popular Filipino dessert made by layering crushed ice, sweetened fruits, jellies, beans, and leche flan, then topped with evaporated milk and ube ice cream. It's a colorful, refreshing treat perfect for cooling down in hot weather.","archived",46]
+2025-09-08 14:44:25 Updated pos_category.status to archived for category_id=23
+2025-09-08 14:44:33 POST received. id=47, restore=1
+2025-09-08 14:44:33 Restore requested for archive_id=47
+2025-09-08 14:44:33 Restored pos_category.status to active for category_id=23
+2025-09-08 14:44:33 Deleted from archive_category where archive_id=47
+2025-09-08 14:49:42 POST received. id=22, restore=0
+2025-09-08 14:49:42 Archive requested for category_id=22
+2025-09-08 14:49:42 Inserted into archive_category: [22,"Pizza","Pizza is a savory dish made with a round, flat crust topped with tomato sauce, melted cheese, and various toppings like meats, vegetables, and herbs. Baked until golden and bubbly, it\u2019s a widely loved meal enjoyed around the world.","archived",46]
+2025-09-08 14:49:42 Updated pos_category.status to archived for category_id=22
+2025-09-08 14:52:09 POST received. id=48, restore=1
+2025-09-08 14:52:09 Restore requested for archive_id=48
+2025-09-08 14:52:09 Restored pos_category.status to active for category_id=22
+2025-09-08 14:52:09 Deleted from archive_category where archive_id=48
+2025-09-08 15:00:31 POST received. id=22, restore=0
+2025-09-08 15:00:31 Archive requested for category_id=22
+2025-09-08 15:00:31 Inserted into archive_category: [22,"Pizza","Pizza is a savory dish made with a round, flat crust topped with tomato sauce, melted cheese, and various toppings like meats, vegetables, and herbs. Baked until golden and bubbly, it\u2019s a widely loved meal enjoyed around the world.","archived",46]
+2025-09-08 15:00:31 Updated pos_category.status to archived for category_id=22
+2025-09-08 15:00:37 POST received. id=49, restore=1
+2025-09-08 15:00:37 Restore requested for archive_id=49
+2025-09-08 15:00:37 Restored pos_category.status to active for category_id=22
+2025-09-08 15:00:37 Deleted from archive_category where archive_id=49
+2025-09-08 15:03:43 POST received. id=23, restore=0
+2025-09-08 15:03:43 Archive requested for category_id=23
+2025-09-08 15:03:43 Inserted into archive_category: [23,"Halo-Halo","Halo-halo is a popular Filipino dessert made by layering crushed ice, sweetened fruits, jellies, beans, and leche flan, then topped with evaporated milk and ube ice cream. It's a colorful, refreshing treat perfect for cooling down in hot weather.","archived",46]
+2025-09-08 15:03:43 Updated pos_category.status to archived for category_id=23
+2025-09-08 15:04:03 POST received. id=50, restore=1
+2025-09-08 15:04:03 Restore requested for archive_id=50
+2025-09-08 15:04:03 Restored pos_category.status to active for category_id=23
+2025-09-08 15:04:03 Deleted from archive_category where archive_id=50

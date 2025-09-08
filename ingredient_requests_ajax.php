@@ -2,7 +2,18 @@
 require_once 'db_connect.php';
 require_once 'auth_function.php';
 
-checkAdminLogin();
+// Check if user is logged in and is either Admin or Stockman
+if (!isset($_SESSION['user_logged_in']) || $_SESSION['user_logged_in'] !== true) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
+    exit();
+}
+
+if ($_SESSION['user_type'] !== 'Admin' && $_SESSION['user_type'] !== 'Stockman') {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
+    exit();
+}
 
 header('Content-Type: application/json');
 
@@ -25,6 +36,18 @@ try {
     
     $params = array();
     
+    // For stockman users, only show completed requests for their branch
+    if ($_SESSION['user_type'] === 'Stockman') {
+        $query .= " AND r.branch_id = :stockman_branch";
+        $params[':stockman_branch'] = $_SESSION['branch_id'];
+        
+        // Only show completed requests (approved and delivered)
+        $query .= " AND r.status = 'approved' AND r.delivery_status IN ('delivered', 'partially_delivered')";
+        
+        // Debug logging for stockman
+        error_log("Stockman completed requests query - Branch ID: " . $_SESSION['branch_id'] . ", User: " . $_SESSION['user_name']);
+    }
+    
     // Apply filters
     if (!empty($branch)) {
         $query .= " AND r.branch_id = :branch";
@@ -32,13 +55,25 @@ try {
     }
     
     if (!empty($status)) {
-        $query .= " AND r.status = :status";
-        $params[':status'] = $status;
+        if ($status === 'pending') {
+            $query .= " AND r.status = 'pending'";
+        } else {
+            $query .= " AND r.status = :status";
+            $params[':status'] = $status;
+        }
     }
     
     if (!empty($delivery_status)) {
-        $query .= " AND r.delivery_status = :delivery_status";
-        $params[':delivery_status'] = $delivery_status;
+        if ($delivery_status === 'pending') {
+            $query .= " AND r.delivery_status = 'pending'";
+        } elseif ($delivery_status === 'processed') {
+            $query .= " AND r.delivery_status != 'pending'";
+        } elseif ($delivery_status === 'non-pending') {
+            $query .= " AND r.status IN ('approved', 'rejected')";
+        } else {
+            $query .= " AND r.delivery_status = :delivery_status";
+            $params[':delivery_status'] = $delivery_status;
+        }
     }
     
     // Apply date filters
@@ -69,8 +104,14 @@ try {
         }
     }
     
-    // Add ORDER BY clause to sort by request_date in descending order (latest first)
-    $query .= " ORDER BY r.request_date DESC";
+    // Add ORDER BY clause to sort by request_date in ascending order (oldest first)
+    $query .= " ORDER BY r.request_date ASC";
+    
+    // Debug logging for stockman
+    if ($_SESSION['user_type'] === 'Stockman') {
+        error_log("Stockman completed requests final query: " . $query);
+        error_log("Stockman completed requests parameters: " . json_encode($params));
+    }
     
     // Prepare and execute query
     $stmt = $pdo->prepare($query);
@@ -105,10 +146,24 @@ try {
     foreach ($requests as $request) {
         // Parse ingredients JSON and get ingredient names
         $ingredients_list = [];
-        $ingredients_json = json_decode($request['ingredients'], true);
         
-        if ($ingredients_json && is_array($ingredients_json)) {
-            foreach ($ingredients_json as $ingredient) {
+        // Check if this request has approved ingredients (for completed requests)
+        $ingredients_to_display = null;
+        if (isset($request['approved_ingredients']) && !empty($request['approved_ingredients']) && $request['status'] === 'approved') {
+            // Use approved ingredients for completed requests
+            $ingredients_to_display = json_decode($request['approved_ingredients'], true);
+        } else {
+            // Use original ingredients for pending requests or when no approved ingredients
+            $ingredients_to_display = json_decode($request['ingredients'], true);
+        }
+        
+        // Fallback: if approved_ingredients column doesn't exist, always use original ingredients
+        if (!isset($request['approved_ingredients'])) {
+            $ingredients_to_display = json_decode($request['ingredients'], true);
+        }
+        
+        if ($ingredients_to_display && is_array($ingredients_to_display)) {
+            foreach ($ingredients_to_display as $ingredient) {
                 if (isset($ingredient['ingredient_id']) && isset($ingredient['quantity'])) {
                     // Get ingredient name from database
                     $stmt_ingredient = $pdo->prepare("SELECT ingredient_name, ingredient_unit FROM ingredients WHERE ingredient_id = ?");
@@ -120,6 +175,10 @@ try {
                     } else {
                         $ingredients_list[] = 'Unknown Ingredient (ID: ' . $ingredient['ingredient_id'] . ') - ' . $ingredient['quantity'];
                     }
+                } elseif (isset($ingredient['ingredient_name']) && isset($ingredient['quantity'])) {
+                    // Handle new format with ingredient_name
+                    $unit = isset($ingredient['unit']) ? $ingredient['unit'] : 'pieces';
+                    $ingredients_list[] = $ingredient['ingredient_name'] . ' (' . $ingredient['quantity'] . ' ' . $unit . ')';
                 }
             }
         }

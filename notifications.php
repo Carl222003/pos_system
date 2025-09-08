@@ -38,44 +38,62 @@ function getAdminNotifications() {
     $notifications = array();
     
     try {
-        // Check for low stock ingredients
-        $lowStockQuery = "SELECT ingredient_id, ingredient_name, ingredient_quantity, ingredient_unit, minimum_stock 
-                         FROM ingredients 
-                         WHERE ingredient_quantity <= minimum_stock AND ingredient_status != 'archived'
-                         ORDER BY ingredient_quantity ASC 
+        // Check for low stock ingredients from branch_ingredient table
+        $lowStockQuery = "SELECT 
+                            i.ingredient_id, 
+                            i.ingredient_name, 
+                            bi.quantity as ingredient_quantity, 
+                            i.ingredient_unit, 
+                            bi.minimum_stock,
+                            b.branch_name
+                         FROM ingredients i
+                         INNER JOIN branch_ingredient bi ON i.ingredient_id = bi.ingredient_id
+                         LEFT JOIN pos_branch b ON bi.branch_id = b.branch_id
+                         WHERE bi.quantity <= bi.minimum_stock 
+                         AND i.ingredient_status != 'archived'
+                         AND bi.status = 'active'
+                         ORDER BY bi.quantity ASC 
                          LIMIT 10";
         
         $lowStockStmt = $pdo->query($lowStockQuery);
         while ($row = $lowStockStmt->fetch(PDO::FETCH_ASSOC)) {
             $notifications[] = array(
-                'id' => 'low_' . $row['ingredient_id'],
+                'id' => 'low_' . $row['ingredient_id'] . '_' . $row['branch_name'],
                 'type' => 'low_stock',
                 'icon' => 'fas fa-exclamation-triangle',
                 'icon_color' => '#ffc107',
                 'title' => 'Low Stock Alert',
-                'message' => "{$row['ingredient_name']} is running low",
+                'message' => "{$row['ingredient_name']} is running low in {$row['branch_name']}",
                 'details' => "Only {$row['ingredient_quantity']} {$row['ingredient_unit']} remaining",
                 'timestamp' => 'Just now',
                 'priority' => 'high'
             );
         }
         
-        // Check for out of stock ingredients
-        $outOfStockQuery = "SELECT ingredient_id, ingredient_name, ingredient_unit 
-                           FROM ingredients 
-                           WHERE ingredient_quantity <= 0 AND ingredient_status != 'archived'
-                           ORDER BY ingredient_name ASC 
+        // Check for out of stock ingredients from branch_ingredient table
+        $outOfStockQuery = "SELECT 
+                            i.ingredient_id, 
+                            i.ingredient_name, 
+                            i.ingredient_unit,
+                            b.branch_name
+                           FROM ingredients i
+                           INNER JOIN branch_ingredient bi ON i.ingredient_id = bi.ingredient_id
+                           LEFT JOIN pos_branch b ON bi.branch_id = b.branch_id
+                           WHERE bi.quantity <= 0 
+                           AND i.ingredient_status != 'archived'
+                           AND bi.status = 'active'
+                           ORDER BY i.ingredient_name ASC 
                            LIMIT 10";
         
         $outOfStockStmt = $pdo->query($outOfStockQuery);
         while ($row = $outOfStockStmt->fetch(PDO::FETCH_ASSOC)) {
             $notifications[] = array(
-                'id' => 'out_' . $row['ingredient_id'],
+                'id' => 'out_' . $row['ingredient_id'] . '_' . $row['branch_name'],
                 'type' => 'out_of_stock',
                 'icon' => 'fas fa-times-circle',
                 'icon_color' => '#dc3545',
                 'title' => 'Out of Stock',
-                'message' => "{$row['ingredient_name']} is completely out",
+                'message' => "{$row['ingredient_name']} is completely out in {$row['branch_name']}",
                 'details' => "0 {$row['ingredient_unit']} available",
                 'timestamp' => 'Just now',
                 'priority' => 'critical'
@@ -113,15 +131,15 @@ function getAdminNotifications() {
         }
         
         // Check for approved/fulfilled requests (for stockmen to know their requests were processed)
-        $processedRequestsQuery = "SELECT ir.request_id, b.branch_name, ir.status, ir.updated_date,
+        $processedRequestsQuery = "SELECT ir.request_id, b.branch_name, ir.status, ir.updated_at,
                                          u_updated.user_name as updated_by_name
                                   FROM ingredient_requests ir
                                   JOIN pos_branch b ON ir.branch_id = b.branch_id
                                   LEFT JOIN pos_user u_updated ON ir.updated_by = u_updated.user_id
                                   WHERE ir.status IN ('approved', 'fulfilled') 
-                                  AND ir.updated_date >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-                                  ORDER BY ir.updated_date DESC
-                                  LIMIT 5";
+                                  AND ir.updated_at >= DATE_SUB(NOW(), INTERVAL 48 HOUR)
+                                  ORDER BY ir.updated_at DESC
+                                  LIMIT 10";
         
         $processedStmt = $pdo->query($processedRequestsQuery);
         while ($row = $processedStmt->fetch(PDO::FETCH_ASSOC)) {
@@ -131,20 +149,31 @@ function getAdminNotifications() {
             
             $updated_by = $row['updated_by_name'] ? " by {$row['updated_by_name']}" : "";
             
+            // Create more specific messages for admin
+            $admin_messages = [
+                'approved' => "Request from {$row['branch_name']} was approved{$updated_by}",
+                'fulfilled' => "Request from {$row['branch_name']} was fulfilled{$updated_by}"
+            ];
+            
+            $admin_details = [
+                'approved' => "Ingredients approved and ready for delivery",
+                'fulfilled' => "Ingredients successfully delivered to branch"
+            ];
+            
             $notifications[] = array(
                 'id' => 'processed_' . $row['request_id'],
                 'type' => 'request_processed',
                 'icon' => $status_icon,
                 'icon_color' => $status_color,
                 'title' => "Request {$status_text}",
-                'message' => "Your request from {$row['branch_name']} was {$row['status']}{$updated_by}",
-                'details' => "Status updated recently",
-                'timestamp' => calculateTimeAgo($row['updated_date']),
-                'priority' => 'medium'
+                'message' => $admin_messages[$row['status']],
+                'details' => $admin_details[$row['status']],
+                'timestamp' => calculateTimeAgo($row['updated_at']),
+                'priority' => $row['status'] === 'approved' ? 'high' : 'medium'
             );
         }
         
-        // Check for expiring ingredients
+        // Check for expiring and expired ingredients
         $expiringQuery = "SELECT ingredient_id, ingredient_name, ingredient_unit, consume_before
                          FROM ingredients 
                          WHERE consume_before IS NOT NULL 
@@ -155,18 +184,38 @@ function getAdminNotifications() {
         
         $expiringStmt = $pdo->query($expiringQuery);
         while ($row = $expiringStmt->fetch(PDO::FETCH_ASSOC)) {
-            $daysLeft = ceil((strtotime($row['consume_before']) - time()) / (60 * 60 * 24));
-            $notifications[] = array(
-                'id' => 'exp_' . $row['ingredient_id'],
-                'type' => 'expiring',
-                'icon' => 'fas fa-calendar-times',
-                'icon_color' => '#fd7e14',
-                'title' => 'Expiring Soon',
-                'message' => "{$row['ingredient_name']} expires in {$daysLeft} days",
-                'details' => "Expires: " . date('M j, Y', strtotime($row['consume_before'])),
-                'timestamp' => 'Just now',
-                'priority' => 'medium'
-            );
+            $expirationDate = strtotime($row['consume_before']);
+            $currentTime = time();
+            $daysLeft = ceil(($expirationDate - $currentTime) / (60 * 60 * 24));
+            
+            // Handle expired items
+            if ($daysLeft < 0) {
+                $daysExpired = abs($daysLeft);
+                $notifications[] = array(
+                    'id' => 'exp_' . $row['ingredient_id'],
+                    'type' => 'expired',
+                    'icon' => 'fas fa-exclamation-triangle',
+                    'icon_color' => '#dc3545',
+                    'title' => 'Expired Item',
+                    'message' => "{$row['ingredient_name']} expired {$daysExpired} day" . ($daysExpired != 1 ? 's' : '') . " ago",
+                    'details' => "Expired: " . date('M j, Y', $expirationDate),
+                    'timestamp' => 'Just now',
+                    'priority' => 'high'
+                );
+            } else {
+                // Handle expiring items
+                $notifications[] = array(
+                    'id' => 'exp_' . $row['ingredient_id'],
+                    'type' => 'expiring',
+                    'icon' => 'fas fa-calendar-times',
+                    'icon_color' => '#fd7e14',
+                    'title' => 'Expiring Soon',
+                    'message' => "{$row['ingredient_name']} expires in {$daysLeft} day" . ($daysLeft != 1 ? 's' : ''),
+                    'details' => "Expires: " . date('M j, Y', $expirationDate),
+                    'timestamp' => 'Just now',
+                    'priority' => $daysLeft <= 2 ? 'high' : 'medium'
+                );
+            }
         }
         
         // Check for active cashier sessions (Admin dashboard info)
@@ -212,13 +261,20 @@ function getStockmanNotifications() {
     $branch_id = $_SESSION['branch_id'];
     
     try {
-        // Check for low stock ingredients in their branch
-        $lowStockQuery = "SELECT ingredient_id, ingredient_name, ingredient_quantity, ingredient_unit, minimum_stock 
-                         FROM ingredients 
-                         WHERE ingredient_quantity <= minimum_stock 
-                         AND ingredient_status != 'archived'
-                         AND branch_id = ?
-                         ORDER BY ingredient_quantity ASC 
+        // Check for low stock ingredients in their branch from branch_ingredient table
+        $lowStockQuery = "SELECT 
+                            i.ingredient_id, 
+                            i.ingredient_name, 
+                            bi.quantity as ingredient_quantity, 
+                            i.ingredient_unit, 
+                            bi.minimum_stock
+                         FROM ingredients i
+                         INNER JOIN branch_ingredient bi ON i.ingredient_id = bi.ingredient_id
+                         WHERE bi.quantity <= bi.minimum_stock 
+                         AND i.ingredient_status != 'archived'
+                         AND bi.branch_id = ?
+                         AND bi.status = 'active'
+                         ORDER BY bi.quantity ASC 
                          LIMIT 5";
         
         $lowStockStmt = $pdo->prepare($lowStockQuery);
@@ -237,16 +293,16 @@ function getStockmanNotifications() {
             );
         }
         
-        // Check for their own request status updates (approved/fulfilled in last 24 hours)
-        $myRequestsQuery = "SELECT ir.request_id, ir.status, ir.updated_date, ir.ingredients,
+        // Check for their own request status updates (approved/fulfilled in last 48 hours)
+        $myRequestsQuery = "SELECT ir.request_id, ir.status, ir.updated_at, ir.ingredients,
                                   u_updated.user_name as updated_by_name
                            FROM ingredient_requests ir
                            LEFT JOIN pos_user u_updated ON ir.updated_by = u_updated.user_id
                            WHERE ir.branch_id = ? 
                            AND ir.status IN ('approved', 'fulfilled', 'rejected')
-                           AND ir.updated_date >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-                           ORDER BY ir.updated_date DESC
-                           LIMIT 5";
+                           AND ir.updated_at >= DATE_SUB(NOW(), INTERVAL 48 HOUR)
+                           ORDER BY ir.updated_at DESC
+                           LIMIT 10";
         
         $myRequestsStmt = $pdo->prepare($myRequestsQuery);
         $myRequestsStmt->execute([$branch_id]);
@@ -268,44 +324,83 @@ function getStockmanNotifications() {
             $updated_by = $row['updated_by_name'] ? " by {$row['updated_by_name']}" : "";
             $status_text = ucfirst($row['status']);
             
+            // Create more specific messages based on status
+            $status_messages = [
+                'approved' => "Your ingredient request has been approved{$updated_by}",
+                'fulfilled' => "Your ingredient request has been fulfilled{$updated_by}",
+                'rejected' => "Your ingredient request was rejected{$updated_by}"
+            ];
+            
+            $status_details = [
+                'approved' => "{$ingredient_count} ingredients approved - ready for delivery",
+                'fulfilled' => "{$ingredient_count} ingredients delivered successfully",
+                'rejected' => "{$ingredient_count} ingredients in rejected request"
+            ];
+            
             $notifications[] = array(
                 'id' => 'mystatus_' . $row['request_id'],
                 'type' => 'my_request_status',
                 'icon' => $status_icons[$row['status']],
                 'icon_color' => $status_colors[$row['status']],
                 'title' => "Request {$status_text}",
-                'message' => "Your stock request was {$row['status']}{$updated_by}",
-                'details' => "{$ingredient_count} ingredients in request",
-                'timestamp' => calculateTimeAgo($row['updated_date']),
-                'priority' => 'high'
+                'message' => $status_messages[$row['status']],
+                'details' => $status_details[$row['status']],
+                'timestamp' => calculateTimeAgo($row['updated_at']),
+                'priority' => $row['status'] === 'approved' ? 'high' : 'medium'
             );
         }
         
-        // Check for expiring ingredients in their branch
-        $expiringQuery = "SELECT ingredient_id, ingredient_name, ingredient_unit, consume_before
-                         FROM ingredients 
-                         WHERE consume_before IS NOT NULL 
-                         AND consume_before <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-                         AND ingredient_status != 'archived'
-                         AND branch_id = ?
-                         ORDER BY consume_before ASC
+        // Check for expiring and expired ingredients in their branch from branch_ingredient table
+        $expiringQuery = "SELECT 
+                            i.ingredient_id, 
+                            i.ingredient_name, 
+                            i.ingredient_unit, 
+                            i.consume_before
+                         FROM ingredients i
+                         INNER JOIN branch_ingredient bi ON i.ingredient_id = bi.ingredient_id
+                         WHERE i.consume_before IS NOT NULL 
+                         AND i.consume_before <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                         AND i.ingredient_status != 'archived'
+                         AND bi.branch_id = ?
+                         AND bi.status = 'active'
+                         ORDER BY i.consume_before ASC
                          LIMIT 3";
         
         $expiringStmt = $pdo->prepare($expiringQuery);
         $expiringStmt->execute([$branch_id]);
         while ($row = $expiringStmt->fetch(PDO::FETCH_ASSOC)) {
-            $daysLeft = ceil((strtotime($row['consume_before']) - time()) / (60 * 60 * 24));
-            $notifications[] = array(
-                'id' => 'exp_' . $row['ingredient_id'],
-                'type' => 'expiring',
-                'icon' => 'fas fa-calendar-times',
-                'icon_color' => '#fd7e14',
-                'title' => 'Expiring Soon',
-                'message' => "{$row['ingredient_name']} expires in {$daysLeft} days",
-                'details' => "Expires: " . date('M j, Y', strtotime($row['consume_before'])),
-                'timestamp' => 'Just now',
-                'priority' => 'medium'
-            );
+            $expirationDate = strtotime($row['consume_before']);
+            $currentTime = time();
+            $daysLeft = ceil(($expirationDate - $currentTime) / (60 * 60 * 24));
+            
+            // Handle expired items
+            if ($daysLeft < 0) {
+                $daysExpired = abs($daysLeft);
+                $notifications[] = array(
+                    'id' => 'exp_' . $row['ingredient_id'],
+                    'type' => 'expired',
+                    'icon' => 'fas fa-exclamation-triangle',
+                    'icon_color' => '#dc3545',
+                    'title' => 'Expired Item',
+                    'message' => "{$row['ingredient_name']} expired {$daysExpired} day" . ($daysExpired != 1 ? 's' : '') . " ago",
+                    'details' => "Expired: " . date('M j, Y', $expirationDate),
+                    'timestamp' => 'Just now',
+                    'priority' => 'high'
+                );
+            } else {
+                // Handle expiring items
+                $notifications[] = array(
+                    'id' => 'exp_' . $row['ingredient_id'],
+                    'type' => 'expiring',
+                    'icon' => 'fas fa-calendar-times',
+                    'icon_color' => '#fd7e14',
+                    'title' => 'Expiring Soon',
+                    'message' => "{$row['ingredient_name']} expires in {$daysLeft} day" . ($daysLeft != 1 ? 's' : ''),
+                    'details' => "Expires: " . date('M j, Y', $expirationDate),
+                    'timestamp' => 'Just now',
+                    'priority' => $daysLeft <= 2 ? 'high' : 'medium'
+                );
+            }
         }
         
     } catch (PDOException $e) {

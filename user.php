@@ -1754,6 +1754,152 @@ h1 {
         from { opacity: 0; transform: translateY(-18px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Normal Archive Modal Styles */
+    .normal-archive-modal {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .normal-archive-header {
+        background: linear-gradient(135deg, #8B4543 0%, #b97a6a 50%, #d4a574 100%);
+        border: none;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .normal-archive-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.2;
+    }
+
+    .archive-icon-container {
+        width: 45px;
+        height: 45px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .archive-icon-container i {
+        font-size: 1.25rem;
+        color: white;
+    }
+
+    .normal-archive-body {
+        padding: 2rem;
+        background: #ffffff;
+    }
+
+    .archive-icon-normal {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #8B4543, #b97a6a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 8px 25px rgba(139, 69, 67, 0.3);
+    }
+
+    .archive-icon-normal i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .archive-title {
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .archive-info-normal {
+        background: #f8f9fa;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border: 1px solid rgba(139, 69, 67, 0.1);
+        margin-top: 1rem;
+    }
+
+    .info-item-normal {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0;
+        font-weight: 500;
+        color: #495057;
+        font-size: 1rem;
+    }
+
+    .info-item-normal i {
+        color: #8B4543;
+        width: 20px;
+    }
+
+    .normal-archive-footer {
+        background: #f8f9fa;
+        border: none;
+        padding: 1.5rem 2rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .normal-archive-footer .btn {
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .normal-archive-footer .btn-secondary {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+    }
+
+    .normal-archive-footer .btn-secondary:hover {
+        background: linear-gradient(135deg, #c82333, #bd2130);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-archive-confirm {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+    }
+
+    .btn-archive-confirm:hover {
+        background: linear-gradient(135deg, #218838, #1e7e34);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
 </style>
 
 <div class="container-fluid px-4">
@@ -2157,6 +2303,58 @@ h1 {
     </div>
 </div>
 
+<!-- Normal Archive Confirmation Modal -->
+<div class="modal fade" id="archiveConfirmationModal" tabindex="-1" aria-labelledby="archiveConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content normal-archive-modal">
+            <div class="modal-header normal-archive-header">
+                <div class="d-flex align-items-center">
+                    <div class="archive-icon-container me-3">
+                        <i class="fas fa-archive"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0 text-white" id="archiveConfirmationModalLabel">Archive User</h5>
+                        <small class="text-white opacity-75">Secure archiving process</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body normal-archive-body">
+                <div class="text-center">
+                    <div class="archive-icon-normal mb-4">
+                        <i class="fas fa-archive"></i>
+                    </div>
+                    <h5 class="archive-title mb-3" id="archiveConfirmationMessage">Are you sure you want to archive this item?</h5>
+                    <div class="archive-info-normal">
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <div class="info-item-normal">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    <span>Data will be safely stored</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item-normal">
+                                    <i class="fas fa-undo me-2"></i>
+                                    <span>Can be restored anytime</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer normal-archive-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-archive-confirm" id="confirmArchiveBtn">
+                    <i class="fas fa-archive me-2"></i>Archive
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php
 include('footer.php');
 ?>
@@ -2171,6 +2369,26 @@ function showFeedbackModal(type, title, text) {
     customClass: { confirmButton: 'swal2-confirm-archive' },
     buttonsStyling: false
   });
+}
+
+// Archive confirmation modal function
+function showArchiveConfirmationModal(title, message, confirmCallback) {
+    $('#archiveConfirmationModalLabel').text(title);
+    $('#archiveConfirmationMessage').text(message);
+    
+    // Remove any existing event handlers
+    $('#confirmArchiveBtn').off('click');
+    
+    // Add new event handler
+    $('#confirmArchiveBtn').on('click', function() {
+        $('#archiveConfirmationModal').modal('hide');
+        if (typeof confirmCallback === 'function') {
+            confirmCallback();
+        }
+    });
+    
+    // Show the modal
+    $('#archiveConfirmationModal').modal('show');
 }
 
 $(document).ready(function() {
@@ -2210,8 +2428,8 @@ $(document).ready(function() {
                         <button class="btn btn-warning btn-sm edit-user-btn" data-id="${row.user_id}" title="Edit User">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-secondary btn-sm archive-btn" data-id="${row.user_id}" title="Archive User">
-                            <i class="fas fa-box-archive"></i>
+                        <button class="btn btn-secondary btn-sm archive-user-btn" data-id="${row.user_id}" title="Archive User">
+                            <i class="fas fa-archive"></i>
                         </button>
                     </div>`;
                 }
@@ -2436,52 +2654,39 @@ $(document).ready(function() {
         });
     });
 
-    // Handle Archive Button Click
-    $(document).on('click', '.archive-btn', function() {
+    // Archive user functionality
+    $(document).on('click', '.archive-user-btn', function() {
         let userId = $(this).data('id');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You can restore this user from the archive.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#6c757d',
-            cancelButtonColor: '#f8f9fa',
-            confirmButtonText: '<i class="fas fa-box-archive me-2"></i>Yes, archive it!',
-            cancelButtonText: '<i class="fas fa-times me-2"></i>Cancel',
-            customClass: {
-                confirmButton: 'btn btn-secondary btn-lg',
-                cancelButton: 'btn btn-light btn-lg'
-            },
-            buttonsStyling: false,
-            padding: '2rem',
-            width: 400,
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown animate__faster'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp animate__faster'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
+        let userName = $(this).closest('tr').find('td:eq(1)').text();
+        
+        // Show confirmation modal
+        showArchiveConfirmationModal(
+            'Archive User',
+            `Are you sure you want to archive the user "${userName}"?`,
+            function() {
+                // Confirm callback
                 $.ajax({
                     url: 'archive_user.php',
                     type: 'POST',
                     data: { id: userId },
                     dataType: 'json',
                     success: function(response) {
-                        if (response.success) {
+                        console.log('AJAX Success Response:', response);
+                        if (response && response.success) {
+                            showFeedbackModal('success', 'Success!', 'User archived successfully!');
                             $('#userTable').DataTable().ajax.reload();
-                            showFeedbackModal('success', 'Archived!', 'User has been archived successfully.');
                         } else {
                             showFeedbackModal('error', 'Error!', response.message || 'Failed to archive user.');
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.log('AJAX Error:', xhr.responseText, status, error);
                         showFeedbackModal('error', 'Error!', 'An error occurred while archiving the user.');
                     }
                 });
             }
-        });
+        );
     });
+
 });
 </script>

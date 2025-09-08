@@ -1,4 +1,11 @@
 <?php
+// Suppress any output that might interfere with JSON response
+error_reporting(0);
+ini_set('display_errors', 0);
+
+// Set proper headers for JSON response
+header('Content-Type: application/json');
+
 require_once 'db_connect.php';
 require_once 'auth_function.php';
 checkAdminLogin();
@@ -14,14 +21,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         $stmt->execute([$user_id]);
         $archived = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($archived) {
-            // Restore: set user_status to 'Active'
-            $update = $pdo->prepare("UPDATE pos_user SET user_status = 'Active' WHERE user_id = ?");
-            $update->execute([$archived['original_id']]);
+            // Check if the original user still exists
+            $checkOriginal = $pdo->prepare("SELECT user_id FROM pos_user WHERE user_id = ?");
+            $checkOriginal->execute([$archived['original_id']]);
+            
+            if ($checkOriginal->fetch()) {
+                // Original user exists, just update its status
+                $update = $pdo->prepare("UPDATE pos_user SET user_status = 'Active' WHERE user_id = ?");
+                $update->execute([$archived['original_id']]);
+            } else {
+                // Original user doesn't exist, recreate it
+                $recreate = $pdo->prepare("INSERT INTO pos_user (user_id, user_name, user_email, user_type, contact_number, profile_image, user_status, branch_id, employee_id, shift_schedule, date_hired, emergency_contact, emergency_number, address, notes) VALUES (?, ?, ?, ?, ?, ?, 'Active', ?, ?, ?, ?, ?, ?, ?, ?)");
+                $recreate->execute([
+                    $archived['original_id'],
+                    $archived['user_name'],
+                    $archived['user_email'],
+                    $archived['user_type'],
+                    $archived['contact_number'],
+                    $archived['profile_image'],
+                    $archived['branch_id'],
+                    $archived['employee_id'],
+                    $archived['shift_schedule'],
+                    $archived['date_hired'],
+                    $archived['emergency_contact'],
+                    $archived['emergency_number'],
+                    $archived['address'],
+                    $archived['notes']
+                ]);
+            }
+            
             // Remove from archive
             $pdo->prepare('DELETE FROM archive_user WHERE archive_id = ?')->execute([$user_id]);
             // Log activity
             if ($admin_id) {
-                logActivity($pdo, $admin_id, 'Restored User', 'User: ' . $archived['user_name'] . ' (ID: ' . $archived['original_id'] . ')');
+                try {
+                    logActivity($pdo, $admin_id, 'Restored User', 'User: ' . $archived['user_name'] . ' (ID: ' . $archived['original_id'] . ')');
+                } catch (Exception $e) {
+                    // Log activity failed, but don't fail the restore operation
+                }
             }
             echo json_encode(['success' => true]);
         } else {
@@ -29,13 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
         }
     } else {
         // Archive logic
-        // Check if already archived
-        $check = $pdo->prepare("SELECT 1 FROM archive_user WHERE original_id = ?");
-        $check->execute([$user_id]);
-        if ($check->fetch()) {
-            echo json_encode(['success' => false, 'message' => 'User is already archived.']);
-            exit;
-        }
         $stmt = $pdo->prepare("SELECT * FROM pos_user WHERE user_id = ?");
         $stmt->execute([$user_id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -59,11 +89,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
                 $user['notes'],
                 $admin_id
             ]);
-            // Set user_status to Inactive
+            // Set user_status to Inactive (archived users will be excluded from main list via AJAX query)
             $pdo->prepare('UPDATE pos_user SET user_status = ? WHERE user_id = ?')->execute(['Inactive', $user_id]);
             // Log activity
             if ($admin_id) {
-                logActivity($pdo, $admin_id, 'Archived User', 'User: ' . $user['user_name'] . ' (ID: ' . $user['user_id'] . ')');
+                try {
+                    logActivity($pdo, $admin_id, 'Archived User', 'User: ' . $user['user_name'] . ' (ID: ' . $user['user_id'] . ')');
+                } catch (Exception $e) {
+                    // Log activity failed, but don't fail the archive operation
+                }
             }
             echo json_encode(['success' => true]);
         } else {

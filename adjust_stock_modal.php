@@ -129,8 +129,11 @@ if (!$ingredient) {
                         </label>
                         <div class="quantity-input-enhanced">
                             <input type="number" name="adjustment_quantity" id="adjustment_quantity" 
-                                   class="enhanced-number-input" min="0" step="0.01" 
-                                   placeholder="Enter quantity" required>
+                                   class="enhanced-number-input no-spinner" min="0" step="1" 
+                                   placeholder="Enter quantity" required
+                                   oninput="this.value = Math.round(this.value)"
+                                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                   onpaste="setTimeout(() => this.value = Math.round(parseFloat(this.value) || 0), 0)">
                             <span class="quantity-unit-display"><?php echo htmlspecialchars($ingredient['ingredient_unit']); ?></span>
                         </div>
                     </div>
@@ -166,7 +169,11 @@ if (!$ingredient) {
             <i class="fas fa-times me-2"></i>
             Cancel
         </button>
-        <button type="button" class="enhanced-btn enhanced-btn-save" id="saveAdjustmentBtn">
+        <button type="button" class="enhanced-btn enhanced-btn-warning" onclick="alert('Test button works!')">
+            <i class="fas fa-bug me-2"></i>
+            Test
+        </button>
+        <button type="button" class="enhanced-btn enhanced-btn-save" id="saveAdjustmentBtn" onclick="console.log('Direct onclick works!')">
             <i class="fas fa-save me-2"></i>
             Save Changes
         </button>
@@ -179,10 +186,10 @@ $(document).ready(function() {
     $('#adjustment_type').change(function() {
         const type = $(this).val();
         const currentStock = <?php echo $ingredient['ingredient_quantity']; ?>;
-        
+
         if (type === 'subtract') {
-            $('#adjustment_quantity').attr('max', currentStock);
-            $('#adjustment_quantity').attr('placeholder', `Max: ${currentStock} ${<?php echo json_encode($ingredient['ingredient_unit']); ?>}`);
+            $('#adjustment_quantity').attr('max', Math.round(currentStock));
+            $('#adjustment_quantity').attr('placeholder', `Max: ${Math.round(currentStock)} ${<?php echo json_encode($ingredient['ingredient_unit']); ?>}`);
         } else if (type === 'set') {
             $('#adjustment_quantity').removeAttr('max');
             $('#adjustment_quantity').attr('placeholder', 'Enter new total quantity');
@@ -191,11 +198,44 @@ $(document).ready(function() {
             $('#adjustment_quantity').attr('placeholder', 'Enter quantity to add');
         }
     });
+
+    // Ensure quantity input always shows whole numbers
+    $('#adjustment_quantity').on('input change blur focus', function() {
+        const value = parseFloat($(this).val()) || 0;
+        $(this).val(Math.round(value));
+    });
+
+
+    // Set initial value to whole number if it exists
+    $(document).ready(function() {
+        const currentValue = $('#adjustment_quantity').val();
+        if (currentValue) {
+            $('#adjustment_quantity').val(Math.round(parseFloat(currentValue) || 0));
+        }
+    });
+
+    // Force whole numbers on modal show
+    $('#adjustStockModal').on('shown.bs.modal', function() {
+        const currentValue = $('#adjustment_quantity').val();
+        if (currentValue) {
+            $('#adjustment_quantity').val(Math.round(parseFloat(currentValue) || 0));
+        }
+        
+    });
     
     // Handle form submission
-    $('#saveAdjustmentBtn').click(function() {
+    $('#saveAdjustmentBtn').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('Save button clicked!');
+        console.log('Button element:', this);
+        
         const form = $('#adjustStockForm');
         const formData = form.serialize();
+        
+        console.log('Form data:', formData);
+        console.log('Form element:', form);
         
         $.ajax({
             url: 'process_stock_adjustment.php',
@@ -638,6 +678,17 @@ $(document).ready(function() {
     transform: translateY(-1px);
 }
 
+/* Hide spinner arrows for number inputs */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.no-spinner[type=number] {
+    -moz-appearance: textfield;
+}
+
 .quantity-unit-display {
     position: absolute;
     right: 1rem;
@@ -780,6 +831,18 @@ $(document).ready(function() {
     background: linear-gradient(135deg, #723836, #8B4543);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(139, 69, 67, 0.4);
+}
+
+.enhanced-btn-warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.enhanced-btn-warning:hover {
+    background: linear-gradient(135deg, #e0a800, #dc6502);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
 }
 
 /* Responsive Design */
